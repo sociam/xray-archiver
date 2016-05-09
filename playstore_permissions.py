@@ -12,5 +12,4 @@ print htmlElem.text
 # OR for just the permissions text
 
 permdeets = driver.find_element_by_css_selector("div.permission-buckets.id-permission-buckets")
-
-permdeets.text
+print permdeets.text
