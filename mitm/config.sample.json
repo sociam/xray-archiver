@@ -1,0 +1,7 @@
+{
+	"input":"/tmp/out.csv",
+	"IMEI":"<IMEI>",
+	"MEID":"<MEID>",
+	"OSVER":"9.3.2",
+	"SERIAL":"<SN>"
+}
