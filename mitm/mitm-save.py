@@ -8,16 +8,21 @@
 from mitmproxy import flow
 from mitmproxy.models import HTTPResponse
 from netlib.http import Headers
-import csv, json, time, os, urllib
+import csv, json, time, os, urllib, random
 
-OUTFILE = '/tmp/out.csv'
+config = json.loads(''.join(open('./mitm-save-config.json', 'r').readlines())) # seriously, python? 
+rand = ''.join([random.choice('abcdefghijklmnopqrstuvwxyz') for r in xrange(5)])
+OUTFILE = '/'.join([config["destdir"],'-'.join([config['app'],config['platform'],config['version'],rand])+'.csv'])
+(app, device, platform, version, researcher) = (config['app'], config['device'], config['platform'], config['version'], config['researcher'])
+
+print "logging ", app, platform, version, " to ", OUTFILE
 
 def openfile():
     newFile = not os.path.isfile(OUTFILE) 
     f = open(OUTFILE,'a')
     writer = csv.writer(f)
     if newFile:
-        writer.writerow(['time', 'host', 'url', 'headers', 'body'])
+        writer.writerow(['app', 'version', 'device', 'platform', 'researcher', 'time', 'host', 'url', 'method', 'headers', 'body'])
     return f,writer
 
 def request(context, flow):
@@ -29,6 +34,6 @@ def request(context, flow):
     # print " host ", flow.request.pretty_host, flow.request.url, flow.request.headers
 
     f,writer = openfile()
-    writer.writerow([int(time.time()*1000),flow.request.pretty_host, urllib.quote(flow.request.url), urllib.quote(json.dumps(dict(flow.request.headers))), urllib.quote(flow.request.body)]) # json.dumps(dict(flow.request.headers)), flow.request.body])
+    writer.writerow([app, version, device, platform, researcher, int(time.time()*1000), flow.request.pretty_host, urllib.quote(flow.request.url), flow.request.method, urllib.quote(json.dumps(dict(flow.request.headers))), urllib.quote(flow.request.body)]) 
     f.close()
  
