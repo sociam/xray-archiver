@@ -33,7 +33,7 @@ var loadFile = (fname) => {
 		}
 		// dont return anything for those that don't
 	}).filter((x)=>x);
-};
+}, compile;
 
 exports.decode_urls = decode_urls;
 exports.load = loadDir;
