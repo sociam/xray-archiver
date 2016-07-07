@@ -18,7 +18,7 @@ from mitmproxy.models import HTTPResponse
 from netlib.http import Headers
 import csv, json, time, os, urllib, random
 
-config = json.loads(''.join(open('./mitm-save-config.json', 'r').readlines())) # seriously, python? 
+config = json.loads(''.join(open('./mitm-config.json', 'r').readlines())) # seriously, python? 
 runid = ''.join([random.choice('abcdefghijklmnopqrstuvwxyz') for r in xrange(5)])
 OUTFILE = '/'.join([config["destdir"],'-'.join([config['app'],config['platform'],config['version'],runid])+'.csv'])
 (app, device, platform, version, researcher) = (config['app'], config['device'], config['platform'], config['version'], config['researcher'])
