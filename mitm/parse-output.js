@@ -9,8 +9,9 @@ var parse = require('csv-parse/lib/sync'),
 	config = JSON.parse(fs.readFileSync('./config.json'));
 
 var loadFile = (fname) => {
-	console.log("Parsing file ", fname);
-	data = parse(fs.readFileSync(fname).toString());
+	text = 	fs.readFileSync(fname).toString()
+	console.log("Parsing file ", fname, "(", text.length, ")");
+	data = parse(text, {max_limit_on_data_read:9999999999});
 	headers = data[0];
 	data = data.slice(1);
 	data = data.map((x) => _.zipObject(headers,x));
@@ -23,7 +24,9 @@ var loadFile = (fname) => {
 }, loadDir = () => {
 	// loads all of the data in the specified directory
 	var srcdir = config.inputdir;
-	return fs.readdirSync(srcdir).reduce((arr,fname) => arr.concat(loadFile([srcdir,fname].join('/'))), []);
+	return fs.readdirSync(srcdir)
+		.filter((fname) => fname.indexOf('.csv') >= 0)
+		.reduce((arr,fname) => arr.concat(loadFile([srcdir,fname].join('/'))), []);
 }, decode_urls = (datas) =>  {
 	return datas.map((x) => {
 		var url = decodeURIComponent(x.url);	 
@@ -33,7 +36,14 @@ var loadFile = (fname) => {
 		}
 		// dont return anything for those that don't
 	}).filter((x)=>x);
+<<<<<<< HEAD
 }, compile;
+=======
+}, count_hosts = (data, app) => {
+	hosts = _(data).filter((x) => x.app == app).map((x)=>x.host).uniq().value();	
+	counts = _(data).reduce((y,x) => { y[x.host] = y[x.host] ? y[x.host] + 1 : 1; return y; },{})
+};
+>>>>>>> 2b05cf4f46de90d1c6c79145ce1f68fe59507403
 
 exports.decode_urls = decode_urls;
 exports.load = loadDir;

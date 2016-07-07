@@ -1,7 +1,7 @@
 { 
-	"destdir":"./data",
-	"app":"grindr",
-	"version":"2.2.9",
+	"destdir":"../../data",
+	"app":"qrreader",
+	"version":"x",
 	"platform":"iOS",
 	"researcher":"emax",
 	"device":"iPhone7,1"
