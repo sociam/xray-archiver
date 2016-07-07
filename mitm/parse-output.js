@@ -33,6 +33,9 @@ var loadFile = (fname) => {
 		}
 		// dont return anything for those that don't
 	}).filter((x)=>x);
+}, count_hosts = (data, app) => {
+	hosts = _(data).filter((x) => x.app == app).map((x)=>x.host).uniq().value();	
+	counts = _(data).reduce((y,x) => { y[x.host] = y[x.host] ? y[x.host] + 1 : 1; return y; },{})
 };
 
 exports.decode_urls = decode_urls;
