@@ -6,6 +6,8 @@ var parse = require('csv-parse/lib/sync'),
 	qs = require('querystring'),
 	company_domains,
 	COMPANY_DOMAINS = 'curated/company-domains.csv', 
+	platform_companies,
+	PLATFORM_COMPANIES = 'curated/platform-company.csv',
 	config = JSON.parse(fs.readFileSync('./config.json'));
 
 var loadFile = (fname) => {
@@ -24,9 +26,17 @@ var loadFile = (fname) => {
 		.reduce((arr,fname) => arr.concat(loadFile([srcdir,fname].join('/'))), []);
 }, getCompanyDomains = () => {
 	if (company_domains === undefined) { 
-		company_domains = loadFile(COMPANY_DOMAINS).map((x) => { x.domains = x.domains.split(' '); return x; });
+		company_domains = loadFile(COMPANY_DOMAINS)
+			.map((x) => { x.domains = x.domains.split(' '); return x; })
+			.reduce((obj, x) => { obj[x.company] = x.domains; return obj; }, {});
 	}
 	return company_domains;
+}, getPlatformCompanies = () => {
+	if (platform_companies === undefined) { 
+		platform_companies = loadFile(PLATFORM_COMPANIES)
+			.reduce((obj, x) => { obj[x.platform] = x.company; return obj; }, {});
+	}
+	return platform_companies;
 }, only_third_parties = (data) => {		
 	return data.filter((r) => {
 		// first attempt: try to filter out for hosts that have substrings with company or app name
@@ -35,20 +45,22 @@ var loadFile = (fname) => {
 			company = r.company && r.company.toLowerCase().split(' ').filter((x) => x.length > 2);
 
 		if (company && _.some(company, (cfrag) => host.indexOf(cfrag) >= 0)) {
-			console.info('detected company name in hostname ', r.host, r.company);
+			// console.info('detected company name in hostname ', r.host, r.company);
 			return false;
 		}
 		if (_.some(appname, (namefrag) => host.indexOf(namefrag) >= 0)) {
-			console.info('detected name frag in appname ', appname, r.host);
+			// console.info('detected name frag in appname ', appname, r.host);
 			return false;
 		}
 		if (_.some(getCompanyDomains()[r.company] || [], (serverTLD) => host.indexOf(serverTLD) >= 0)) {
-			console.info('detected company TLD ', appname, r.host);			
+			// console.info('detected company TLD ', appname, r.host);			
 			return false;
 		}
-		if (!r.platform) { console.warn(" no platform for ", r.app); }
-		if (_.some(getCompanyDomains()[r.platform], (plat) => r.host.indexOf(plat) >= 0)) { 
-			console.info('detected platform domain ', r.app, r.host);			
+		// if (!r.platform) { console.warn(" no platform for ", r.app); }
+		var pc = getPlatformCompanies()[r.platform.toLowerCase().trim()];
+		// console.info('platform ', r.platform.toLowerCase(), pc, getCompanyDomains()[pc]);
+		if (pc && _.some(getCompanyDomains()[pc], (plat) => r.host.indexOf(plat) >= 0)) { 
+			// console.info('detected platform domain ', r.app, r.host);			
 			return false;
 		}
 		return true;
@@ -72,6 +84,8 @@ exports.decode_url = decode_url;
 exports.decode_all = decode_all;
 exports.count_hosts = count_hosts;
 exports.only_third_parties = only_third_parties;
+exports.getCompanyDomains = getCompanyDomains;
+exports.getPlatformCompanies = getPlatformCompanies;
 exports.load = loadDir;
 
 var main = (app) => { 
