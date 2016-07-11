@@ -65,7 +65,6 @@ var loadFile = (fname) => {
 		}
 		return true;
 	});
-
 }, decode_url = (url) => {
 	url = decodeURIComponent(url);	 
 	if (url.indexOf('?') >= 0) { 
