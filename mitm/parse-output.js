@@ -4,6 +4,8 @@ var parse = require('csv-parse/lib/sync'),
 	_ = require('lodash'),
 	headers,
 	qs = require('querystring'),
+	company_domains,
+	COMPANY_DOMAINS = 'curated/company-domains.csv', 
 	config = JSON.parse(fs.readFileSync('./config.json'));
 
 var loadFile = (fname) => {
@@ -20,6 +22,38 @@ var loadFile = (fname) => {
 	return fs.readdirSync(srcdir)
 		.filter((fname) => fname.indexOf('.csv') >= 0)
 		.reduce((arr,fname) => arr.concat(loadFile([srcdir,fname].join('/'))), []);
+}, getCompanyDomains = () => {
+	if (company_domains === undefined) { 
+		company_domains = loadFile(COMPANY_DOMAINS).map((x) => { x.domains = x.domains.split(' '); return x; });
+	}
+	return company_domains;
+}, only_third_parties = (data) => {		
+	return data.filter((r) => {
+		// first attempt: try to filter out for hosts that have substrings with company or app name
+		var appname = r.app.toLowerCase().split(' '),
+			host = r.host.toLowerCase(),
+			company = r.company && r.company.toLowerCase().split(' ').filter((x) => x.length > 2);
+
+		if (company && _.some(company, (cfrag) => host.indexOf(cfrag) >= 0)) {
+			console.info('detected company name in hostname ', r.host, r.company);
+			return false;
+		}
+		if (_.some(appname, (namefrag) => host.indexOf(namefrag) >= 0)) {
+			console.info('detected name frag in appname ', appname, r.host);
+			return false;
+		}
+		if (_.some(getCompanyDomains()[r.company] || [], (serverTLD) => host.indexOf(serverTLD) >= 0)) {
+			console.info('detected company TLD ', appname, r.host);			
+			return false;
+		}
+		if (!r.platform) { console.warn(" no platform for ", r.app); }
+		if (_.some(getCompanyDomains()[r.platform], (plat) => r.host.indexOf(plat) >= 0)) { 
+			console.info('detected platform domain ', r.app, r.host);			
+			return false;
+		}
+		return true;
+	});
+
 }, decode_url = (url) => {
 	url = decodeURIComponent(url);	 
 	if (url.indexOf('?') >= 0) { 
@@ -37,13 +71,14 @@ var loadFile = (fname) => {
 exports.decode_url = decode_url;
 exports.decode_all = decode_all;
 exports.count_hosts = count_hosts;
+exports.only_third_parties = only_third_parties;
 exports.load = loadDir;
 
 var main = (app) => { 
 	var data = loadDir();
 	console.log('decoded urls', decode_all(data)); 
-	console.log('count hosts ', count_hosts(data, app));
-}
+	console.log('count hosts ', count_hosts(only_third_parties(data), app));
+};
 
 if (require.main === module) { 
 	// console.info(process.argv.length);

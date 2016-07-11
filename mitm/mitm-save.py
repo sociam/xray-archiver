@@ -21,7 +21,7 @@ import csv, json, time, os, urllib, random
 config = json.loads(''.join(open('./mitm-config.json', 'r').readlines())) # seriously, python? 
 runid = ''.join([random.choice('abcdefghijklmnopqrstuvwxyz') for r in xrange(5)])
 OUTFILE = '/'.join([config["destdir"],'-'.join([config['app'],config['platform'],config['version'],runid])+'.csv'])
-(app, device, platform, version, researcher) = (config['app'], config['device'], config['platform'], config['version'], config['researcher'])
+(app, company, device, platform, version, researcher) = (config['app'], config['company'] or '', config['device'], config['platform'], config['version'], config['researcher'])
 
 print "logging ", app, platform, version, " to ", OUTFILE
 
@@ -30,7 +30,7 @@ def openfile():
     f = open(OUTFILE,'a')
     writer = csv.writer(f)
     if newFile:
-        writer.writerow(['app', 'version', 'device', 'platform', 'researcher', 'time', 'runid', 'host', 'url', 'method', 'headers', 'body'])
+        writer.writerow(['app', 'company', 'version', 'device', 'platform', 'researcher', 'time', 'runid', 'host', 'url', 'method', 'headers', 'body'])
     return f,writer
 
 def request(context, flow):
@@ -42,6 +42,6 @@ def request(context, flow):
     # print " host ", flow.request.pretty_host, flow.request.url, flow.request.headers
 
     f,writer = openfile()
-    writer.writerow([app, version, device, platform, researcher, int(time.time()*1000), runid, flow.request.pretty_host, urllib.quote(flow.request.url), flow.request.method, urllib.quote(json.dumps(dict(flow.request.headers))), urllib.quote(flow.request.body)]) 
+    writer.writerow([app, company, version, device, platform, researcher, int(time.time()*1000), runid, flow.request.pretty_host, urllib.quote(flow.request.url), flow.request.method, urllib.quote(json.dumps(dict(flow.request.headers))), urllib.quote(flow.request.body)]) 
     f.close()
  
