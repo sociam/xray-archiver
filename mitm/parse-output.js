@@ -3,23 +3,16 @@ var parse = require('csv-parse/lib/sync'),
 	fs = require('fs'),
 	_ = require('lodash'),
 	headers,
-	hosts,
-	counts,
 	qs = require('querystring'),
 	config = JSON.parse(fs.readFileSync('./config.json'));
 
 var loadFile = (fname) => {
-	text = 	fs.readFileSync(fname).toString()
+	var text = 	fs.readFileSync(fname).toString();
 	console.log("Parsing file ", fname, "(", text.length, ")");
-	data = parse(text, {max_limit_on_data_read:9999999999});
+	var data = parse(text, {max_limit_on_data_read:9999999999});
 	headers = data[0];
 	data = data.slice(1);
 	data = data.map((x) => _.zipObject(headers,x));
-	// for giggles
-	// hosts = _(data).map((x)=>x.host).uniq().value();	
-	// counts = _(data).reduce((y,x) => { y[x.host] = y[x.host] ? y[x.host] + 1 : 1; return y; },{})
-	// console.log('counts: ', counts);
-	// _(data).map((x) => console.log(x.params))
 	return data;
 }, loadDir = () => {
 	// loads all of the data in the specified directory
@@ -27,24 +20,40 @@ var loadFile = (fname) => {
 	return fs.readdirSync(srcdir)
 		.filter((fname) => fname.indexOf('.csv') >= 0)
 		.reduce((arr,fname) => arr.concat(loadFile([srcdir,fname].join('/'))), []);
-}, decode_urls = (datas) =>  {
-	return datas.map((x) => {
-		var url = decodeURIComponent(x.url);	 
-		if (url.indexOf('?') >= 0) { 
-			// chop off the querystring for urls that have it
-			return qs.parse(url.slice(url.indexOf('?')+1));
-		}
-		// dont return anything for those that don't
-	}).filter((x)=>x);
-<<<<<<< HEAD
-}, compile;
-=======
+}, decode_url = (url) => {
+	url = decodeURIComponent(url);	 
+	if (url.indexOf('?') >= 0) { 
+		// chop off the querystring for urls that have it
+		return qs.parse(url.slice(url.indexOf('?')+1));
+	}
+}, decode_all = (datas) => { 
+	return datas.map((x) => decode_url(x.url)).filter((x)=>x);
 }, count_hosts = (data, app) => {
-	hosts = _(data).filter((x) => x.app == app).map((x)=>x.host).uniq().value();	
-	counts = _(data).reduce((y,x) => { y[x.host] = y[x.host] ? y[x.host] + 1 : 1; return y; },{})
+	if (app !== undefined) { data = _(data).filter((x) => x.app === app); }
+	return _(data).reduce((y,x) => { y[x.host] = y[x.host] ? y[x.host] + 1 : 1; return y; },{});
 };
->>>>>>> 2b05cf4f46de90d1c6c79145ce1f68fe59507403
 
-exports.decode_urls = decode_urls;
+
+exports.decode_url = decode_url;
+exports.decode_all = decode_all;
+exports.count_hosts = count_hosts;
 exports.load = loadDir;
 
+var main = (app) => { 
+	var data = loadDir();
+	console.log('decoded urls', decode_all(data)); 
+	console.log('count hosts ', count_hosts(data, app));
+}
+
+if (require.main === module) { 
+	// console.info(process.argv.length);
+	// process.argv.forEach(function (val, index, array) {
+	//   console.log(index + ': ' + val);
+	// });	
+	if (process.argv.length === 3) { 
+		// console.log('fo ', process.argv.length);
+		return main(process.argv[2]);
+	}  else {
+		main(); 
+	}
+}
