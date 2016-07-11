@@ -65,27 +65,40 @@ var loadFile = (fname) => {
 		}
 		return true;
 	});
-}, decode_url = (url) => {
+}, decodeURL = (url) => {
 	url = decodeURIComponent(url);	 
 	if (url.indexOf('?') >= 0) { 
 		// chop off the querystring for urls that have it
 		return qs.parse(url.slice(url.indexOf('?')+1));
 	}
 }, decode_all = (datas) => { 
-	return datas.map((x) => decode_url(x.url)).filter((x)=>x);
+	return datas.map((x) => decodeURL(x.url)).filter((x)=>x);
 }, count_hosts = (data, app) => {
 	if (app !== undefined) { data = _(data).filter((x) => x.app === app); }
 	return _(data).reduce((y,x) => { y[x.host] = y[x.host] ? y[x.host] + 1 : 1; return y; },{});
-};
+}, get3rdParty = (data, party) => {
+	party = party.toLowerCase().trim();
+	var hosts = getCompanyDomains()[party] || [];
+	return data.filter((x) => {
+		var host = x.host.toLowerCase();
+		return _.some([ host.indexOf(party) >= 0 ].concat(hosts.map((h) => host.indexOf(h) >= 0)));
+	});
+}, decodeHeaders = (record) => record && record.headers && JSON.parse(decodeURIComponent(record.headers)
+), decodeBody = (record) => record && record.body && decodeURIComponent(record.body),
+decode = (record) => _.extend({}, decodeURL(record.url), decodeHeaders(record) || {}, decodeBody() || {});
 
 
-exports.decode_url = decode_url;
 exports.decode_all = decode_all;
 exports.count_hosts = count_hosts;
 exports.only_third_parties = only_third_parties;
 exports.getCompanyDomains = getCompanyDomains;
 exports.getPlatformCompanies = getPlatformCompanies;
 exports.load = loadDir;
+exports.get3rdParty = get3rdParty;
+exports.decodeURL = decodeURL;
+exports.decodeHeaders = decodeHeaders;
+exports.decodeBody = decodeBody;
+exports.decode = decode;
 
 var main = (app) => { 
 	var data = loadDir();
