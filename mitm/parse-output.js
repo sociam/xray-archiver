@@ -8,7 +8,8 @@ var parse = require('csv-parse/lib/sync'),
 	COMPANY_DOMAINS = 'curated/company-domains.csv', 
 	platform_companies,
 	PLATFORM_COMPANIES = 'curated/platform-company.csv',
-	config = JSON.parse(fs.readFileSync('./config.json'));
+	config = JSON.parse(fs.readFileSync('./config.json')),
+	detectors = require('./detect-pitypes').detectors;
 
 var loadFile = (fname) => {
 	var text = 	fs.readFileSync(fname).toString();
@@ -85,7 +86,19 @@ var loadFile = (fname) => {
 	});
 }, decodeHeaders = (record) => record && record.headers && JSON.parse(decodeURIComponent(record.headers)
 ), decodeBody = (record) => record && record.body && decodeURIComponent(record.body),
-decode = (record) => _.extend({}, decodeURL(record.url), decodeHeaders(record) || {}, decodeBody() || {});
+decode = (record) => _.extend({}, decodeURL(record.url), decodeHeaders(record) || {}, decodeBody() || {}),
+detect = (data) => {
+	return data.map((x) => ({ record: x, decode: decode(x) })).map((pair) => {
+
+		var d = pair.decode,
+			types = _.keys(d).map((k) => detectors.map((detector) => { 
+			console.log(detector.type, ' testing ', k, d[k], detector.kv(k,d[k]), detector.kv(k,d[k]) ? true : false);
+			return detector.kv(k,d[k]) ? detector.type : undefined; 
+		}).filter((x) => x)).reduce((a,x) => a.concat(x), []);
+		console.info('types detected for ', d, _.uniq(types));
+		return [ pair.record.host, _.uniq(types)];
+	});
+};
 
 
 exports.decode_all = decode_all;
@@ -99,6 +112,10 @@ exports.decodeURL = decodeURL;
 exports.decodeHeaders = decodeHeaders;
 exports.decodeBody = decodeBody;
 exports.decode = decode;
+exports.data = loadDir();
+exports.detect = detect;
+exports.detected = detect(exports.data);
+exports.detectors = detectors;
 
 var main = (app) => { 
 	var data = loadDir();
