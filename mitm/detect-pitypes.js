@@ -29,11 +29,6 @@ var _ = require('lodash'),
 			kv:(k,v) => ['city','country','country_code'].indexOf(k.toLowerCase()) >= 0 || (isstr(v) && 'gb' === v)
 		},
 		{ 
-			type:'USER_PERSONAL_DETAILS', 
-			kv:(k,v) => ['age','gender','name'].indexOf(k.toLowerCase()) >= 0 ||
-				isstr(v) && _.some(['age','gender','name'], (frag) => v.toLowerCase().indexOf(frag) >= 0)
-		},
-		{ 
 			type:'USER_LOCATION',
 			kv:(k,v) => false || // ['lat','lon','lng'].indexOf(k.toLowerCase()) >= 0 || 
 					isstr(v) && (
@@ -43,6 +38,17 @@ var _ = require('lodash'),
 						// /^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$/.test(v) || // latitude
 						// /^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$/.test(v) // longitude
 					))
+		},
+		{
+			// name, email, gender, age, home address, postcode 
+			type:'USER_PERSONAL_DETAILS', 
+			kv:(k,v) => ['age','gender','name'].indexOf(k.toLowerCase()) >= 0 ||
+				isstr(v) && _.some(['age','gender','name'], (frag) => v.toLowerCase().indexOf(frag) >= 0)
+		},
+		{
+			// name, email, gender, age, home address, postcode 
+			type:'USER_ACTIVITY', 
+			kv:(k,v) => { } 
 		}
 	];
 

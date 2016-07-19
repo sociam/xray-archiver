@@ -77,7 +77,7 @@ var loadFile = (fname) => {
 }, count_hosts = (data, app) => {
 	if (app !== undefined) { data = _(data).filter((x) => x.app === app); }
 	return _(data).reduce((y,x) => { y[x.host] = y[x.host] ? y[x.host] + 1 : 1; return y; },{});
-}, get3rdParty = (data, party) => {
+}, getParty = (data, party) => {
 	party = party.toLowerCase().trim();
 	var hosts = getCompanyDomains()[party] || [];
 	return data.filter((x) => {
@@ -89,7 +89,6 @@ var loadFile = (fname) => {
 decode = (record) => _.extend({}, decodeURL(record.url), decodeHeaders(record) || {}, decodeBody() || {}),
 detect = (data) => {
 	return data.map((x) => ({ record: x, decode: decode(x) })).map((pair) => {
-
 		var d = pair.decode,
 			types = _.keys(d).map((k) => detectors.map((detector) => { 
 			console.log(detector.type, ' testing ', k, d[k], detector.kv(k,d[k]), detector.kv(k,d[k]) ? true : false);
@@ -107,7 +106,7 @@ exports.only_third_parties = only_third_parties;
 exports.getCompanyDomains = getCompanyDomains;
 exports.getPlatformCompanies = getPlatformCompanies;
 exports.load = loadDir;
-exports.get3rdParty = get3rdParty;
+exports.getParty = getParty;
 exports.decodeURL = decodeURL;
 exports.decodeHeaders = decodeHeaders;
 exports.decodeBody = decodeBody;
