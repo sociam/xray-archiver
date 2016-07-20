@@ -97,8 +97,13 @@ detect = (data) => {
 		console.info('types detected for ', d, _.uniq(types));
 		return [ pair.record.host, _.uniq(types)];
 	});
+}, hosts_by_app = (data) => {
+	return _(data).reduce((y,x) => { 
+		y[x.app] = y[x.app] || {};
+		y[x.app][x.host] = y[x.app][x.host] ? y[x.app][x.host] + 1 : 1; 
+		return y;
+	},{});
 };
-
 
 exports.decode_all = decode_all;
 exports.count_hosts = count_hosts;
@@ -115,11 +120,13 @@ exports.data = loadDir();
 exports.detect = detect;
 exports.detected = detect(exports.data);
 exports.detectors = detectors;
+exports.hosts_by_app = hosts_by_app(exports.data);
 
 var main = (app) => { 
 	var data = loadDir();
 	console.log('decoded urls', decode_all(data)); 
 	console.log('count hosts ', count_hosts(only_third_parties(data), app));
+	console.log('hba', exports.hosts_by_app);
 };
 
 if (require.main === module) { 
