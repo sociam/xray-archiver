@@ -149,7 +149,7 @@ exports.ccslds = getSLDs();
 exports.data = fold_into_2ld(loadDir());
 exports.detect = detect;
 exports.detected = detect_by_host(detect(exports.data));
-exports.hosts_by_app = hosts_by_app(exports.data, 'host_2ld');
+exports.hosts_by_app = hosts_by_app(exports.data); // hosts_by_app(exports.data, 'host_2ld');
 exports.detectors = detectors;
 
 var main = (app) => { 
@@ -158,7 +158,17 @@ var main = (app) => {
 	console.log('decoded urls', decode_all(data)); 
 	console.log('count hosts ', count_hosts(only_third_parties(data), app));
 	console.log('hba', exports.hosts_by_app);
-	// console.log('ccslds', exports.ccslds);
+
+	console.info("writing hosts by app to ", config.out_hosts_by_app, _.keys(exports.hosts_by_app).length, ' apps');
+	console.log(JSON.stringify(exports.hosts_by_app))
+	if (config.out_hosts_by_app) { 
+		fs.writeFileSync(config.out_hosts_by_app, JSON.stringify(exports.hosts_by_app));
+	}
+	console.info("writing pi by host", config.out_pi_by_host, _.keys(exports.detected).length, ' hosts');
+	console.log(JSON.stringify(exports.detected))
+	if (config.out_pi_by_host) { 
+		fs.writeFileSync(config.out_pi_by_host, JSON.stringify(exports.detected));
+	}
 };
 
 if (require.main === module) { 
