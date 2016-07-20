@@ -4,7 +4,6 @@ var parse = require('csv-parse/lib/sync'),
 	_ = require('lodash'),
 	headers,
 	qs = require('querystring'),
-	company_domains,
 	COMPANY_DOMAINS = 'curated/company-domains.csv', 
 	platform_companies,
 	PLATFORM_COMPANIES = 'curated/platform-company.csv',
@@ -26,12 +25,20 @@ var loadFile = (fname) => {
 		.filter((fname) => fname.indexOf('.csv') >= 0)
 		.reduce((arr,fname) => arr.concat(loadFile([srcdir,fname].join('/'))), []);
 }, getCompanyDomains = () => {
-	if (company_domains === undefined) { 
-		company_domains = loadFile(COMPANY_DOMAINS)
-			.map((x) => { x.domains = x.domains.split(' '); return x; })
+	// returns { company_name => [d1, d2, d3] }
+	return loadFile(COMPANY_DOMAINS)
+			.map((x) => { x.domains = x.domains.split(' ').map((x) => x.trim().toLowerCase()); return x; })
 			.reduce((obj, x) => { obj[x.company] = x.domains; return obj; }, {});
-	}
-	return company_domains;
+}, getDomainCompanies = () => {
+	// reversed version of ^^ getCompanyDomains for O(1)
+	// returns { domain => company, shorten_2ld(domain) => company }
+	var cd = getCompanyDomains(), domains = {};
+	_.keys(cd).map((company) => {
+		cd[company].map((domain) => { 
+			domains[domain] = domains[shorten_2ld(domain)] = company;
+		});
+	});
+	return domains;
 }, getPlatformCompanies = () => {
 	if (platform_companies === undefined) { 
 		platform_companies = loadFile(PLATFORM_COMPANIES)
@@ -132,6 +139,17 @@ detect = (data) => {
 }, fold_into_2ld = (data) => {
 	data.map((x) => { x.host_2ld = shorten_2ld(x.host);	});
 	return data;
+}, fold_in_host_company = (data) => {
+	var dc = getDomainCompanies();
+	data.map((row) => {
+		if (dc[row.host] || dc[row.host_2ld]) { row.host_company = dc[row.host] || dc[row.host_2ld]; return; }
+		// try app company
+		var app_company = row.company.toLowerCase();
+		if (row.host.indexOf(app_company) >= 0) { 
+			row.host_company = app_company;
+		}
+	});
+	return data;
 };
 
 exports.decode_all = decode_all;
@@ -146,7 +164,7 @@ exports.decodeHeaders = decodeHeaders;
 exports.decodeBody = decodeBody;
 exports.decode = decode;
 exports.ccslds = getSLDs();
-exports.data = fold_into_2ld(loadDir());
+exports.data = fold_in_host_company(fold_into_2ld(loadDir()));
 exports.detect = detect;
 exports.detected = detect_by_host(detect(exports.data));
 exports.hosts_by_app = hosts_by_app(exports.data); // hosts_by_app(exports.data, 'host_2ld');
