@@ -107,20 +107,18 @@ detect = (data) => {
 		return y;
 	},{});
 }, fold_into_2ld = (data) => {
-	console.log('data ', data);
 	data.map((x) => { 
 		var match = x.host.match(/([^\.]*)\.([^\.]*)$/);
-		if (match && match.length > 2) {
-			x.host_2ld = match.slice(1).join('.');
+		if (match) { 
+			x.host_2ld = match[0]; 
 		}
 		if (exports.ccslds.indexOf(x.host_2ld) >= 0) { 
-			var onemore = x.host.slice(0,x.host.length - x.host_2ld - 1).match(/([^\.]*)$/);
-			if (onemore && onemore.length > 1) { 
-				x.host_2ld = [onemore[1], x.host_2ld].join('.');
+			var onemore = x.host.slice(0,x.host.length - x.host_2ld.length - 1).match(/([^\.]*)$/);
+			if (onemore) { 
+				x.host_2ld = [onemore[0], x.host_2ld].join('.');
 			}
 		}
 		if (!x.host_2ld) { return x.host_2ld = x.host; }
-
 	});
 	return data;
 } ;
