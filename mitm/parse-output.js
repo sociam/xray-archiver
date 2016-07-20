@@ -106,22 +106,26 @@ detect = (data) => {
 		y[x.app][x.host_2ld] = y[x.app][x.host_2ld] ? y[x.app][x.host_2ld] + 1 : 1; 
 		return y;
 	},{});
-}, fold_into_2ld = (data) => {
-	data.map((x) => { 
-		var match = x.host.match(/([^\.]*)\.([^\.]*)$/);
-		if (match) { 
-			x.host_2ld = match[0]; 
-		}
-		if (exports.ccslds.indexOf(x.host_2ld) >= 0) { 
-			var onemore = x.host.slice(0,x.host.length - x.host_2ld.length - 1).match(/([^\.]*)$/);
+}, shorten_2ld = (host) => {
+	var match = host.match(/([^\.]*)\.([^\.]*)$/);
+	if (match) { 
+		var short = match[0];
+		if (exports.ccslds.indexOf(short) >= 0) { 
+			var onemore = host.slice(0,host.length - short.length - 1).match(/([^\.]*)$/);
 			if (onemore) { 
-				x.host_2ld = [onemore[0], x.host_2ld].join('.');
+				return [onemore[0], short].join('.');
+			} else {
+				// fallback
+				return host; 
 			}
 		}
-		if (!x.host_2ld) { return x.host_2ld = x.host; }
-	});
+		return short;
+	}
+	return host;
+}, fold_into_2ld = (data) => {
+	data.map((x) => { x.host_2ld = shorten_2ld(x.host);	});
 	return data;
-} ;
+};
 
 exports.decode_all = decode_all;
 exports.count_hosts = count_hosts;
