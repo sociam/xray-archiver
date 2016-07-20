@@ -15,6 +15,6 @@ pyvenv.cfg
 pip-selfcheck.json
 env/
 *node_modules*
-mockups/www/lib
+prototypes/www/lib
 *.DS_Store*
 *~
