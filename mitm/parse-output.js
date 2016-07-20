@@ -106,10 +106,11 @@ detect = (data) => {
 	var host = hostkey && x.record[hostkey] || x.record.host;
 	dict[host] = _.uniq((dict[host] || []).concat(x.types))
 	return dict;
-}, {}), hosts_by_app = (data) => {
+}, {}), hosts_by_app = (data, hostkey) => {
 	return _(data).reduce((y,x) => { 
+		var host = hostkey && x[hostkey] || x.host;
 		y[x.app] = y[x.app] || {};
-		y[x.app][x.host_2ld] = y[x.app][x.host_2ld] ? y[x.app][x.host_2ld] + 1 : 1; 
+		y[x.app][host] = y[x.app][host] ? y[x.app][host] + 1 : 1; 
 		return y;
 	},{});
 }, shorten_2ld = (host) => {
@@ -148,7 +149,7 @@ exports.ccslds = getSLDs();
 exports.data = fold_into_2ld(loadDir());
 exports.detect = detect;
 exports.detected = detect_by_host(detect(exports.data));
-exports.hosts_by_app = hosts_by_app(exports.data);
+exports.hosts_by_app = hosts_by_app(exports.data, 'host_2ld');
 exports.detectors = detectors;
 
 var main = (app) => { 
