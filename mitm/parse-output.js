@@ -84,6 +84,9 @@ var loadFile = (fname) => {
 		var host = x.host.toLowerCase();
 		return _.some([ host.indexOf(party) >= 0 ].concat(hosts.map((h) => host.indexOf(h) >= 0)));
 	});
+}, getSLDs = () => {
+	var ccsld = fs.readFileSync('curated/ccsld.txt').toString();
+	return ccsld.split('\n').filter((x) => (x && x.trim().length > 0 && x.indexOf('.') >= 0 && x.indexOf('//') < 0 &&  x.indexOf('!') < 0 && x.indexOf('*') < 0));
 }, decodeHeaders = (record) => record && record.headers && JSON.parse(decodeURIComponent(record.headers)
 ), decodeBody = (record) => record && record.body && decodeURIComponent(record.body),
 decode = (record) => _.extend({}, decodeURL(record.url), decodeHeaders(record) || {}, decodeBody() || {}),
@@ -100,10 +103,27 @@ detect = (data) => {
 }, hosts_by_app = (data) => {
 	return _(data).reduce((y,x) => { 
 		y[x.app] = y[x.app] || {};
-		y[x.app][x.host] = y[x.app][x.host] ? y[x.app][x.host] + 1 : 1; 
+		y[x.app][x.host_2ld] = y[x.app][x.host_2ld] ? y[x.app][x.host_2ld] + 1 : 1; 
 		return y;
 	},{});
-};
+}, fold_into_2ld = (data) => {
+	console.log('data ', data);
+	data.map((x) => { 
+		var match = x.host.match(/([^\.]*)\.([^\.]*)$/);
+		if (match && match.length > 2) {
+			x.host_2ld = match.slice(1).join('.');
+		}
+		if (exports.ccslds.indexOf(x.host_2ld) >= 0) { 
+			var onemore = x.host.slice(0,x.host.length - x.host_2ld - 1).match(/([^\.]*)$/);
+			if (onemore && onemore.length > 1) { 
+				x.host_2ld = [onemore[1], x.host_2ld].join('.');
+			}
+		}
+		if (!x.host_2ld) { return x.host_2ld = x.host; }
+
+	});
+	return data;
+} ;
 
 exports.decode_all = decode_all;
 exports.count_hosts = count_hosts;
@@ -116,17 +136,20 @@ exports.decodeURL = decodeURL;
 exports.decodeHeaders = decodeHeaders;
 exports.decodeBody = decodeBody;
 exports.decode = decode;
-exports.data = loadDir();
+exports.ccslds = getSLDs();
+exports.data = fold_into_2ld(loadDir());
 exports.detect = detect;
 exports.detected = detect(exports.data);
 exports.detectors = detectors;
 exports.hosts_by_app = hosts_by_app(exports.data);
 
 var main = (app) => { 
-	var data = loadDir();
+	// var data = loadDir();
+	var data = exports.data;
 	console.log('decoded urls', decode_all(data)); 
 	console.log('count hosts ', count_hosts(only_third_parties(data), app));
 	console.log('hba', exports.hosts_by_app);
+	// console.log('ccslds', exports.ccslds);
 };
 
 if (require.main === module) { 
