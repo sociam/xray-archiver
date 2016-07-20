@@ -1,0 +1,31 @@
+{
+  "name": "DCI",
+  "version": "1.0.0",
+  "homepage": "https://github.com/sociam/xray",
+  "authors": [ "Max Van Kleek <max@hip.cat>" ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "www/lib"
+  ],
+  "resolutions": {
+    "angular": "~1.5.0"
+  },
+  "dependencies": {
+    "angular": "",
+    "angular-animate": "",
+    "angular-sanitize": "",
+    "angular-touch": "",
+    "angular-ui-router": "",
+    "bootstrap": "",
+    "d3": "~3.5.14",
+    "jquery": "",
+    "less": "",
+    "pouchdb": "",
+    "lodash": "",
+    "bluebird": "~2.9.34",
+    "moment": "",
+    "fastclick": "^1.0.6"
+  }
+}

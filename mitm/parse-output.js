@@ -91,16 +91,22 @@ var loadFile = (fname) => {
 ), decodeBody = (record) => record && record.body && decodeURIComponent(record.body),
 decode = (record) => _.extend({}, decodeURL(record.url), decodeHeaders(record) || {}, decodeBody() || {}),
 detect = (data) => {
+	// returns an array one per data element
+	// [ { record: {<data item>}, types: [ 'DEVICE_SOFT' ] } ... { } { } ]
 	return data.map((x) => ({ record: x, decode: decode(x) })).map((pair) => {
 		var d = pair.decode,
 			types = _.keys(d).map((k) => detectors.map((detector) => { 
-			console.log(detector.type, ' testing ', k, d[k], detector.kv(k,d[k]), detector.kv(k,d[k]) ? true : false);
+			// console.log(detector.type, ' testing ', k, d[k], detector.kv(k,d[k]), detector.kv(k,d[k]) ? true : false);
 			return detector.kv(k,d[k]) ? detector.type : undefined; 
 		}).filter((x) => x)).reduce((a,x) => a.concat(x), []);
-		console.info('types detected for ', d, _.uniq(types));
-		return [ pair.record.host, _.uniq(types)];
+		// console.info('types detected for ', d, _.uniq(types));
+		return { record: pair.record, types: _.uniq(types) };
 	});
-}, hosts_by_app = (data) => {
+}, detect_by_host = (detected, hostkey) => detected.reduce((dict, x) => {
+	var host = hostkey && x.record[hostkey] || x.record.host;
+	dict[host] = _.uniq((dict[host] || []).concat(x.types))
+	return dict;
+}, {}), hosts_by_app = (data) => {
 	return _(data).reduce((y,x) => { 
 		y[x.app] = y[x.app] || {};
 		y[x.app][x.host_2ld] = y[x.app][x.host_2ld] ? y[x.app][x.host_2ld] + 1 : 1; 
@@ -141,9 +147,9 @@ exports.decode = decode;
 exports.ccslds = getSLDs();
 exports.data = fold_into_2ld(loadDir());
 exports.detect = detect;
-exports.detected = detect(exports.data);
-exports.detectors = detectors;
+exports.detected = detect_by_host(detect(exports.data));
 exports.hosts_by_app = hosts_by_app(exports.data);
+exports.detectors = detectors;
 
 var main = (app) => { 
 	// var data = loadDir();
