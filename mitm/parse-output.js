@@ -159,15 +159,17 @@ var main = (app) => {
 	console.log('count hosts ', count_hosts(only_third_parties(data), app));
 	console.log('hba', exports.hosts_by_app);
 
-	console.info("writing hosts by app to ", config.out_hosts_by_app, _.keys(exports.hosts_by_app).length, ' apps');
-	console.log(JSON.stringify(exports.hosts_by_app))
 	if (config.out_hosts_by_app) { 
+		console.info("writing Hosts By App table to:", config.out_hosts_by_app, _.keys(exports.hosts_by_app).length, ' apps');
 		fs.writeFileSync(config.out_hosts_by_app, JSON.stringify(exports.hosts_by_app));
 	}
-	console.info("writing pi by host", config.out_pi_by_host, _.keys(exports.detected).length, ' hosts');
-	console.log(JSON.stringify(exports.detected))
 	if (config.out_pi_by_host) { 
+		console.info("writing PI types by host to:", config.out_pi_by_host, _.keys(exports.detected).length, ' hosts');
 		fs.writeFileSync(config.out_pi_by_host, JSON.stringify(exports.detected));
+	}
+	if (config.out_data) { 
+		console.info("writing all data records to:", config.out_data, _.keys(exports.data).length, ' records');
+		fs.writeFileSync(config.out_data, JSON.stringify(exports.data));
 	}
 };
 

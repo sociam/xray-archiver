@@ -2,6 +2,7 @@
 	"inputdir":"/Users/electronic/Desktop/x-ray/data",
 	"out_pi_by_host":"../mitm_out/pi_by_host.json",
 	"out_hosts_by_app":"../mitm_out/host_by_app.json",	
+	"out_data":"../mitm_out/data_all.json",	
 	"UDID":"49b55a0096c676a84fbcc8057daf7f8ce34a5f37",
 	"ECID":"A08A4043A4826",
 	"UDID2":"C5644DF0-7044-480D-9F3B-C754172B1022",
