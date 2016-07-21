@@ -54,7 +54,10 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 						return r;
 					}, {}),
 					isAd = (company) => {
-						return company && companydetails[company] && companydetails[company].type.indexOf('advert')>=0;
+						return company && 
+							company !== appcompany && // don't consider the first party an ad (e.g. google)
+							companydetails[company] && 
+							companydetails[company].type.indexOf('advert')>=0;
 					},
 					recompute = () => {
 						var apphosts = _(hosts[$scope.app]).pickBy((val) => val > $scope.threshold).keys().value();
@@ -75,15 +78,16 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 							return r;
 						}, {});
 
-						$scope.ad2pi = _.pickBy($scope.company2pi, (pis, company) => isAd(company));
-						$scope.non2pi = _.pickBy($scope.company2pi, (pis, company) => !isAd(company));
+						$scope.appcompany2pi = _.pickBy($scope.company2pi, (pis, company) => company === appcompany);
+						$scope.ad2pi = _.pickBy($scope.company2pi, (pis, company) => !$scope.appcompany2pi[company] && isAd(company));
+						$scope.non2pi = _.pickBy($scope.company2pi, (pis, company) => !$scope.appcompany2pi[company] && !isAd(company));
 					};
 
 				// $scope.details = companydetails;
 
 				if (!hosts[$scope.app]) { $scope.error = 'No hosts known for app'; }
 
-				$scope.threshold = 2;
+				$scope.threshold = 0;
 				$scope.$watch('threshold', () => { if ($scope.threshold!==undefined) { recompute(); }});
 
 				$scope.hosts = hosts;

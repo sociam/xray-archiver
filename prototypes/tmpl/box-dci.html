@@ -9,9 +9,9 @@
 		<input type="range" ng-model="threshold" min="0" max="100">
 	</div>
 	<h2 ng-if="error"> {{ error }} </h2>
-	<div ng-if="!error" class="trackers">
-		non-advertisers
-		<div class="company" ng-repeat="(company,pis) in non2pi">   
+	<div ng-if="!error" class="trackers app-publisher">
+		<h5>app publisher</h5>
+		<div class="company" ng-repeat="(company,pis) in appcompany2pi">   
 			<h4>{{company}}</h4>			
 			<ol>
 				<li ng-repeat="pi in pis"> {{ pi }} </li>
@@ -19,7 +19,7 @@
 		</div>
 	</div>
 	<div class="trackers ad">
-		advertisers:
+		<h5>advertisers</h5>
 		<div class="company" ng-repeat="(company,pis) in ad2pi">
 			<h4>{{company}}</h4>			
 			<ol>
@@ -27,4 +27,15 @@
 			</ol>			
 		</div>
 	</div>
+	<div ng-if="!error" class="trackers other">
+		<h5>others</h5>
+		<div class="company" ng-repeat="(company,pis) in non2pi">   
+			<h4>{{company}}</h4>			
+			<ol>
+				<li ng-repeat="pi in pis"> {{ pi }} </li>
+			</ol>			
+		</div>
+	</div>
+
 </div>
+
