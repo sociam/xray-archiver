@@ -5,8 +5,8 @@ var parse = require('csv-parse/lib/sync'),
 	headers,
 	qs = require('querystring'),
 	COMPANY_DOMAINS = 'curated/company-domains.csv', 
+	PLATFORM_COMPANIES = 'curated/platform-company.csv',	
 	platform_companies,
-	PLATFORM_COMPANIES = 'curated/platform-company.csv',
 	config = JSON.parse(fs.readFileSync('./config.json')),
 	detectors = require('./detect-pitypes').detectors;
 
@@ -144,8 +144,12 @@ detect = (data) => {
 	data.map((row) => {
 		if (dc[row.host] || dc[row.host_2ld]) { row.host_company = dc[row.host] || dc[row.host_2ld]; return; }
 		// try app company
-		var app_company = row.company.toLowerCase();
-		if (row.host.indexOf(app_company) >= 0) { 
+		var app_company = row.company && row.company.toLowerCase();
+		if (!app_company) { 
+			console.error(' error: no company for ', row.host);
+			return;
+		}
+		if (app_company && row.host.indexOf(app_company) >= 0) { 
 			row.host_company = app_company;
 		}
 	});
