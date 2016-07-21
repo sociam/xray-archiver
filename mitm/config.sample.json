@@ -1,5 +1,7 @@
 {
 	"inputdir":"/Users/electronic/Desktop/x-ray/data",
+	"in_company_domains":"../../private-data-repo/curated/company_domains.csv",
+	"in_platform_companies":"../../private-data-repo/curated/platform_companies.csv",
 	"out_pi_by_host":"../mitm_out/pi_by_host.json",
 	"out_hosts_by_app":"../mitm_out/host_by_app.json",	
 	"out_data":"../mitm_out/data_all.json",	

@@ -4,9 +4,6 @@ var parse = require('csv-parse/lib/sync'),
 	_ = require('lodash'),
 	headers,
 	qs = require('querystring'),
-	COMPANY_DOMAINS = 'curated/company-domains.csv', 
-	PLATFORM_COMPANIES = 'curated/platform-company.csv',	
-	platform_companies,
 	config = JSON.parse(fs.readFileSync('./config.json')),
 	detectors = require('./detect-pitypes').detectors;
 
@@ -26,7 +23,7 @@ var loadFile = (fname) => {
 		.reduce((arr,fname) => arr.concat(loadFile([srcdir,fname].join('/'))), []);
 }, getCompanyDomains = () => {
 	// returns { company_name => [d1, d2, d3] }
-	return loadFile(COMPANY_DOMAINS)
+	return loadFile(config.in_company_domains)
 			.map((x) => { x.domains = x.domains.split(' ').map((x) => x.trim().toLowerCase()); return x; })
 			.reduce((obj, x) => { obj[x.company] = x.domains; return obj; }, {});
 }, getDomainCompanies = () => {
@@ -40,11 +37,8 @@ var loadFile = (fname) => {
 	});
 	return domains;
 }, getPlatformCompanies = () => {
-	if (platform_companies === undefined) { 
-		platform_companies = loadFile(PLATFORM_COMPANIES)
-			.reduce((obj, x) => { obj[x.platform] = x.company; return obj; }, {});
-	}
-	return platform_companies;
+	return loadFile(config.in_platform_companies)
+		.reduce((obj, x) => { obj[x.platform] = x.company; return obj; }, {});
 }, only_third_parties = (data) => {		
 	return data.filter((r) => {
 		// first attempt: try to filter out for hosts that have substrings with company or app name
@@ -111,7 +105,7 @@ detect = (data) => {
 	});
 }, detect_by_host = (detected, hostkey) => detected.reduce((dict, x) => {
 	var host = hostkey && x.record[hostkey] || x.record.host;
-	dict[host] = _.uniq((dict[host] || []).concat(x.types))
+	dict[host] = _.uniq((dict[host] || []).concat(x.types));
 	return dict;
 }, {}), hosts_by_app = (data, hostkey) => {
 	return _(data).reduce((y,x) => { 
