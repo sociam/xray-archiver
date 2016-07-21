@@ -146,7 +146,7 @@ detect = (data) => {
 		// try app company
 		var app_company = row.company && row.company.toLowerCase();
 		if (!app_company) { 
-			console.error(' error: no company for ', row.app, row.host);
+			console.error('Error: no company for ', row.app, row.host);
 			return;
 		}
 		if (app_company && row.host.indexOf(app_company) >= 0) { 
@@ -177,9 +177,9 @@ exports.detectors = detectors;
 var main = (app) => { 
 	// var data = loadDir();
 	var data = exports.data;
-	console.log('decoded urls', decode_all(data)); 
-	console.log('count hosts ', count_hosts(only_third_parties(data), app));
-	console.log('hba', exports.hosts_by_app);
+	// console.log('decoded urls', decode_all(data)); 
+	// console.log('count hosts ', count_hosts(only_third_parties(data), app));
+	// console.log('hba', exports.hosts_by_app);
 
 	if (config.out_hosts_by_app) { 
 		console.info("writing Hosts By App table to:", config.out_hosts_by_app, _.keys(exports.hosts_by_app).length, ' apps');
