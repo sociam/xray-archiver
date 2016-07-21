@@ -26,6 +26,11 @@ var loadFile = (fname) => {
 	return loadFile(config.in_company_domains)
 			.map((x) => { x.domains = x.domains.split(' ').map((x) => x.trim().toLowerCase()); return x; })
 			.reduce((obj, x) => { obj[x.company] = x.domains; return obj; }, {});
+}, getCompanyDetails = () => {
+	return loadFile(config.in_company_domains)
+		.filter((x) => x.company)
+		.map((x) => { x.domains = x.domains.split(' ').map((x) => x.trim().toLowerCase()); return x; })
+		.reduce((obj, x) => { obj[x.company] = x; return obj; }, {});
 }, getDomainCompanies = () => {
 	// reversed version of ^^ getCompanyDomains for O(1)
 	// returns { domain => company, shorten_2ld(domain) => company }
@@ -146,6 +151,7 @@ detect = (data) => {
 	// 	}
 	// });
 	var dc = getDomainCompanies(),
+		details = getCompanyDetails(),
 		dc_domains = _.keys(dc).filter((x) => x.length),
 		dc_companies = _.uniq(_.values(dc)).filter((x)=>x.length);
 
@@ -154,7 +160,7 @@ detect = (data) => {
 		// Phase 0 : check app company explicitly
 		var host = row.host,
 			app_company = row.company && row.company.toLowerCase();
-			
+
 		if (app_company && row.host.indexOf(app_company) >= 0) { 
 			row.host_company = app_company;
 			console.info('phase 0 ', host, '=>', app_company);
@@ -163,9 +169,10 @@ detect = (data) => {
 
 		// Phase 1 : then check to see if the host is among companies we know
 		var	matching_companies = dc_companies.filter((name_frag) => host.indexOf(name_frag) >= 0);
+
 		if (matching_companies.length) {
 			row.host_company = matching_companies[0];
-			// console.info('phase 1 ', host, '=>', matching_companies[0]);
+			// console.info('phase 1 ', host, '=>', row.host_company);
 			return;
 		}
 
@@ -175,12 +182,20 @@ detect = (data) => {
 
 		if (company) { 
 			row.host_company = company;
-			// console.info('phase 2 ', host, '=>', company);
+			// console.info('phase 2 ', host, '=>', row.host_company);
 			return;
 		}
 
 		console.info('could not identify company for ', host);
 	});
+
+	// // add company details
+	// data.map((row) => {
+	// 	if (row.host_company) { 
+	// 		var company_details = details[row.host_company];
+	// 		if (company_details) { _.extend(row, company_details); }			
+	// 	}
+	// });
 
 	return data;
 };
@@ -221,6 +236,11 @@ var main = (app) => {
 	if (config.out_data) { 
 		console.info("writing all data records to:", config.out_data, _.keys(exports.data).length, ' records');
 		fs.writeFileSync(config.out_data, JSON.stringify(exports.data));
+	}
+	if (config.out_company_details) { 
+		var details = getCompanyDetails();
+		console.info("writing company details (to json):", config.out_company_details, _.keys(details).length, ' records');
+		fs.writeFileSync(config.out_company_details, JSON.stringify(details));
 	}
 };
 
