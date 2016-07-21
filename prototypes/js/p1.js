@@ -45,6 +45,13 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 						}
 						return r;
 					}, {}),
+					hTh = $scope.hTc = data.reduce((r,a) => {
+						if (a.host_2ld) { 
+							r[a.host] = a.host_2ld;
+						}
+						return r;
+					}, {}),
+
 					recompute = () => {
 						var apphosts = _(hosts[$scope.app]).pickBy((val) => val > $scope.threshold).keys().value();
 						// next we wanna group together all the pi_types, and consolidate around company
@@ -52,7 +59,14 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 						$scope.company2pi = apphosts.reduce((r,host) => {
 							var company = hTc[host],
 								host_pis = pitypes[host] || [];
-							if (!company) { console.error('no company for host ', host); return r; }
+							if (!company) { 
+								var mfirst = hTh[host].match(/^([^\.]+)\./);
+								if (mfirst) { 
+									company = mfirst[1]; 
+								} else {
+									console.error('no company for host ', host); return r; 
+								}
+							} 
 							r[company] = _.union(r[company] || [], host_pis);
 							return r;
 						}, {});
