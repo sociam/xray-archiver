@@ -146,7 +146,7 @@ detect = (data) => {
 		// try app company
 		var app_company = row.company && row.company.toLowerCase();
 		if (!app_company) { 
-			console.error(' error: no company for ', row.host);
+			console.error(' error: no company for ', row.app, row.host);
 			return;
 		}
 		if (app_company && row.host.indexOf(app_company) >= 0) { 
