@@ -30,15 +30,16 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 			resolve: {
 				pitypes:($http) => $http.get('../mitm_out/pi_by_host.json').then((x) => x.data),
 				hosts: ($http) => $http.get('../mitm_out/host_by_app.json').then((x) => x.data),
+				companydetails: ($http) => $http.get('../mitm_out/company_details.json').then((x) => x.data),
 				data: ($http) => $http.get('../mitm_out/data_all.json').then((x) => x.data)
 			},
-			controller:function($scope, pitypes, hosts, data, $stateParams) {
+			controller:function($scope, pitypes, hosts, companydetails, data, $stateParams) {
 				console.log('boxdci stateparams', $stateParams);
 				console.log('got relevant ', data.length);
 				
 				data = data.filter((x) => x.app == $stateParams.app);
 				var app = $scope.app = $stateParams.app,
-					appCompany = $scope.appcompany = data[0].company,
+					appcompany = $scope.appcompany = data[0].company,
 					hTc = $scope.hTc = data.reduce((r,a) => {
 						if (a.host_company) { 
 							r[a.host] = a.host_company; 
@@ -52,7 +53,9 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 						}
 						return r;
 					}, {}),
-
+					isAd = (company) => {
+						return company && companydetails[company] && companydetails[company].type.indexOf('advert')>=0;
+					},
 					recompute = () => {
 						var apphosts = _(hosts[$scope.app]).pickBy((val) => val > $scope.threshold).keys().value();
 						// next we wanna group together all the pi_types, and consolidate around company
@@ -71,7 +74,12 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 							r[company] = _.union(r[company] || [], host_pis);
 							return r;
 						}, {});
+
+						$scope.ad2pi = _.pickBy($scope.company2pi, (pis, company) => isAd(company));
+						$scope.non2pi = _.pickBy($scope.company2pi, (pis, company) => !isAd(company));
 					};
+
+				// $scope.details = companydetails;
 
 				if (!hosts[$scope.app]) { $scope.error = 'No hosts known for app'; }
 
