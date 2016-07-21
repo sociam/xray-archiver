@@ -41,11 +41,12 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 					appCompany = $scope.appcompany = data[0].company,
 					hTc = $scope.hTc = data.reduce((r,a) => {
 						if (a.host_company) { 
-							r[a.host] = a.host_company; r[a.host_2ld] = a.host_company;
+							r[a.host] = a.host_company; 
+							r[a.host_2ld] = a.host_company;
 						}
 						return r;
 					}, {}),
-					hTh = $scope.hTc = data.reduce((r,a) => {
+					hTh = $scope.hTh = data.reduce((r,a) => {
 						if (a.host_2ld) { 
 							r[a.host] = a.host_2ld;
 						}

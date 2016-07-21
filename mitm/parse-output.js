@@ -134,19 +134,54 @@ detect = (data) => {
 	data.map((x) => { x.host_2ld = shorten_2ld(x.host);	});
 	return data;
 }, fold_in_host_company = (data) => {
-	var dc = getDomainCompanies();
+
+	// old code was O(n) and fast but only exact matched
+	// var dc = getDomainCompanies();
+	// data.map((row) => {
+	// 	if (dc[row.host] || dc[row.host_2ld]) { row.host_company = dc[row.host] || dc[row.host_2ld]; return; }
+	// 	// try app company
+	// 	var app_company = row.company && row.company.toLowerCase();
+	// 	if (app_company && row.host.indexOf(app_company) >= 0) { 
+	// 		row.host_company = app_company;
+	// 	}
+	// });
+	var dc = getDomainCompanies(),
+		dc_domains = _.keys(dc).filter((x) => x.length),
+		dc_companies = _.uniq(_.values(dc)).filter((x)=>x.length);
+
 	data.map((row) => {
-		if (dc[row.host] || dc[row.host_2ld]) { row.host_company = dc[row.host] || dc[row.host_2ld]; return; }
-		// try app company
-		var app_company = row.company && row.company.toLowerCase();
-		if (!app_company) { 
-			console.error('Error: no company for ', row.app, row.host);
-			return;
-		}
+
+		// Phase 0 : check app company explicitly
+		var host = row.host,
+			app_company = row.company && row.company.toLowerCase();
+			
 		if (app_company && row.host.indexOf(app_company) >= 0) { 
 			row.host_company = app_company;
+			console.info('phase 0 ', host, '=>', app_company);
+			return;
 		}
+
+		// Phase 1 : then check to see if the host is among companies we know
+		var	matching_companies = dc_companies.filter((name_frag) => host.indexOf(name_frag) >= 0);
+		if (matching_companies.length) {
+			row.host_company = matching_companies[0];
+			// console.info('phase 1 ', host, '=>', matching_companies[0]);
+			return;
+		}
+
+		// Phase 2: finally check to see if the host is among domains of companies we know
+		var matching_domains = dc_domains.filter((domain_frag) => host.indexOf(domain_frag) >= 0),
+			company = matching_domains.length && dc[matching_domains[0]];
+
+		if (company) { 
+			row.host_company = company;
+			// console.info('phase 2 ', host, '=>', company);
+			return;
+		}
+
+		console.info('could not identify company for ', host);
 	});
+
 	return data;
 };
 
