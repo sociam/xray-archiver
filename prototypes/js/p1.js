@@ -57,7 +57,8 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 						return company && 
 							company !== appcompany && // don't consider the first party an ad (e.g. google)
 							companydetails[company] && 
-							companydetails[company].type.indexOf('advert')>=0;
+							companydetails[company].typetag && 
+							companydetails[company].typetag.indexOf('advert')>=0;
 					},
 					recompute = () => {
 						var apphosts = _(hosts[$scope.app]).pickBy((val) => val > $scope.threshold).keys().value();
