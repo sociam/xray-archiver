@@ -21,57 +21,29 @@ var loadFile = (fname) => {
 	return fs.readdirSync(srcdir)
 		.filter((fname) => fname.indexOf('.csv') >= 0)
 		.reduce((arr,fname) => arr.concat(loadFile([srcdir,fname].join('/'))), []);
-}, getCompanyDomains = () => {
+}, getDomainsById = () => {
 	// returns { company_name => [d1, d2, d3] }
 	return loadFile(config.in_company_domains)
 			.map((x) => { x.domains = x.domains.split(' ').map((x) => x.trim().toLowerCase()); return x; })
-			.reduce((obj, x) => { obj[x.company] = x.domains; return obj; }, {});
-}, getCompanyDetails = () => {
+			.reduce((obj, x) => { obj[x.id] = x.domains; return obj; }, {});
+}, getDetailsById = () => {
+	// returns id -> details map 
 	return loadFile(config.in_company_domains)
-		.filter((x) => x.company)
+		.filter((x) => x.id)
 		.map((x) => { x.domains = x.domains.split(' ').map((x) => x.trim().toLowerCase()); return x; })
-		.reduce((obj, x) => { obj[x.company] = x; return obj; }, {});
-}, getDomainCompanies = () => {
-	// reversed version of ^^ getCompanyDomains for O(1)
-	// returns { domain => company, shorten_2ld(domain) => company }
-	var cd = getCompanyDomains(), domains = {};
-	_.keys(cd).map((company) => {
-		cd[company].map((domain) => { 
-			domains[domain] = domains[shorten_2ld(domain)] = company;
+		.reduce((obj, x) => { obj[x.id] = x; return obj; }, {});
+}, getIdByDomain = () => {
+	// reversed version of ^^ getDomainsById for O(1)
+	// returns { domain => rowid, shorten_2ld(domain) => rowid }
+	var cd = getDomainsById(), domains = {};
+	_.keys(cd).map((id) => {
+		cd[id].map((domain) => { 
+			domains[domain] = domains[shorten_2ld(domain)] = id;
 		});
 	});
 	return domains;
 }, getPlatformCompanies = () => {
-	return loadFile(config.in_platform_companies)
-		.reduce((obj, x) => { obj[x.platform] = x.company; return obj; }, {});
-}, only_third_parties = (data) => {		
-	return data.filter((r) => {
-		// first attempt: try to filter out for hosts that have substrings with company or app name
-		var appname = r.app.toLowerCase().split(' '),
-			host = r.host.toLowerCase(),
-			company = r.company && r.company.toLowerCase().split(' ').filter((x) => x.length > 2);
-
-		if (company && _.some(company, (cfrag) => host.indexOf(cfrag) >= 0)) {
-			// console.info('detected company name in hostname ', r.host, r.company);
-			return false;
-		}
-		if (_.some(appname, (namefrag) => host.indexOf(namefrag) >= 0)) {
-			// console.info('detected name frag in appname ', appname, r.host);
-			return false;
-		}
-		if (_.some(getCompanyDomains()[r.company] || [], (serverTLD) => host.indexOf(serverTLD) >= 0)) {
-			// console.info('detected company TLD ', appname, r.host);			
-			return false;
-		}
-		// if (!r.platform) { console.warn(" no platform for ", r.app); }
-		var pc = getPlatformCompanies()[r.platform.toLowerCase().trim()];
-		// console.info('platform ', r.platform.toLowerCase(), pc, getCompanyDomains()[pc]);
-		if (pc && _.some(getCompanyDomains()[pc], (plat) => r.host.indexOf(plat) >= 0)) { 
-			// console.info('detected platform domain ', r.app, r.host);			
-			return false;
-		}
-		return true;
-	});
+	return loadFile(config.in_platform_companies).reduce((obj, x) => { obj[x.platform] = x.company; return obj; }, {});
 }, decodeURL = (url) => {
 	url = decodeURIComponent(url);	 
 	if (url.indexOf('?') >= 0) { 
@@ -85,7 +57,7 @@ var loadFile = (fname) => {
 	return _(data).reduce((y,x) => { y[x.host] = y[x.host] ? y[x.host] + 1 : 1; return y; },{});
 }, getParty = (data, party) => {
 	party = party.toLowerCase().trim();
-	var hosts = getCompanyDomains()[party] || [];
+	var hosts = getDomainsById()[party] || [];
 	return data.filter((x) => {
 		var host = x.host.toLowerCase();
 		return _.some([ host.indexOf(party) >= 0 ].concat(hosts.map((h) => host.indexOf(h) >= 0)));
@@ -150,60 +122,63 @@ detect = (data) => {
 	// 		row.host_company = app_company;
 	// 	}
 	// });
-	var dc = getDomainCompanies(),
-		details = getCompanyDetails(),
-		dc_domains = _.keys(dc).filter((x) => x.length),
-		dc_companies = _.uniq(_.values(dc)).filter((x)=>x.length);
+	var d2id = getIdByDomain(),
+		details = getDetailsById(),
+		name2id = _.values(details).reduce((a,x) => { a[x.company] = x.id; return a; }, {}),
+		names = _.keys(name2id).filter((x) => x),		
+		domains = _.keys(d2id).filter((x) => x.length),
+		missing = [];
 
 	data.map((row) => {
-
 		// Phase 0 : check app company explicitly
 		var host = row.host,
 			app_company = row.company && row.company.toLowerCase();
 
-		if (app_company && row.host.indexOf(app_company) >= 0) { 
-			row.host_company = app_company;
-			console.info('phase 0 ', host, '=>', app_company);
-			return;
-		}
 
-		// Phase 1 : then check to see if the host is among companies we know
-		var	matching_companies = dc_companies.filter((name_frag) => host.indexOf(name_frag) >= 0);
-
-		if (matching_companies.length) {
-			row.host_company = matching_companies[0];
-			// console.info('phase 1 ', host, '=>', row.host_company);
-			return;
-		}
-
-		// Phase 2: finally check to see if the host is among domains of companies we know
-		var matching_domains = dc_domains.filter((domain_frag) => host.indexOf(domain_frag) >= 0),
-			company = matching_domains.length && dc[matching_domains[0]];
-
+		// Phase 1: check to see if the host is among domains of companies we know
+		var matching_domains = _(domains)
+				.filter((domain_frag) => host.indexOf(domain_frag) >= 0)
+				.sortBy((x) => -x.length) // longer matches first
+				.value(),			
+			company = matching_domains.length && d2id[matching_domains[0]];
 		if (company) { 
-			row.host_company = company;
-			// console.info('phase 2 ', host, '=>', row.host_company);
+			row.host_company = company; 
+			return; 
+		}
+
+		// phase 2: Try to match with app company name
+		if (app_company && row.host.indexOf(app_company) >= 0) { 
+			row.host_company = name2id[app_company];
+			// fall back to app_company
+			if (!row.host_company) { 
+				console.error('Warning: no app company in name2id for ', app_company); 
+				row.host_company = app_company;
+			}
 			return;
 		}
 
+		// Phase 2 : check to see if the host contains the name is among companies we know
+		var	matching_companies = _(names)
+				.filter((name_frag) => host.indexOf(name_frag) >= 0)
+				.sortBy((x) => -x.length) // longer matches first
+				.value();
+		if (matching_companies.length) {
+			row.host_company = name2id[matching_companies[0]];
+			return;
+		}
 		console.info('could not identify company for ', host);
+		missing = _.union(missing, [host]);
 	});
 
-	// // add company details
-	// data.map((row) => {
-	// 	if (row.host_company) { 
-	// 		var company_details = details[row.host_company];
-	// 		if (company_details) { _.extend(row, company_details); }			
-	// 	}
-	// });
-
-	return data;
+	return missing;
 };
 
+exports.loadFile = loadFile;
 exports.decode_all = decode_all;
 exports.count_hosts = count_hosts;
-exports.only_third_parties = only_third_parties;
-exports.getCompanyDomains = getCompanyDomains;
+exports.getDomainsById = getDomainsById;
+exports.getIdByDomain = getIdByDomain;
+exports.getDetailsById = getDetailsById;
 exports.getPlatformCompanies = getPlatformCompanies;
 exports.load = loadDir;
 exports.getParty = getParty;
@@ -212,19 +187,14 @@ exports.decodeHeaders = decodeHeaders;
 exports.decodeBody = decodeBody;
 exports.decode = decode;
 exports.ccslds = getSLDs();
-exports.data = fold_in_host_company(fold_into_2ld(loadDir()));
+exports.data = fold_into_2ld(loadDir());
+exports.missing = fold_in_host_company(exports.data);
 exports.detect = detect;
 exports.detected = detect_by_host(detect(exports.data));
 exports.hosts_by_app = hosts_by_app(exports.data); // hosts_by_app(exports.data, 'host_2ld');
 exports.detectors = detectors;
 
-var main = (app) => { 
-	// var data = loadDir();
-	var data = exports.data;
-	// console.log('decoded urls', decode_all(data)); 
-	// console.log('count hosts ', count_hosts(only_third_parties(data), app));
-	// console.log('hba', exports.hosts_by_app);
-
+var main = () => { 
 	if (config.out_hosts_by_app) { 
 		console.info("writing Hosts By App table to:", config.out_hosts_by_app, _.keys(exports.hosts_by_app).length, ' apps');
 		fs.writeFileSync(config.out_hosts_by_app, JSON.stringify(exports.hosts_by_app));
@@ -238,9 +208,13 @@ var main = (app) => {
 		fs.writeFileSync(config.out_data, JSON.stringify(exports.data));
 	}
 	if (config.out_company_details) { 
-		var details = getCompanyDetails();
+		var details = getDetailsById();
 		console.info("writing company details (to json):", config.out_company_details, _.keys(details).length, ' records');
 		fs.writeFileSync(config.out_company_details, JSON.stringify(details));
+	}
+	if (config.out_missing) { 
+		console.info("writing missing hosts (to txt):", config.out_missing, exports.missing.length);
+		fs.writeFileSync(config.out_missing, exports.missing.join('\n'));
 	}
 };
 
