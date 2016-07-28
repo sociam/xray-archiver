@@ -37,10 +37,12 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 				console.log('boxdci stateparams', $stateParams);
 				console.log('got relevant ', data.length);
 				
-				data = data.filter((x) => x.app === $stateParams.app);
+				data = $scope.data = data.filter((x) => x.app === $stateParams.app);
 				var app = $scope.app = $stateParams.app,
 					appcompany = $scope.appcompany = data[0].company,
-					id2names = data.reduce((a,x) => { a[x.id] = x.company; return a; }, {}),
+					id2names = $scope.id2names = _.keys(details).reduce((a,id) => { 
+						a[id] = details[id].company; return a; 
+					}, {}),
 					hTc = $scope.hTc = data.reduce((r,a) => {
 						if (a.host_company) { 
 							r[a.host] = a.host_company; 
@@ -56,9 +58,10 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 						return r;
 					}, {}),
 					matchCompany = (x) => (x || '').toLowerCase() === appcompany.toLowerCase(),
-					isAd = (id) => {
+					isAd = $scope.isAd = (id) => {
+						console.info(id, ' ', id2names[id], id, 'details ', details[id]);
 						return id && 
-							_.some([id2names[id], id].map(matchCompany)) && 
+							!_.some([id2names[id], id].map(matchCompany)) && 
 							details[id] && details[id].typetag && details[id].typetag.indexOf('advert') >= 0;
 					},
 					recompute = () => {
