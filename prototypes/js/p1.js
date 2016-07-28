@@ -58,12 +58,18 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 						return r;
 					}, {}),
 					matchCompany = (x) => (x || '').toLowerCase() === appcompany.toLowerCase(),
-					isAd = $scope.isAd = (id) => {
-						console.info(id, ' ', id2names[id], id, 'details ', details[id]);
+					// isAd = $scope.isAd = (id) => {
+					// 	console.info(id, ' ', id2names[id], id, 'details ', details[id]);
+					// 	return id && 
+					// 		!_.some([id2names[id], id].map(matchCompany)) && 
+					// 		details[id] && details[id].typetag && details[id].typetag.indexOf('advert') >= 0;
+					// },
+					is3rdPartyType = $scope.is3rdPartyType = (id, type) => {
 						return id && 
-							!_.some([id2names[id], id].map(matchCompany)) && 
-							details[id] && details[id].typetag && details[id].typetag.indexOf('advert') >= 0;
+							!_.some([id2names[id], id].map(matchCompany)) &&  // filter out self
+							details[id] && details[id].typetag && details[id].typetag.indexOf(type) >= 0;
 					},
+					isAd = (id) => is3rdPartyType(id,'advert'),
 					recompute = () => {
 						var apphosts = _(hosts[$scope.app]).pickBy((val) => val > $scope.threshold).keys().value();
 						// next we wanna group together all the pi_types, and consolidate around company
@@ -84,8 +90,11 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 
 						// each of the boxes
 						$scope.appcompany2pi = _.pickBy($scope.company2pi, (pis, company) => matchCompany(company));
-						$scope.ad2pi = _.pickBy($scope.company2pi, (pis, company) => !$scope.appcompany2pi[company] && isAd(company));
-						$scope.non2pi = _.pickBy($scope.company2pi, (pis, company) => !$scope.appcompany2pi[company] && !isAd(company));
+						$scope.ad2pi = _.pickBy($scope.company2pi, (pis, company) => isAd(company));
+						$scope.analytics2pi = _.pickBy($scope.company2pi, (pis, company) => is3rdPartyType(company, 'analytics'));
+						$scope.non2pi = _.pickBy($scope.company2pi, (pis, company) => !$scope.appcompany2pi[company] &&
+							!isAd(company) && 
+							!is3rdPartyType(company, 'analytics'));
 					};
 
 				// $scope.details = companydetails;

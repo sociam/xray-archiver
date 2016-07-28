@@ -28,6 +28,15 @@
 				</ol>			
 			</div>
 		</div>
+		<div class="trackers analytics">
+			<h5>analytics</h5>
+			<div class="company" ng-repeat="(company,pis) in analytics2pi">
+				<h4>{{company}}</h4>			
+				<ol>
+					<li ng-repeat="pi in pis"> {{ pi }} </li>
+				</ol>			
+			</div>
+		</div>
 		<div ng-if="!error" class="trackers other">
 			<h5>others</h5>
 			<div class="company" ng-repeat="(company,pis) in non2pi">   
