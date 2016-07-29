@@ -37,7 +37,12 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 				console.log('boxdci stateparams', $stateParams);
 				console.log('got relevant ', data.length);
 				
+
 				data = $scope.data = data.filter((x) => x.app === $stateParams.app);
+				// console.log('before filter ', data.length);
+				// data = $scope.data = data.filter((x) => ((details[x.host_company] || {}).typetag || '').indexOf('ignore') < 0);
+				// console.log('after filter ', data.length);				
+
 				var app = $scope.app = $stateParams.app,
 					appcompany = $scope.appcompany = data[0].company,
 					id2names = $scope.id2names = _.keys(details).reduce((a,id) => { 
@@ -54,29 +59,25 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 						// host -> 2ld
 						if (a.host_2ld) { 
 							r[a.host] = a.host_2ld;
-						}
+						} else { console.error('warning no 2ld ', a.host); }
 						return r;
 					}, {}),
 					matchCompany = (x) => (x || '').toLowerCase() === appcompany.toLowerCase(),
-					// isAd = $scope.isAd = (id) => {
-					// 	console.info(id, ' ', id2names[id], id, 'details ', details[id]);
-					// 	return id && 
-					// 		!_.some([id2names[id], id].map(matchCompany)) && 
-					// 		details[id] && details[id].typetag && details[id].typetag.indexOf('advert') >= 0;
-					// },
-					is3rdPartyType = $scope.is3rdPartyType = (id, type) => {
-						return id && 
-							!_.some([id2names[id], id].map(matchCompany)) &&  // filter out self
-							details[id] && details[id].typetag && details[id].typetag.indexOf(type) >= 0;
-					},
+					isType = $scope.isType = (id, type) => id && 
+						details[id] && 
+						details[id].typetag && 
+						details[id].typetag.indexOf(type) >= 0,
+					is3rdPartyType = $scope.is3rdPartyType = (id, type) => isType(id,type) &&
+							!_.some([id2names[id], id].map(matchCompany)),
 					isAd = (id) => is3rdPartyType(id,'advert'),
 					recompute = () => {
 						var apphosts = _(hosts[$scope.app]).pickBy((val) => val > $scope.threshold).keys().value();
 						// next we wanna group together all the pi_types, and consolidate around company
-						console.info('threshold', $scope.threshold, 'apphosts', apphosts.length);
+						// console.info('threshold', $scope.threshold, 'apphosts', apphosts.length);
 						$scope.company2pi = apphosts.reduce((r,host) => {
 							var company = id2names[hTc[host]] || hTc[host], host_pis = pitypes[host] || [];
 							if (!company) { 
+								console.log('hth ', host, hTh[host]);
 								var mfirst = hTh[host].match(/^([^\.]+)\./);
 								if (mfirst) { 
 									company = mfirst[1]; 
@@ -89,12 +90,23 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 						}, {});
 
 						// each of the boxes
-						$scope.appcompany2pi = _.pickBy($scope.company2pi, (pis, company) => matchCompany(company));
-						$scope.ad2pi = _.pickBy($scope.company2pi, (pis, company) => isAd(company));
-						$scope.analytics2pi = _.pickBy($scope.company2pi, (pis, company) => is3rdPartyType(company, 'analytics'));
-						$scope.non2pi = _.pickBy($scope.company2pi, (pis, company) => !$scope.appcompany2pi[company] &&
-							!isAd(company) && 
-							!is3rdPartyType(company, 'analytics'));
+						$scope.appcompany2pi = _.pickBy($scope.company2pi, (pis, company) => 
+							matchCompany(company));
+						$scope.ad2pi = _.pickBy($scope.company2pi, (pis, company) => 
+							!isType(company, 'ignore') && 
+							!isType(company, 'platform') && 
+							isAd(company));
+						$scope.analytics2pi = _.pickBy($scope.company2pi, (pis, company) => 
+							!isType(company, 'ignore') && 
+							!isType(company, 'platform') && 
+							is3rdPartyType(company, 'analytics'));
+						$scope.non2pi = _.pickBy($scope.company2pi, (pis, company) => 
+							!matchCompany(company) &&							
+							!isType(company, 'ignore') && 							
+							!isType(company, 'platform') && 							
+							!isType(company, 'analytics') &&
+							!isAd(company));
+
 					};
 
 				// $scope.details = companydetails;
