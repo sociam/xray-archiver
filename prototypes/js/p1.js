@@ -75,7 +75,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 						// next we wanna group together all the pi_types, and consolidate around company
 						console.info('threshold', $scope.threshold, 'apphosts', apphosts.length);
 						$scope.company2pi = apphosts.reduce((r,host) => {
-							var company = hTc[host], host_pis = pitypes[host] || [];
+							var company = id2names[hTc[host]] || hTc[host], host_pis = pitypes[host] || [];
 							if (!company) { 
 								var mfirst = hTh[host].match(/^([^\.]+)\./);
 								if (mfirst) { 
@@ -101,6 +101,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 
 				if (!hosts[$scope.app]) { $scope.error = 'No hosts known for app'; }
 
+				$scope.size = (l) => _.keys(l).length;
 				$scope.threshold = 0;
 				$scope.$watch('threshold', () => { if ($scope.threshold!==undefined) { recompute(); }});
 
