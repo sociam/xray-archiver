@@ -146,6 +146,9 @@ detect = (data) => {
 			return; 
 		}
 
+		// ad
+		missing = _.union(missing, [host]);
+
 		// phase 2: Try to match with app company name
 		if (app_company && row.host.indexOf(app_company) >= 0) { 
 			row.host_company = name2id[app_company];
@@ -157,17 +160,16 @@ detect = (data) => {
 			return;
 		}
 
-		// Phase 2 : check to see if the host contains the name is among companies we know
+		// Phase 3 : check to see if the host contains the name is among companies we know
 		var	matching_companies = _(names)
 				.filter((name_frag) => host.indexOf(name_frag) >= 0)
 				.sortBy((x) => -x.length) // longer matches first
-				.value();
+				.value();	
 		if (matching_companies.length) {
 			row.host_company = name2id[matching_companies[0]];
 			return;
 		}
-		console.info('could not identify company for ', host);
-		missing = _.union(missing, [host]);
+		console.info('could not identify company for ', host);		
 	});
 
 	return missing;
