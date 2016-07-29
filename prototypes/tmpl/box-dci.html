@@ -13,36 +13,36 @@
 		<div class="trackers app-publisher" ng-if="size(appcompany2pi)" >
 			<h5>app publisher</h5>
 			<div class="company" ng-repeat="(company,pis) in appcompany2pi">   
-				<h4>{{company}}</h4>			
+				<company-name company="company">{{company}}</company-name>			
 				<ol>
-					<li ng-repeat="pi in pis"> {{ pi }} </li>
+					<li ng-repeat="pi in pis"><pi-type type="pi"></pi-type></li>
 				</ol>			
 			</div>
 		</div>
 		<div class="trackers ad" ng-if="size(ad2pi)">
 			<h5>advertisers</h5>
 			<div class="company" ng-repeat="(company,pis) in ad2pi" >
-				<h4>{{company}}</h4>			
+				<company-name company="company">{{company}}</company-name>			
 				<ol>
-					<li ng-repeat="pi in pis"> {{ pi }} </li>
+					<li ng-repeat="pi in pis"><pi-type type="pi"></pi-type></li>
 				</ol>			
 			</div>
 		</div>
 		<div class="trackers analytics" ng-if="size(analytics2pi)">
 			<h5>analytics</h5>
 			<div class="company" ng-repeat="(company,pis) in analytics2pi">
-				<h4>{{company}}</h4>			
+				<company-name company="company">{{company}}</company-name>			
 				<ol>
-					<li ng-repeat="pi in pis"> {{ pi }} </li>
+					<li ng-repeat="pi in pis"><pi-type type="pi"></pi-type></li>
 				</ol>			
 			</div>
 		</div>
 		<div class="trackers other" ng-if="size(non2pi)">
 			<h5>others</h5>
 			<div class="company" ng-repeat="(company,pis) in non2pi">   
-				<h4>{{company}}</h4>			
+				<company-name company="company">{{company}}</company-name>			
 				<ol>
-					<li ng-repeat="pi in pis"> {{ pi }} </li>
+					<li ng-repeat="pi in pis"><pi-type type="pi"></pi-type></li>
 				</ol>			
 			</div>
 		</div>

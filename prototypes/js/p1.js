@@ -1,9 +1,8 @@
 /* global angular, _, jQuery, Backbone */
 
 angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
-	.controller('p1', function () {
-
-	}).config(function ($stateProvider, $urlRouterProvider) {
+	.controller('p1', function () {})
+	.config(function ($stateProvider, $urlRouterProvider) {
 	    $urlRouterProvider.otherwise('/chooseapp');
 		$stateProvider.state('chooseApp', {
 			url: '/chooseapp',
@@ -124,4 +123,12 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 				window._s = $scope;
 			}
 		});
-	});
+	}).component('companyName', {
+	  templateUrl: 'tmpl/company-name.html',
+	  bindings: { company: '=' },	  
+	  controller: ($scope) => { console.log('company name', $scope.company); }
+   }).component('piType', {
+	  templateUrl: 'tmpl/pi-type.html',
+	  bindings: { type: '=' },	  	  
+	  controller: ($scope) => { console.log('pitype', $scope.type); }
+   });
