@@ -9,8 +9,8 @@
 		<input type="range" ng-model="threshold" min="0" max="100">
 	</div>
 	<h2 ng-if="error"> {{ error }} </h2>
-	<div class="all">
-		<div ng-if="!error" class="trackers app-publisher" ng-if="size(appcompany2pi)">
+	<div ng-if="!error" class="all">
+		<div class="trackers app-publisher" ng-if="size(appcompany2pi)" >
 			<h5>app publisher</h5>
 			<div class="company" ng-repeat="(company,pis) in appcompany2pi">   
 				<h4>{{company}}</h4>			
@@ -37,7 +37,7 @@
 				</ol>			
 			</div>
 		</div>
-		<div ng-if="!error" class="trackers other" ng-if="size(non2pi)">
+		<div class="trackers other" ng-if="size(non2pi)">
 			<h5>others</h5>
 			<div class="company" ng-repeat="(company,pis) in non2pi">   
 				<h4>{{company}}</h4>			
