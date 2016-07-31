@@ -61,41 +61,60 @@ body, html {
 			width:30%;
 			font-size:1.5vw !important;			
 			h5 { 
-				margin:0px; padding:0px;
+				margin:0px 0px 0.6em 0px; 
+				padding:0px;
 				font-weight:200;
-				font-size:28pt;
+				font-size:22pt;
 				text-align:right;
 				// text-decoration:underline;
 			}
-			div.company { 
+			.company { 
 				// background-color:#fefefe;
-				padding:20px 0px;
+				margin:10px 0px;
+				padding:10px;
+				// box-shadow:5px 5px #e0e0e0;
+				border:0.5px solid #e0e0e0;
 				// border-top:1px solid #eee;
-				border-bottom:1px solid #eee;
-				h4 { margin:0px; padding:0px; }
-				ol { 
-					list-style-type:none;
-					padding:0px; 
-				}
-			}
-			.piclass { 
-				padding:10px 0px;
-				.piclassname {
-					font-style:italic;
-					padding:5px 0px 0px 0px;
-					font-size:12pt;
-					text-align:center;
-					// font-weight:bold;
-				}
-				ol { margin:0px 0px; }
-				.pi { 
-					padding:0px 0px 0px 18px;
-					font-size:12pt;
-					// font-weight:bold;
-					&.DEVICE_SOFT {  }
-					&.USER_PERSONAL_DETAILS {}
-					&.DEVICE_ID {  }
-					&.USER_LOCATION, &.USER_LOCATION_COARSE {}
+				// border-bottom:1px solid #eee;
+				// &:last-child { border-bottom:none; }
+				background:#fafafa;
+				h4.company-name { margin:5px 0px; padding:0px; }
+				.piclass { 
+					padding:5px;
+					margin:0px 0px 10px 0px;
+					.piclassname {
+						text-align:left;					
+						font-style:italic;
+						font-size:11pt;
+						font-variant:small-caps;
+						// text-decoration:underline;
+						width:100%;
+					}
+					border-bottom:1px solid #eee;
+					&:last-child { border-bottom:none; }					
+					ul {  // pi elements
+						margin:0px; 
+						padding:5px 0px 5px 10px;
+						// padding:0px;
+						list-style-type:none;
+						.pi { 
+							// padding:0px 0px 0px 18px;
+							margin:5px 0px;
+							padding:0px;
+							font-size:11.5pt;
+							font-weight:100;
+							// font-weight:bold;
+							&.DEVICE_SOFT {  }
+							&.USER_PERSONAL_DETAILS {}
+							&.DEVICE_ID {  }
+							&.USER_LOCATION, &.USER_LOCATION_COARSE {}
+							text-indent:-5px;							
+							&:before {
+							  content: "- ";
+							  // text-indent: -5px;
+							}
+						}
+					}
 				}
 			}
 		}
@@ -113,7 +132,7 @@ body, html {
 		border:1px solid #169FFF !important;		
 	}
 	.other {
-		border:1px solid #efefef;
-		color:#aaa;		
+		border:1px solid #999 !important;
+		color:#999;		
 	}
 }
