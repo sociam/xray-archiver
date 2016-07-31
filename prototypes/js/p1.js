@@ -127,8 +127,14 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 	  templateUrl: 'tmpl/company-name.html',
 	  bindings: { company: '=' },	  
 	  controller: ($scope) => { console.log('company name', $scope.company); }
-   }).component('piType', {
-	  templateUrl: 'tmpl/pi-type.html',
-	  bindings: { type: '=' },	  	  
-	  controller: ($scope) => { console.log('pitype', $scope.type); }
+   }).component('piTypesDisplay', {
+	  templateUrl: 'tmpl/pi-types-display.html',
+	  bindings: { types: '=' },	  	  
+	  controller: function($scope) { 
+	  	console.log('pitypes', this.types); 
+	  	this.pis = this.types;
+	  	var types = this.types;
+	  	$scope.contains = ((type) => types.filter((x) => x === type).length);
+	  	$scope.containsPartial = ((type) => types.filter((x) => x.indexOf(type) >= 0).length);
+	  }
    });

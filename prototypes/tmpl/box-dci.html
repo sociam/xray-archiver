@@ -14,36 +14,28 @@
 			<h5>app publisher</h5>
 			<div class="company" ng-repeat="(company,pis) in appcompany2pi">   
 				<company-name company="company">{{company}}</company-name>			
-				<ol>
-					<li ng-repeat="pi in pis"><pi-type type="pi"></pi-type></li>
-				</ol>			
+				<pi-types-display types="pis"></pi-types-display>
 			</div>
 		</div>
 		<div class="trackers ad" ng-if="size(ad2pi)">
 			<h5>advertisers</h5>
 			<div class="company" ng-repeat="(company,pis) in ad2pi" >
 				<company-name company="company">{{company}}</company-name>			
-				<ol>
-					<li ng-repeat="pi in pis"><pi-type type="pi"></pi-type></li>
-				</ol>			
+				<pi-types-display types="pis"></pi-types-display>
 			</div>
 		</div>
 		<div class="trackers analytics" ng-if="size(analytics2pi)">
 			<h5>analytics</h5>
 			<div class="company" ng-repeat="(company,pis) in analytics2pi">
 				<company-name company="company">{{company}}</company-name>			
-				<ol>
-					<li ng-repeat="pi in pis"><pi-type type="pi"></pi-type></li>
-				</ol>			
+				<pi-types-display types="pis"></pi-types-display>
 			</div>
 		</div>
 		<div class="trackers other" ng-if="size(non2pi)">
 			<h5>others</h5>
 			<div class="company" ng-repeat="(company,pis) in non2pi">   
 				<company-name company="company">{{company}}</company-name>			
-				<ol>
-					<li ng-repeat="pi in pis"><pi-type type="pi"></pi-type></li>
-				</ol>			
+				<pi-types-display types="pis"></pi-types-display>
 			</div>
 		</div>
 	</div>

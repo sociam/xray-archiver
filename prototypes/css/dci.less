@@ -71,51 +71,33 @@ body, html {
 				// background-color:#fefefe;
 				padding:20px 0px;
 				// border-top:1px solid #eee;
-				// border-bottom:1px solid #eee;
+				border-bottom:1px solid #eee;
 				h4 { margin:0px; padding:0px; }
 				ol { 
 					list-style-type:none;
 					padding:0px; 
 				}
 			}
-			.DEVICE_SOFT { 
-				padding:2px 6px;
-				font-size:12pt;
-				// background-color:lightblue;
-				background-color:grey;
-
-				color:white;
-				font-weight:bold;
-				// border-radius:8px;
+			.piclass { 
+				padding:10px 0px;
+				.piclassname {
+					font-style:italic;
+					padding:5px 0px 0px 0px;
+					font-size:12pt;
+					text-align:center;
+					// font-weight:bold;
+				}
+				ol { margin:0px 0px; }
+				.pi { 
+					padding:0px 0px 0px 18px;
+					font-size:12pt;
+					// font-weight:bold;
+					&.DEVICE_SOFT {  }
+					&.USER_PERSONAL_DETAILS {}
+					&.DEVICE_ID {  }
+					&.USER_LOCATION, &.USER_LOCATION_COARSE {}
+				}
 			}
-			.USER_PERSONAL_DETAILS { 
-				padding:2px 6px;
-				font-size:12pt;
-				// background-color:purple;
-				background-color:grey;				
-				color:white;
-				font-weight:bold;
-				// border-radius:8px;
-			}
-			.DEVICE_ID { 
-				padding:2px 6px;
-				font-size:12pt;
-				background-color:grey;
-				color:white;
-				font-weight:bold;
-				// border-radius:8px;
-			}
-			.USER_LOCATION, .USER_LOCATION_COARSE { 
-				padding:2px 6px;
-				font-size:12pt;
-				background-color:grey;
-				
-				// background-color:darkblue;
-				color:white;
-				font-weight:bold;
-				// border-radius:8px;
-			}
-
 		}
 	}
 	.ad { 
