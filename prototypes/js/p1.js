@@ -115,7 +115,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 										is3rdPartyType(company,'marketing'))
 							},
 							{
-								label:'tracking usage',
+								label:'usage tracking',
 								class:'usage',								
 								companies: _.pickBy($scope.company2pi, (pis, company) => 
 										!isType(company, 'ignore') && 
@@ -140,7 +140,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 							},							
 							{
 								label:'unknown',
-								class:'others',
+								class:'other',
 								companies: _.pickBy($scope.company2pi, (pis, company) => 
 									!matchCompany(company) &&							
 									!isType(company, 'ignore') && 							
@@ -171,6 +171,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 		});
 	}).component('companyInfo', {
 	  templateUrl: 'tmpl/company-info.html',
+	  replace:true,
 	  bindings: { company: '=', companyName:'=', details:'=', showDetails:'=' },	  
 	  controller: function($scope) { console.log('company id:', this.company, 'name: ', this.companyName, this.details); }
    }).component('piTypesDisplay', {

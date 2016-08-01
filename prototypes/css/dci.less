@@ -47,63 +47,68 @@ body, html {
 	}
 	.threshdisplay { font-size:8pt; }
 	.all { 
+		border:1px solid #eee;
 		display:flex;
-		flex-direction:row;
+		flex-direction:column; // row;
 		flex-wrap:wrap;
+		height:800px;
 		justify-content:flex-start;
 		align-items:stretch !important; // flex-start;
 		align-content:flex-start;
-		div.trackers { 
+		.category { 
 			flex-grow:0;
 			align-items:stretch !important; // flex-start;
-			margin:0 10px 0 0;
+			// margin:0 10px 0 0;
 			border:1px solid #eee;
-			margin-top:50px; 
+			margin:10px; 
 			// display:inline-block;
 			// width:400px;
-			padding:20px;		
+			padding: 10px 8px 0px 8px;
 			vertical-align:top;
-			width:30%;
+			width:31.5%;
+			// width:300px;
 			font-size:1.5vw !important;			
-			h5 { 
+			// category label
+			.catlabel { 
 				margin:0px 0px 0.6em 0px; 
 				padding:0px;
-				font-weight:200;
-				font-size:22pt;
+				font-weight:bold;
+				font-size:16pt;
 				text-align:right;
+				color:white;
+				font-variant:small-caps;
 				// text-decoration:underline;
 			}
 			.company { 
 				// background-color:#fefefe;
 				margin:10px 0px;
 				padding:10px;
-				// box-shadow:5px 5px #e0e0e0;
 				border:0.5px solid #e0e0e0;
-				// border-top:1px solid #eee;
-				// border-bottom:1px solid #eee;
-				// &:last-child { border-bottom:none; }
 				background:rgba(240,240,240,0.5);
 				.company-display { 
-					margin:5px 0px; padding:0px; 
+					margin:0px; 
+					padding:6px; 
 					.name { 
+						text-align:left;
+						color:white;
 						flex-grow:1;
 						display:block; 
 						margin:0px; padding:0px;
-						h5 { 
-							padding:0px; margin:0px;
-						}
+						font-size:16pt;
+						font-weight:bold;
 					}
 					.props {
+						color:white;
 						display:flex;
 						flex-direction:row;
 						flex-wrap:no-wrap;
-						justify-content:flex-end;
+						justify-content:flex-start;
 						align-items:stretch !important; // flex-start;
 						align-content:flex-start;					
 						padding:0px; margin:-5px 0px 0px 0px;
 						// border:1px solid #eee; 
 						.property { 
-							padding:4px;
+							// padding:4px;
 							margin:0px 3px 0px 3px;
 							flex-grow:0;
 							font-size:10pt;	
@@ -112,7 +117,7 @@ body, html {
 							// margin:0px 5px;
 							// height:50px;
 							&.textonly { 
-								padding-top:8px;
+								padding-top:5px;
 							}
 							&:last-child {
 								margin-right:0px !important;
@@ -186,8 +191,7 @@ body, html {
 		// border:1px solid #1BA39C !important;				
 	}
 	.other {
-		background-color:#999;		
+		background-color:#999 !important;		
 		// border:1px solid #999 !important;
-
 	}
 }
