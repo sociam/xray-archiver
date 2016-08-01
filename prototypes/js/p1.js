@@ -35,12 +35,13 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 			controller:function($scope, pitypes, hosts, details, data, $stateParams) {
 				console.log('boxdci stateparams', $stateParams);
 				console.log('got relevant ', data.length);
-				
-
+				$scope.apps = _.uniq(data.map((x) => x.app));
 				data = $scope.data = data.filter((x) => x.app === $stateParams.app);
 				// console.log('before filter ', data.length);
 				// data = $scope.data = data.filter((x) => ((details[x.host_company] || {}).typetag || '').indexOf('ignore') < 0);
 				// console.log('after filter ', data.length);				
+
+				if (!data.length) { $scope.error = 'no data for app ' + $stateParams.app; }
 
 				var app = $scope.app = $stateParams.app,
 					appcompany = $scope.appcompany = data[0].company,
@@ -61,7 +62,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 						} else { console.error('warning no 2ld ', a.host); }
 						return r;
 					}, {}),
-					matchCompany = (x) => (x || '').toLowerCase() === appcompany.toLowerCase(),
+					matchCompany = (x) => appcompany && ((x || '').toLowerCase() === appcompany.toLowerCase()),
 					isType = $scope.isType = (id, type) => id && 
 						details[id] && 
 						details[id].typetag && 
@@ -110,6 +111,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 
 				// $scope.details = companydetails;
 
+				if (!appcompany) { $scope.error = 'Captured data for ' + app + ' is in old data format without company field'; }
 				if (!hosts[$scope.app]) { $scope.error = 'No hosts known for app'; }
 
 				$scope.size = (l) => _.keys(l).length;
@@ -136,5 +138,18 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 	  	var types = this.types;
 	  	$scope.contains = ((type) => types.filter((x) => x === type).length);
 	  	$scope.containsPartial = ((type) => types.filter((x) => x.indexOf(type) >= 0).length);
+	  }
+   }).component('toolbar', { 
+	  templateUrl: 'tmpl/toolbar.html',
+	  bindings: { apps: '=', selected:'=' },
+	  controller:function($scope, $state) {
+	  	console.log('selected ', this.selected);
+	  	$scope.app = this.selected;
+	  	$scope.$watch('app', () => { 
+	  		console.info('new selected app ', $scope.app);
+	  		if ($scope.app) { 
+		  		$state.go('boxdci', {app:$scope.app}); 
+		  	}
+	  	});
 	  }
    });

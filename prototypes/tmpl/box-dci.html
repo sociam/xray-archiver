@@ -1,4 +1,5 @@
 <div class="boxdci">
+	<toolbar apps='apps' selected="app"></toolbar>
 	<div class="about">
 		<h1>{{app}}</h1>
 		<h2 ng-if='appcompany'>by <a>{{ appcompany }}</a></h2>
@@ -8,7 +9,7 @@
 		<!-- <div class="label">threshold:</div> -->
 		<input type="range" ng-model="threshold" min="0" max="100">
 	</div>
-	<h2 ng-if="error"> {{ error }} </h2>
+	<h2 ng-if="error" class="error"> Error: {{ error }} </h2>
 	<div ng-if="!error" class="all">
 		<div class="trackers app-publisher" ng-if="size(appcompany2pi)" >
 			<h5>app publisher</h5>
