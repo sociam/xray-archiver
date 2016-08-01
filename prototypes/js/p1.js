@@ -69,7 +69,6 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 						details[id].typetag.indexOf(type) >= 0,
 					is3rdPartyType = $scope.is3rdPartyType = (id, type) => isType(id,type) &&
 							!_.some([id2names[id], id].map(matchCompany)),
-					isAd = (id) => is3rdPartyType(id,'advert'),
 					recompute = () => {
 						var apphosts = _(hosts[$scope.app]).pickBy((val) => val > $scope.threshold).keys().value();
 						// next we wanna group together all the pi_types, and consolidate around company
@@ -98,51 +97,60 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 									matchCompany(company))
 							},
 							{
+								label:'app functionality',
+								class:'app-functionality',								
+								companies: _.pickBy($scope.company2pi, (pis, company) => 
+										!isType(company, 'ignore') && 
+										!isType(company, 'platform') && 
+										is3rdPartyType(company,'app'))
+							},
+							{
 								label:'marketing',
-								class:'ad',								
+								class:'marketing',								
 								companies: _.pickBy($scope.company2pi, (pis, company) => 
 										!isType(company, 'ignore') && 
 										!isType(company, 'platform') && 
-										isAd(company))
+										is3rdPartyType(company,'marketing'))
 							},
 							{
-								label:'analytics',
-								class:'analytics',								
+								label:'tracking usage',
+								class:'usage',								
 								companies: _.pickBy($scope.company2pi, (pis, company) => 
 										!isType(company, 'ignore') && 
 										!isType(company, 'platform') && 
-										is3rdPartyType(company, 'analytics'))
+										is3rdPartyType(company, 'usage'))
 							},
 							{
-								label:'other',
+								label:'payments',
+								class:'payments',								
+								companies: _.pickBy($scope.company2pi, (pis, company) => 
+										!isType(company, 'ignore') && 
+										!isType(company, 'platform') && 
+										is3rdPartyType(company, 'payments'))
+							},
+							{
+								label:'security',
+								class:'security',								
+								companies: _.pickBy($scope.company2pi, (pis, company) => 
+										!isType(company, 'ignore') && 
+										!isType(company, 'platform') && 
+										is3rdPartyType(company, 'security'))
+							},							
+							{
+								label:'unknown',
 								class:'others',
 								companies: _.pickBy($scope.company2pi, (pis, company) => 
 									!matchCompany(company) &&							
 									!isType(company, 'ignore') && 							
+									!isType(company, 'app') && 							
+									!isType(company,'marketing') &&
 									!isType(company, 'platform') && 							
-									!isType(company, 'analytics') &&
-									!isAd(company))
+									!isType(company, 'usage') &&
+									!isType(company, 'payments') &&
+									!isType(company, 'security')
+								)
 							}
 						];
-
-
-						// $scope.appcompany2pi = _.pickBy($scope.company2pi, (pis, company) => 
-						// 	matchCompany(company));
-						// $scope.ad2pi = _.pickBy($scope.company2pi, (pis, company) => 
-						// 	!isType(company, 'ignore') && 
-						// 	!isType(company, 'platform') && 
-						// 	isAd(company));
-						// $scope.analytics2pi = _.pickBy($scope.company2pi, (pis, company) => 
-						// 	!isType(company, 'ignore') && 
-						// 	!isType(company, 'platform') && 
-						// 	is3rdPartyType(company, 'analytics'));
-						// $scope.non2pi = _.pickBy($scope.company2pi, (pis, company) => 
-						// 	!matchCompany(company) &&							
-						// 	!isType(company, 'ignore') && 							
-						// 	!isType(company, 'platform') && 							
-						// 	!isType(company, 'analytics') &&
-						// 	!isAd(company));
-
 					};
 
 				// $scope.details = companydetails;
