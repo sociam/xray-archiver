@@ -1,0 +1,9 @@
+<div class='company-display' ng-click="$ctrl.showDetails=($ctrl.showDetails=='show'?'hide':'show')">
+	<h5 class="name">{{$ctrl.companyName}}</h5>
+	<div class="props" ng-if="$ctrl.showDetails === 'show'">
+		<div class="property equity textonly" ng-if="$ctrl.details[$ctrl.company].equity">$ {{ $ctrl.details[$ctrl.company].equity }}</div>
+		<div class="property jurisdiction" ng-if="$ctrl.details[$ctrl.company].jurisdiction"> {{ $ctrl.details[$ctrl.company].jurisdiction.toUpperCase() }} &#x1f310;</div>
+		<div class="property size" ng-if="$ctrl.details[$ctrl.company].size">{{ $ctrl.details[$ctrl.company].size }} &#x1f466;</div>
+		<div class="property founded textonly" ng-if="$ctrl.details[$ctrl.company].founded">(est. {{ $ctrl.details[$ctrl.company].founded }})</div>
+	</div>
+</div>

@@ -195,6 +195,6 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 		  		$state.go('boxdci', {app:$scope.app}); 
 		  	}
 	  	});
-	  	if (this.showCompanyDetails === undefined) { this.showCompanyDetails = 'show'; 	}
+	  	if (this.showCompanyDetails === undefined) { this.showCompanyDetails = 'hide'; 	}
 	  }
    });
