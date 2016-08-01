@@ -12,6 +12,8 @@ body, html {
 	font-style:italic;
 }
 
+
+
 .chooseapp {
 	padding:10px 10% 0px 10%;
 	ol { 
@@ -38,8 +40,14 @@ body, html {
 	margin: 50px 4% 50px 4%; 
 	padding: 50px 40px;
 	position:relative;
-	h1 { font-size:42pt; font-weight:100; padding-bottom:0px; margin-bottom:0px; }
-	h2 { margin:0px; padding:0px; font-weight:100; }
+	// app name
+	h1 { 
+		font-size:42pt; 
+		font-weight:100; 
+		padding-bottom:0px; 
+		margin:0px 0px 0px 10px;
+	}
+	h2 { margin:0px 0px 1em 10px; padding:0px; font-weight:100; }
 	.threshold_slider { 
 		position:absolute;
 		right:40px; 
@@ -47,7 +55,6 @@ body, html {
 	}
 	.threshdisplay { font-size:8pt; }
 	.all { 
-		border:1px solid #eee;
 		display:flex;
 		flex-direction:column; // row;
 		flex-wrap:wrap;
@@ -59,8 +66,8 @@ body, html {
 			flex-grow:0;
 			align-items:stretch !important; // flex-start;
 			// margin:0 10px 0 0;
-			border:1px solid #eee;
-			margin:10px; 
+			// border:1px solid #eee;
+			margin:0px 10px 10px 10px; 
 			// display:inline-block;
 			// width:400px;
 			padding: 10px 8px 0px 8px;
@@ -126,6 +133,9 @@ body, html {
 						}
 					}
 				}
+				.pi-types-display { 
+					padding:0px 15px;
+				}
 				.piclass { 
 					padding:5px;
 					margin:0px 0px 10px 0px;
@@ -167,31 +177,31 @@ body, html {
 		}
 	}
 	.marketing { 
-		background-color:#FF0080 !important;
+		background-color:#f2c81e !important;
 		// border:1px solid #FF0080 !important;
 	}
 	.usage { 
-		background-color:#8F50FF !important;
+		background-color:#34495e !important;
 		// border:1px solid #8F50FF !important;
 	}
 	.app-publisher { 
-		background-color:#446CB3 !important; // #169FFF !important;		
+		background-color:#2980b9 !important; // #169FFF !important;		
 		// border:1px solid #446CB3 !important;		
 	}
 	.app-functionality { 
-		background-color:#3498DB !important;		
+		background-color:#3498db !important;		
 		// border:1px solid #3498DB !important;		
 	}	
 	.security { 
-		background-color:#D24D57 !important;		
+		background-color:#c0392b !important;		
 		// border:1px solid #D24D57 !important;		
 	}
 	.payments {
-		background-color:#1BA39C !important;		
+		background-color:#27ae60 !important;		
 		// border:1px solid #1BA39C !important;				
 	}
 	.other {
-		background-color:#999 !important;		
+		background-color:#7f8c8d !important;		
 		// border:1px solid #999 !important;
 	}
 }

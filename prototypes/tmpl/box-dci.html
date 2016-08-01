@@ -3,11 +3,6 @@
 	<div class="about">
 		<h1>{{app}}</h1>
 		<h2 ng-if='appcompany'>by <a>{{ appcompany }}</a></h2>
-		<p class="threshdisplay">minimum threshold: {{ threshold }} </p>		
-	</div>
-	<div class="threshold_slider">
-		<!-- <div class="label">threshold:</div> -->
-		<input type="range" ng-model="threshold" min="0" max="100">
 	</div>
 	<h2 ng-if="error" class="error"> Error: {{ error }} </h2>
 	<div ng-if="!error" class="all">
