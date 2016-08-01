@@ -1,6 +1,11 @@
 <div class="toolbar">
 	DCI
 	<select id="soflow" ng-model="app">
-		<option ng-repeat="a in $ctrl.apps" name="a" ng-selected="a===$ctrl.selectedApp">{{a}}</option>		
+		<option ng-repeat="a in $ctrl.apps" ng-selected="a===$ctrl.selectedApp">{{a}}</option>		
+	</select>
+
+	<select id="soflow" ng-model="$ctrl.showCompanyDetails">
+		<option>show</option>		
+		<option>hide</option>		
 	</select>
 </toolbar>

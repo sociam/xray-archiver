@@ -171,7 +171,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 		});
 	}).component('companyInfo', {
 	  templateUrl: 'tmpl/company-info.html',
-	  bindings: { company: '=', companyName:'=', details:'=' },	  
+	  bindings: { company: '=', companyName:'=', details:'=', showDetails:'=' },	  
 	  controller: function($scope) { console.log('company id:', this.company, 'name: ', this.companyName, this.details); }
    }).component('piTypesDisplay', {
 	  templateUrl: 'tmpl/pi-types-display.html',
@@ -185,7 +185,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 	  }
    }).component('toolbar', { 
 	  templateUrl: 'tmpl/toolbar.html',
-	  bindings: { apps: '=', selected:'=' },
+	  bindings: { apps: '=', selected:'=', showCompanyDetails:'=' },
 	  controller:function($scope, $state) {
 	  	console.log('selected ', this.selected);
 	  	$scope.app = this.selected;
@@ -195,5 +195,6 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 		  		$state.go('boxdci', {app:$scope.app}); 
 		  	}
 	  	});
+	  	if (this.showCompanyDetails === undefined) { this.showCompanyDetails = 'show'; 	}
 	  }
    });
