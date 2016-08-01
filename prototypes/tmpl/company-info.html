@@ -1,5 +1,5 @@
 <div class='company-display' ng-click="$ctrl.showDetails=($ctrl.showDetails=='show'?'hide':'show')">
-	<div class="name">{{$ctrl.companyName}}</div>
+	<div class="name">{{$ctrl.companyName}} <span ng-if="$ctrl.companyName !== $ctrl.company">({{$ctrl.company}})</span></div>
 	<div class="props" ng-if="$ctrl.showDetails === 'show'">
 		<div class="property equity textonly" ng-if="$ctrl.details[$ctrl.company].equity">$ {{ $ctrl.details[$ctrl.company].equity }}</div>
 		<div class="property jurisdiction" ng-if="$ctrl.details[$ctrl.company].jurisdiction"> {{ $ctrl.details[$ctrl.company].jurisdiction.toUpperCase() }} &#x1f310;</div>
