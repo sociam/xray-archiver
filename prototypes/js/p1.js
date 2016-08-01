@@ -90,22 +90,58 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 						}, {});
 
 						// each of the boxes
-						$scope.appcompany2pi = _.pickBy($scope.company2pi, (pis, company) => 
-							matchCompany(company));
-						$scope.ad2pi = _.pickBy($scope.company2pi, (pis, company) => 
-							!isType(company, 'ignore') && 
-							!isType(company, 'platform') && 
-							isAd(company));
-						$scope.analytics2pi = _.pickBy($scope.company2pi, (pis, company) => 
-							!isType(company, 'ignore') && 
-							!isType(company, 'platform') && 
-							is3rdPartyType(company, 'analytics'));
-						$scope.non2pi = _.pickBy($scope.company2pi, (pis, company) => 
-							!matchCompany(company) &&							
-							!isType(company, 'ignore') && 							
-							!isType(company, 'platform') && 							
-							!isType(company, 'analytics') &&
-							!isAd(company));
+						$scope.categories = [
+							{
+								label:'app publisher',
+								class:'app-publisher',
+								companies: _.pickBy($scope.company2pi, (pis, company) => 
+									matchCompany(company))
+							},
+							{
+								label:'marketing',
+								class:'ad',								
+								companies: _.pickBy($scope.company2pi, (pis, company) => 
+										!isType(company, 'ignore') && 
+										!isType(company, 'platform') && 
+										isAd(company))
+							},
+							{
+								label:'analytics',
+								class:'analytics',								
+								companies: _.pickBy($scope.company2pi, (pis, company) => 
+										!isType(company, 'ignore') && 
+										!isType(company, 'platform') && 
+										is3rdPartyType(company, 'analytics'))
+							},
+							{
+								label:'other',
+								class:'others',
+								companies: _.pickBy($scope.company2pi, (pis, company) => 
+									!matchCompany(company) &&							
+									!isType(company, 'ignore') && 							
+									!isType(company, 'platform') && 							
+									!isType(company, 'analytics') &&
+									!isAd(company))
+							}
+						];
+
+
+						// $scope.appcompany2pi = _.pickBy($scope.company2pi, (pis, company) => 
+						// 	matchCompany(company));
+						// $scope.ad2pi = _.pickBy($scope.company2pi, (pis, company) => 
+						// 	!isType(company, 'ignore') && 
+						// 	!isType(company, 'platform') && 
+						// 	isAd(company));
+						// $scope.analytics2pi = _.pickBy($scope.company2pi, (pis, company) => 
+						// 	!isType(company, 'ignore') && 
+						// 	!isType(company, 'platform') && 
+						// 	is3rdPartyType(company, 'analytics'));
+						// $scope.non2pi = _.pickBy($scope.company2pi, (pis, company) => 
+						// 	!matchCompany(company) &&							
+						// 	!isType(company, 'ignore') && 							
+						// 	!isType(company, 'platform') && 							
+						// 	!isType(company, 'analytics') &&
+						// 	!isAd(company));
 
 					};
 

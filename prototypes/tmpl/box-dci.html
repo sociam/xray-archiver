@@ -11,30 +11,9 @@
 	</div>
 	<h2 ng-if="error" class="error"> Error: {{ error }} </h2>
 	<div ng-if="!error" class="all">
-		<div class="trackers app-publisher" ng-if="size(appcompany2pi)" >
-			<h5>app publisher</h5>
-			<div class="company" ng-repeat="(company,pis) in appcompany2pi">   
-				<company-name company="company">{{company}}</company-name>			
-				<pi-types-display types="pis"></pi-types-display>
-			</div>
-		</div>
-		<div class="trackers ad" ng-if="size(ad2pi)">
-			<h5>advertisers</h5>
-			<div class="company" ng-repeat="(company,pis) in ad2pi" >
-				<company-name company="company">{{company}}</company-name>			
-				<pi-types-display types="pis"></pi-types-display>
-			</div>
-		</div>
-		<div class="trackers analytics" ng-if="size(analytics2pi)">
-			<h5>analytics</h5>
-			<div class="company" ng-repeat="(company,pis) in analytics2pi">
-				<company-name company="company">{{company}}</company-name>			
-				<pi-types-display types="pis"></pi-types-display>
-			</div>
-		</div>
-		<div class="trackers other" ng-if="size(non2pi)">
-			<h5>others</h5>
-			<div class="company" ng-repeat="(company,pis) in non2pi">   
+		<div ng-repeat="c in categories" class="trackers {{c.class}}" ng-if="size(c.companies)" >
+			<h5 ng-bind="c.label"></h5>
+			<div class="company" ng-repeat="(company,pis) in c.companies">   
 				<company-name company="company">{{company}}</company-name>			
 				<pi-types-display types="pis"></pi-types-display>
 			</div>
