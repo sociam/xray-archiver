@@ -1,1 +1,6 @@
-<h4 class='company-name'>{{$ctrl.company}}</h4>
+<div class='company-display'>
+	<h5 class="name">{{$ctrl.companyName}}</h5>
+	<div class="property equity" ng-if="details[$ctrl.company].equity">$ {{ details[$ctrl.company].equity }}</div>
+	<div class="property jurisdiction" ng-if="details[$ctrl.company].jurisdiction">&#x1f310; {{ details[$ctrl.company].jurisdiction }} </div>
+	<div class="property size" ng-if="details[$ctrl.company].size">&#x1f466; {{ details[$ctrl.company].size }}</div>
+</div>

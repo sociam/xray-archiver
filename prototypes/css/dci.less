@@ -83,7 +83,41 @@ body, html {
 				// border-bottom:1px solid #eee;
 				// &:last-child { border-bottom:none; }
 				background:#fafafa;
-				h4.company-name { margin:5px 0px; padding:0px; }
+				.company-display { 
+					margin:5px 0px; padding:0px; 
+					.name { 
+						flex-grow:1;
+						display:block; 
+						margin:0px; padding:0px;
+					}
+					.props {
+						display:flex;
+						flex-direction:row;
+						flex-wrap:no-wrap;
+						justify-content:flex-end;
+						align-items:stretch !important; // flex-start;
+						align-content:flex-start;					
+						padding:0px; margin:-5px 0px 0px 0px;
+						// border:1px solid #eee; 
+						.property { 
+							padding:4px;
+							margin:0px 3px 0px 3px;
+							flex-grow:0;
+							font-size:10pt;	
+							display:inline-block; 
+							vertical-align:top !important;
+							// margin:0px 5px;
+							// height:50px;
+							&.textonly { 
+								padding-top:8px;
+							}
+							&:last-child {
+								margin-right:0px !important;
+								padding-right:0px !important;
+							}
+						}
+					}
+				}
 				.piclass { 
 					padding:5px;
 					margin:0px 0px 10px 0px;

@@ -155,8 +155,6 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 						];
 					};
 
-				// $scope.details = companydetails;
-
 				if (!appcompany) { $scope.error = 'Captured data for ' + app + ' is in old data format without company field'; }
 				if (!hosts[$scope.app]) { $scope.error = 'No hosts known for app'; }
 
@@ -171,10 +169,10 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 				window._s = $scope;
 			}
 		});
-	}).component('companyName', {
-	  templateUrl: 'tmpl/company-name.html',
-	  bindings: { company: '=' },	  
-	  controller: ($scope) => { console.log('company name', $scope.company); }
+	}).component('companyInfo', {
+	  templateUrl: 'tmpl/company-info.html',
+	  bindings: { company: '=', companyName:'=', details:'=' },	  
+	  controller: function($scope) { console.log('company id:', this.company, 'name: ', this.companyName, this.details); }
    }).component('piTypesDisplay', {
 	  templateUrl: 'tmpl/pi-types-display.html',
 	  bindings: { types: '=' },	  	  
