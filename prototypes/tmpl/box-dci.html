@@ -14,7 +14,7 @@
 		<div ng-repeat="c in categories" class="trackers {{c.class}}" ng-if="size(c.companies)" >
 			<h5 ng-bind="c.label"></h5>
 			<div class="company" ng-repeat="(company,pis) in c.companies">   
-				<company-name company="company">{{company}}</company-name>			
+				<company-name company="getName(company)">{{company}}</company-name>			
 				<pi-types-display types="pis"></pi-types-display>
 			</div>
 		</div>

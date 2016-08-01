@@ -67,6 +67,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 						details[id] && 
 						details[id].typetag && 
 						details[id].typetag.indexOf(type) >= 0,
+					getName = $scope.getName = (id) => details[id] && details[id].company || id,
 					is3rdPartyType = $scope.is3rdPartyType = (id, type) => isType(id,type) &&
 							!_.some([id2names[id], id].map(matchCompany)),
 					recompute = () => {
@@ -74,7 +75,8 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 						// next we wanna group together all the pi_types, and consolidate around company
 						// console.info('threshold', $scope.threshold, 'apphosts', apphosts.length);
 						$scope.company2pi = apphosts.reduce((r,host) => {
-							var company = id2names[hTc[host]] || hTc[host], host_pis = pitypes[host] || [];
+							var company = hTc[host], 
+								host_pis = pitypes[host] || [];
 							if (!company) { 
 								console.log('hth ', host, hTh[host]);
 								var mfirst = hTh[host].match(/^([^\.]+)\./);
