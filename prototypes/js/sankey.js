@@ -135,9 +135,9 @@ angular.module('dci')
 									nodemap[id] = l;
 									return l;
 								},
-								pushLink = (from, to) => {
+								pushLink = (from, to, width) => {
 									var l = links.length;
-									links.push({source:from, target:to, value:1});
+									links.push({source:from, target:to, value:width || 1});
 									return l;
 								};
 							pitypes_set.map((pitype) => pushNode(pitype));
@@ -158,15 +158,13 @@ angular.module('dci')
 								});
 								_.keys($scope.categories).filter((cname) => $scope.categories[cname][company]).map((cname) => {
 									console.info('adding purpose link ', company, company_nid, ' -> ', cname, nodemap[cname]);
-									pushLink(company_nid, nodemap[cname]);
+									pushLink(company_nid, nodemap[cname], $scope.company2pi[company].length || 1);
 								});
 
 								if ($scope.company2pi[company].length === 0) {
 									console.info('adding other_PI link ', nodemap[OTHERPITYPE], ' -> ', company, ' ', company_nid);
 									pushLink(nodemap[OTHERPITYPE], company_nid);
 								}
-
-
 							});
 							console.log('nodes ', JSON.stringify({nodes:nodes}));
 							console.log('links ', JSON.stringify({links:links}));							
