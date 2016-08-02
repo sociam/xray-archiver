@@ -124,7 +124,8 @@ angular.module('dci')
 
 							// let's start making nodes
 							// start with the pitypes
-							var pitypes_set = _(pitypes).values().flatten().uniq().value(),
+							var OTHERPITYPE = 'OTHER_PI',
+								pitypes_set = _(pitypes).values().flatten().uniq().value().concat([OTHERPITYPE]),
 								nodemap = $scope.nodemap = {},
 								nodes = $scope.nodes = [], 
 								links = $scope.links = [],
@@ -136,7 +137,7 @@ angular.module('dci')
 								},
 								pushLink = (from, to) => {
 									var l = links.length;
-									links.push({source:from, target:to});
+									links.push({source:from, target:to, value:1});
 									return l;
 								};
 							pitypes_set.map((pitype) => pushNode(pitype));
@@ -159,9 +160,16 @@ angular.module('dci')
 									console.info('adding purpose link ', company, company_nid, ' -> ', cname, nodemap[cname]);
 									pushLink(company_nid, nodemap[cname]);
 								});
-							});
 
-							
+								if ($scope.company2pi[company].length === 0) {
+									console.info('adding other_PI link ', nodemap[OTHERPITYPE], ' -> ', company, ' ', company_nid);
+									pushLink(nodemap[OTHERPITYPE], company_nid);
+								}
+
+
+							});
+							console.log('nodes ', JSON.stringify({nodes:nodes}));
+							console.log('links ', JSON.stringify({links:links}));							
 							// do it
 							sankey.nodes(nodes)
 							    .links(links)
