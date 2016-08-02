@@ -62,6 +62,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 						} else { console.error('warning no 2ld ', a.host); }
 						return r;
 					}, {}),
+					checkSize = () => {},
 					matchCompany = (x) => appcompany && ((x || '').toLowerCase() === appcompany.toLowerCase()),
 					isType = $scope.isType = (id, type) => id && 
 						details[id] && 
@@ -153,6 +154,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 								)
 							}
 						];
+						checkSize();
 					};
 
 				if (!appcompany) { $scope.error = 'Captured data for ' + app + ' is in old data format without company field'; }
