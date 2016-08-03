@@ -129,9 +129,9 @@ angular.module('dci')
 								nodemap = $scope.nodemap = {},
 								nodes = $scope.nodes = [], 
 								links = $scope.links = [],
-								pushNode = (id) => {
+								pushNode = (id, label) => {
 									var l = nodes.length;
-									nodes.push({name:id});
+									nodes.push({name:id, label:label});
 									nodemap[id] = l;
 									return l;
 								},
@@ -139,8 +139,16 @@ angular.module('dci')
 									var l = links.length;
 									links.push({source:from, target:to, value:width || 1});
 									return l;
+								},
+								pilabels = {
+									USER_PERSONAL_DETAILS: 'personal details',
+									USER_LOCATION: 'your location',
+									USER_COARSE_LOCATION: 'your city/town',
+									DEVICE_ID:'phone id',
+									DEVICE_SOFT:'phone characteristics'
 								};
-							pitypes_set.map((pitype) => pushNode(pitype));
+
+							pitypes_set.map((pitype) => pushNode(pitype, pilabels[pitype]));
 
 							// make nodes for categories as well 
 							_.keys($scope.categories).map((cname) => pushNode(cname));
@@ -166,15 +174,30 @@ angular.module('dci')
 									pushLink(nodemap[OTHERPITYPE], company_nid);
 								}
 							});
-							console.log('nodes ', JSON.stringify({nodes:nodes}));
-							console.log('links ', JSON.stringify({links:links}));							
+							console.log('old nodes ', nodes.length, JSON.stringify({nodes:nodes}));
+							console.log('old links ', links.length, JSON.stringify({links:links}));							
+
+							// kill nodes that don't have any links
+							var newnodes = _.filter(nodes, (n,i) => links.filter((l) => l.source === i || l.target === i).length > 0),
+								newmap = $scope.newmap = newnodes.reduce((m, i) => { 
+									m[i.name] = newnodes.indexOf(i);
+									return m;
+								}, {}),
+								newlinks = $scope.newlinks = links.map((oldlink) =>_.extend({}, oldlink, {
+									source: newmap[nodes[oldlink.source].name],
+									target: newmap[nodes[oldlink.target].name]
+								}));
+	
+							console.log('new nodes ', newnodes.length, JSON.stringify({nodes:newnodes}));
+							console.log('new links ', newlinks.length, JSON.stringify({links:newlinks}));
+
 							// do it
-							sankey.nodes(nodes)
-							    .links(links)
+							sankey.nodes(newnodes)
+							    .links(newlinks)
 							    .layout(32);
 
 							link = svg.append("g").selectAll(".link")
-							  .data(links)
+							  .data(newlinks)
 							  .enter().append("path")
 							  .attr("class", "link")
 							  .attr("d", path)
@@ -185,7 +208,7 @@ angular.module('dci')
 						    	.text(function(d) { return d.source.name + " → " + d.target.name; });
 
 							var node = svg.append("g").selectAll(".node")
-								.data(nodes)
+								.data(newnodes)
 								.enter().append("g")
 									.attr("class", "node")
 									.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
@@ -208,7 +231,7 @@ angular.module('dci')
 							      .attr("dy", ".35em")
 							      .attr("text-anchor", "end")
 							      .attr("transform", null)
-							      .text(function(d) { return d.name; })
+							      .text(function(d) { return d.label || d.name; })
 							    .filter(function(d) { return d.x < width / 2; })
 							      .attr("x", 6 + sankey.nodeWidth())
 							      .attr("text-anchor", "start");							
