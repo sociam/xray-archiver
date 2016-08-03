@@ -1,0 +1,10 @@
+<div class="dci">
+	<toolbar apps='apps' selected="app" show-company-details='companyDetails'></toolbar>
+	<div class="about">
+		<h1>{{app}}</h1>
+		<h2 ng-if='appcompany'>by <a>{{ appcompany }}</a></h2>
+	</div>
+	<h2 ng-if="error" class="error"> Error: {{ error }} </h2>
+	<div ng-if="!error" class="all"  ui-view></div>
+</div>
+

@@ -1,18 +1,9 @@
-<div class="boxdci">
-	<toolbar apps='apps' selected="app" show-company-details='companyDetails'></toolbar>
-	<div class="about">
-		<h1>{{app}}</h1>
-		<h2 ng-if='appcompany'>by <a>{{ appcompany }}</a></h2>
-	</div>
-	<h2 ng-if="error" class="error"> Error: {{ error }} </h2>
-	<div ng-if="!error" class="all">
-		<div ng-repeat="c in categories" class="category {{c.class}}" ng-if="size(c.companies)" >
-			<div class='catlabel' ng-bind="c.label"></div>
-			<div class="company" ng-repeat="(company,pis) in c.companies">   
-				<company-info company="company" company-name="getName(company)" details="details" show-details="companyDetails">{{company}}</company-info>			
-				<pi-types-display types="pis"></pi-types-display>
-			</div>
+<div class="boxdci all">
+	<div ng-repeat="c in categories" class="category {{c.class}}" ng-if="size(c.companies)" >
+		<div class='catlabel' ng-bind="c.label"></div>
+		<div class="company" ng-repeat="(company,pis) in c.companies">   
+			<company-info company="company" company-name="getName(company)" details="details" show-details="companyDetails">{{company}}</company-info>			
+			<pi-types-display types="pis"></pi-types-display>
 		</div>
 	</div>
 </div>
-

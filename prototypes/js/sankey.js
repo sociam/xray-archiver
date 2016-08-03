@@ -3,8 +3,8 @@
 angular.module('dci')
 	.controller('sankey', function () {})
 	.config(function ($stateProvider, $urlRouterProvider) {
-			$stateProvider.state('sankey', {
-				url: '/sankey?app',
+			$stateProvider.state('dci.sankey', {
+				url: '/sankey',
 				template:'<div id="sankey-chart"></div>',
 				resolve: {
 					pitypes:($http) => $http.get('../mitm_out/pi_by_host.json').then((x) => x.data),

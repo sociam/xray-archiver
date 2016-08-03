@@ -23,8 +23,23 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 				$scope.apps = _.uniq(data.map((x) => x.app));
 			}
 		});
-		$stateProvider.state('boxdci', {
-			url: '/boxdci?app',
+
+		$stateProvider
+		  .state('dci', {
+		  	url: '/dci?app',
+		  	templateUrl:'tmpl/view.html',
+		  	resolve: {
+				data: ($http) => $http.get('../mitm_out/data_all.json').then((x) => x.data)
+			},
+			controller:function($scope, data, $stateParams) {
+				$scope.apps = _.uniq(data.map((x) => x.app));
+				data = $scope.data = data.filter((x) => x.app === $stateParams.app);				
+				
+				var app = $scope.app = $stateParams.app;				
+					appcompany = $scope.appcompany = data[0].company;
+			}
+		  }).state('dci.box', {
+			url: '/box',
 			templateUrl: 'tmpl/box-dci.html',
 			resolve: {
 				pitypes:($http) => $http.get('../mitm_out/pi_by_host.json').then((x) => x.data),
@@ -195,7 +210,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 	  	$scope.$watch('app', () => { 
 	  		console.info('new selected app ', $scope.app);
 	  		if ($scope.app) { 
-		  		$state.go('boxdci', {app:$scope.app}); 
+		  		$state.go('dci.box', {app:$scope.app}); 
 		  	}
 	  	});
 	  	if (this.showCompanyDetails === undefined) { this.showCompanyDetails = 'hide'; 	}
