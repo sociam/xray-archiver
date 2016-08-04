@@ -34,9 +34,11 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 			controller:function($scope, data, $stateParams) {
 				$scope.apps = _.uniq(data.map((x) => x.app));
 				data = $scope.data = data.filter((x) => x.app === $stateParams.app);				
-				
-				var app = $scope.app = $stateParams.app;				
-					appcompany = $scope.appcompany = data[0].company;
+				// console.info('go stateparams ', $stateParams.app, $scope.mode);
+				$scope.app = $stateParams.app;
+				if (!$scope.mode) { console.info('go setting box'); $scope.mode = 'box'; }
+				$scope.appcompany = data[0].company;
+				$scope.$watch('mode', () => { console.log('mode change ', $scope.mode); });
 			}
 		  }).state('dci.box', {
 			url: '/box',
@@ -50,6 +52,8 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 			controller:function($scope, pitypes, hosts, details, data, $stateParams) {
 				console.log('boxdci stateparams', $stateParams);
 				console.log('got relevant ', data.length);
+				$scope.$parent.mode = 'box';
+
 				$scope.apps = _.uniq(data.map((x) => x.app));
 				data = $scope.data = data.filter((x) => x.app === $stateParams.app);
 				// console.log('before filter ', data.length);
@@ -203,14 +207,15 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 	  }
    }).component('toolbar', { 
 	  templateUrl: 'tmpl/toolbar.html',
-	  bindings: { apps: '=', selected:'=', showCompanyDetails:'=' },
+	  bindings: { apps: '=', selected:'=', mode:'=', showCompanyDetails:'=' },
 	  controller:function($scope, $state) {
-	  	console.log('selected ', this.selected);
-	  	$scope.app = this.selected;
-	  	$scope.$watch('app', () => { 
-	  		console.info('new selected app ', $scope.app);
-	  		if ($scope.app) { 
-		  		$state.go('dci.box', {app:$scope.app}); 
+	  	// console.log('selected ', this.selected);
+	  	$scope.$watch(() => this.selected + this.mode, () => { 
+	  		console.info('new selected app ', this.selected, 'mode: ', this.mode);
+	  		if (this.selected && this.mode) { 
+	  			var modemap = { box: 'dci.box', sankey: 'dci.sankey', table: 'dci.table' };
+		  		console.info('go ', this.selected, this.mode);
+		  		$state.go(modemap[this.mode], {app:this.selected}); 
 		  	}
 	  	});
 	  	if (this.showCompanyDetails === undefined) { this.showCompanyDetails = 'hide'; 	}
