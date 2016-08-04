@@ -31,14 +31,18 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 		  	resolve: {
 				data: ($http) => $http.get('../mitm_out/data_all.json').then((x) => x.data)
 			},
-			controller:function($scope, data, $stateParams) {
+			controller:function($scope, $state, data, $stateParams) {
 				$scope.apps = _.uniq(data.map((x) => x.app));
 				data = $scope.data = data.filter((x) => x.app === $stateParams.app);				
 				// console.info('go stateparams ', $stateParams.app, $scope.mode);
 				$scope.app = $stateParams.app;
-				if (!$scope.mode) { console.info('go setting box'); $scope.mode = 'box'; }
+				$scope.mode = {
+					'dci.box': 'box',
+					'dci.sankey': 'sankey',
+					'dci.table' : 'table'
+				}[$state.$current.toString()];
 				$scope.appcompany = data[0].company;
-				$scope.$watch('mode', () => { console.log('mode change ', $scope.mode); });
+				window._st = $state;
 			}
 		  }).state('dci.box', {
 			url: '/box',
