@@ -34,15 +34,19 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 			controller:function($scope, $state, data, $stateParams) {
 				$scope.apps = _.uniq(data.map((x) => x.app));
 				data = $scope.data = data.filter((x) => x.app === $stateParams.app);				
-				// console.info('go stateparams ', $stateParams.app, $scope.mode);
+
+				if (!data.length) { $scope.error = 'no data for app ' + $stateParams.app; }
+				
+				// set app name / company
 				$scope.app = $stateParams.app;
+				$scope.appcompany = data[0].company;
+
+				// sets mode for toolbar
 				$scope.mode = {
 					'dci.box': 'box',
 					'dci.sankey': 'sankey',
 					'dci.table' : 'table'
 				}[$state.$current.toString()];
-				$scope.appcompany = data[0].company;
-				window._st = $state;
 			}
 		  }).state('dci.box', {
 			url: '/box',
@@ -58,7 +62,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 				console.log('got relevant ', data.length);
 				$scope.$parent.mode = 'box';
 
-				$scope.apps = _.uniq(data.map((x) => x.app));
+				// $scope.apps = _.uniq(data.map((x) => x.app));
 				data = $scope.data = data.filter((x) => x.app === $stateParams.app);
 				// console.log('before filter ', data.length);
 				// data = $scope.data = data.filter((x) => ((details[x.host_company] || {}).typetag || '').indexOf('ignore') < 0);
