@@ -1,7 +1,30 @@
 angular.module('dci')
 	.service('utils', { 
 		return {
-			
+			makeId2Names:(details) => _.keys(details).reduce((a,id) => { a[id] = details[id].company; return a; }, {}),
+			makeHTC:(data) => data.reduce((r,a) => {
+				if (a.host_company) { 
+					r[a.host] = a.host_company; 
+					r[a.host_2ld] = a.host_company;
+				}
+				return r;
+			}, {}),
+			makeHTH:(data) => data.reduce((r,a) => {
+				// host -> 2ld
+				if (a.host_2ld) { 
+					r[a.host] = a.host_2ld;
+				} else { console.error('warning no 2ld ', a.host); }
+				return r;
+			}, {}),
+			isType: (id, type) => id && 
+				details[id] && 
+				details[id].typetag && 
+				details[id].typetag.indexOf(type) >= 0,
+			matchCompany : (appcompany, x) => 
+				appcompany && ((x || '').toLowerCase() === appcompany.toLowerCase()),
+
+
+
 		};
 	}).config(function ($stateProvider, $urlRouterProvider) {
 		$stateProvider.state('dci.table', {
@@ -18,29 +41,11 @@ angular.module('dci')
 
 				var app = $scope.app = $stateParams.app,
 					appcompany = $scope.appcompany = data[0].company,
-					id2names = $scope.id2names = _.keys(details).reduce((a,id) => { 
-						a[id] = details[id].company; return a; 
-					}, {}),
-					hTc = $scope.hTc = data.reduce((r,a) => {
-						if (a.host_company) { 
-							r[a.host] = a.host_company; 
-							r[a.host_2ld] = a.host_company;
-						}
-						return r;
-					}, {}),
-					hTh = $scope.hTh = data.reduce((r,a) => {
-						// host -> 2ld
-						if (a.host_2ld) { 
-							r[a.host] = a.host_2ld;
-						} else { console.error('warning no 2ld ', a.host); }
-						return r;
-					}, {}),
-					checkSize = () => {},
-					matchCompany = (x) => appcompany && ((x || '').toLowerCase() === appcompany.toLowerCase()),
-					isType = $scope.isType = (id, type) => id && 
-						details[id] && 
-						details[id].typetag && 
-						details[id].typetag.indexOf(type) >= 0,
+					id2names = $scope.id2names = utils.makeId2Names(details),
+					hTc = $scope.hTc = utils.makeHTC(data),
+					hTh = $scope.hTh = utils.makeHTH(data), 
+					isType = $scope.isType = utils.isType,
+					matchCompany = (x) => utils.matchCompany(appcompany, x)
 					getName = $scope.getName = (id) => details[id] && details[id].company || id,
 					is3rdPartyType = $scope.is3rdPartyType = (id, type) => isType(id,type) &&
 							!_.some([id2names[id], id].map(matchCompany)),
