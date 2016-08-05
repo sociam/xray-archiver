@@ -5,10 +5,19 @@
 			<th ng-repeat="pit in pitypes" ng-bind="pilabels[pit]"></th>
 		</tr>
 		<tr ng-repeat="h in companies">
-			<td>{{getName(h)}} <span ng-if="getName(h) !== h">({{h}})</span></td>
+			<td class="companyname">{{getName(h)}} 
+				<span ng-if="getName(h) !== h">({{h}})</span>
+			</td>
 			<td ng-repeat="pit in pitypes">
 				<!-- {{ pit }} - {{ c2pi[h] }} -->
-				<span ng-if="c2pi[h].indexOf(pit) >= 0">Y</span>
+				<div class="container">
+					<div class="dot app" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'app-publisher') || isCat(h,'app-functionality'))">a</div>
+					<div class="dot marketing" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'marketing'))">m</div>
+					<div class="dot security" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'security'))">s</div>
+					<div class="dot payments" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'payments'))">p</div>
+					<div class="dot usage" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'usage tracking'))">u</div>
+					<div class="dot other" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'other'))">o</div>
+				</div>
 			</td>
 		</tr>
 	</table>

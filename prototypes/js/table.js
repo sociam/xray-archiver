@@ -30,7 +30,7 @@ angular.module('dci')
 				if (!hosts[$scope.app]) { $scope.error = 'No hosts known for app'; }
 				$scope.size = (l) => _.keys(l).length;
 				recompute();
-
+				$scope.isCat = (c,cat) => cat2c2pi[cat] && cat2c2pi[cat][c] !== undefined;
 				$scope.hosts = hosts;
 				$scope.data = data;
 				// $scope.pitypes = pitypes;

@@ -8,12 +8,51 @@
 		// }
 	}
 	td { 
+		&.companyname {
+			// font-style:italic;
+			text-align:right !important;
+			padding:0px 30px;
+			color: #07b;
+			&:hover {
+				background-color:cyan;
+			}
+		}
 		border-right:1px solid #eee;
 		width:150px;
 		text-align:center;
 		padding: 15px 0px 15px 0px;		
-		&:hover {
-			background-color:#eee;
+		&:hover { background-color:#eee; }
+		.container {
+			margin: 0px auto;
+			width:40px;
 		}
+	}
+
+	.dot {
+	    display: table-cell;
+	    width: 30px;
+	    height: 30px;
+	    border-radius: 17px;
+	    color: white;
+	    vertical-align: middle;
+	    text-align: center;
+	}
+	.app { 
+		background-color:#2980b9 !important; // #169FFF !important;		
+	}	
+	.marketing { 
+		background-color:#f2c81e !important;
+	}
+	.usage { 
+		background-color:#34495e !important;
+	}
+	.security { 
+		background-color:#c0392b !important;		
+	}
+	.payments {
+		background-color:#27ae60 !important;		
+	}
+	.other {
+		background-color:#7f8c8d !important;		
 	}
 }
