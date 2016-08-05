@@ -1,0 +1,15 @@
+<div class="table">
+	<table>
+		<tr>
+			<th></th>
+			<th ng-repeat="pit in pitypes" ng-bind="pilabels[pit]"></th>
+		</tr>
+		<tr ng-repeat="h in companies">
+			<td>{{getName(h)}} <span ng-if="getName(h) !== h">({{h}})</span></td>
+			<td ng-repeat="pit in pitypes">
+				<!-- {{ pit }} - {{ c2pi[h] }} -->
+				<span ng-if="c2pi[h].indexOf(pit) >= 0">Y</span>
+			</td>
+		</tr>
+	</table>
+</div>
