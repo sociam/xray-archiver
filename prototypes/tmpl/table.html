@@ -4,19 +4,19 @@
 			<th></th>
 			<th ng-repeat="pit in pitypes" ng-bind="pilabels[pit]"></th>
 		</tr>
-		<tr ng-repeat="h in companies">
+		<tr ng-repeat="h in companies" ng-class="{app:isCat(h,'app-publisher') || isCat(h,'app-functionality'), marketing:isCat(h,'marketing'), security:isCat(h,'security'), payments:isCat(h,'payments'), usage:isCat(h,'usage tracking'), other:isCat(h,'other')}">
 			<td class="companyname">{{getName(h)}} 
 				<span ng-if="getName(h) !== h">({{h}})</span>
 			</td>
-			<td ng-repeat="pit in pitypes">
+			<td ng-class="{pitypes:c2pi[h].indexOf(pit) >= 0}" ng-repeat="pit in pitypes">
 				<!-- {{ pit }} - {{ c2pi[h] }} -->
 				<div class="container">
-					<div class="dot app" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'app-publisher') || isCat(h,'app-functionality'))">a</div>
-					<div class="dot marketing" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'marketing'))">m</div>
-					<div class="dot security" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'security'))">s</div>
-					<div class="dot payments" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'payments'))">p</div>
-					<div class="dot usage" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'usage tracking'))">u</div>
-					<div class="dot other" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'other'))">o</div>
+					<div class="dot" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'app-publisher') || isCat(h,'app-functionality'))">a</div>
+					<div class="dot" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'marketing'))">m</div>
+					<div class="dot" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'security'))">s</div>
+					<div class="dot" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'payments'))">p</div>
+					<div class="dot" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'usage tracking'))">u</div>
+					<div class="dot" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'other'))">o</div>
 				</div>
 			</td>
 		</tr>
