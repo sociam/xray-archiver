@@ -31,6 +31,7 @@
     "bluebird": "~2.9.34",
     "moment": "",
     "fastclick": "^1.0.6",
-    "d3-sankey": "*"
+    "d3-sankey": "*",
+    "glyphicons": "^0.0.2"
   }
 }
