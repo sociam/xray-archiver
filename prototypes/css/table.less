@@ -11,6 +11,8 @@
 		color:white;
 		&.companyname {
 			// font-style:italic;
+			background-color:white;
+			color:black;
 			text-align:right !important;
 			padding:0px 30px;
 			// color: #07b;
@@ -23,6 +25,7 @@
 			div { font-size:12pt; margin-top:-5pt; }
 		}
 		&.category {
+			background-color:white;			
 			font-variant:small-caps;
 			font-size:14pt;
 			font-weight:100;
@@ -50,25 +53,33 @@
 	    padding:5px 0px 0px 0px;
 	    img { width:2.3em; }
 	}
-	@tonealpha:0.71;
+	@tonealpha:1.0;
 	.app { 
-		background-color:rgba(52, 152, 219, @tonealpha);
+		background-color:rgba(52, 152, 219, @tonealpha); 
+		.companyname, .category { color:rgba(52, 152, 219,1.0); }
 	}	
 	.marketing { 
-		background-color:rgba(142, 68, 173,@tonealpha);
+		// yellow
+		background-color:rgba(241, 196, 15, @tonealpha);
+		.companyname, .category { color:rgba(241, 196, 15, 1.0); }
 		// orange :: background-color:rgba(230, 126, 34,@tonealpha);
 	}
 	.usage { 
-		background-color:rgba(241, 196, 15,@tonealpha);
+		// wisteria
+		background-color:rgba(142, 68, 173,@tonealpha);
+		.companyname, .category { color:rgba(142, 68, 173, 1.0); }
+
 	}
 	.security { 
 		background-color:rgba(192, 57, 43,@tonealpha);
+		.companyname, .category { color:rgba(192, 57, 43, 1.0); }		
 	}
-	.payments .pitypes {
-		background-color:rgba(46, 204, 113,@tonealpha);
+	.payments {
+		background-color:rgba(46, 204, 113, @tonealpha);
+		.companyname, .category { color:rgba(46, 204, 113, 1.0); }		
 	}
 	.other {
-		background-color:rgba(149, 165, 166,@tonealpha);
-
+		background-color:rgba(149, 165, 166, @tonealpha);
+		.companyname, .category { color:rgba(149, 165, 166, 1.0); }		
 	}
 }

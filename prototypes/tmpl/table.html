@@ -10,7 +10,7 @@
 				<div ng-if="getName(company.id) !== company.id">{{company.id}}</div>
 			</td>
 			<td class="category">{{company.category}}</td>				
-			<td ng-repeat="pit in pitypes" ng-class="pitypes">
+			<td ng-repeat="pit in pitypes" class="pitypes">
 				<div class='dot' class="container">
 					<img  src="img/double-circle-white.png" ng-if="company.pitypes.indexOf(pit) >= 0">
 				</div>
