@@ -2,21 +2,17 @@
 	<table>
 		<tr>
 			<th></th>
+			<th>company type</th>
 			<th ng-repeat="pit in pitypes" ng-bind="pilabels[pit]"></th>
 		</tr>
-		<tr ng-repeat="h in companies" ng-class="{app:isCat(h,'app-publisher') || isCat(h,'app-functionality'), marketing:isCat(h,'marketing'), security:isCat(h,'security'), payments:isCat(h,'payments'), usage:isCat(h,'usage tracking'), other:isCat(h,'other')}">
-			<td class="companyname">{{getName(h)}} 
-				<span ng-if="getName(h) !== h">({{h}})</span>
+		<tr ng-repeat="company in companies | orderBy:category" ng-class="{app:company.category==='app-publisher' || company.category ==='app-functionality', marketing:company.category==='marketing', security:company.category==='security', payments:company.category==='payments', usage:company.category==='usage tracking', other:company.category==='other'}">
+			<td class="companyname">{{getName(company.id)}} 
+				<div ng-if="getName(company.id) !== company.id">{{company.id}}</div>
 			</td>
-			<td ng-class="{pitypes:c2pi[h].indexOf(pit) >= 0}" ng-repeat="pit in pitypes">
-				<!-- {{ pit }} - {{ c2pi[h] }} -->
-				<div class="container">
-					<div class="dot" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'app-publisher') || isCat(h,'app-functionality'))">a</div>
-					<div class="dot" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'marketing'))">m</div>
-					<div class="dot" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'security'))">s</div>
-					<div class="dot" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'payments'))">p</div>
-					<div class="dot" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'usage tracking'))">u</div>
-					<div class="dot" ng-if="c2pi[h].indexOf(pit) >= 0 && (isCat(h,'other'))">o</div>
+			<td class="category">{{company.category}}</td>				
+			<td ng-repeat="pit in pitypes" ng-class="pitypes">
+				<div class='dot' class="container">
+					<img  src="img/double-circle-white.png" ng-if="company.pitypes.indexOf(pit) >= 0">
 				</div>
 			</td>
 		</tr>

@@ -78,4 +78,4 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 	  	});
 	  	if (this.showCompanyDetails === undefined) { this.showCompanyDetails = 'hide'; 	}
 	  }
-   });
+   })
