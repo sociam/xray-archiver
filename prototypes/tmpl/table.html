@@ -11,8 +11,13 @@
 			</td>
 			<td class="category">{{company.category}}</td>				
 			<td ng-repeat="pit in pitypes" class="pitypes">
-				<div class='dot' class="container">
-					<img  src="img/double-circle-white.png" ng-if="company.pitypes.indexOf(pit) >= 0">
+				<div class='dot container' ng-if="company.pitypes.indexOf(pit) >= 0">
+					<!--
+					<svg viewBox="0 0 18 18" class="icon">
+					      <use xlink:href="img/dot.svg"></use>
+					</svg>				
+					-->
+					<!-- <img  src="img/double-circle-white.png"> -->
 				</div>
 			</td>
 		</tr>

@@ -36,50 +36,59 @@
 		padding: 15px 0px 15px 0px;		
 		&:hover { background-color:#eee; }
 		.container {
-			margin: 0px auto;
-			width:40px;
+			// margin: 0px auto;
+			// width:40px;
+			// height:100%;
 		}
 	}
-
-	.dot {
-	    // display: table-cell;
-	    // width: 30px;
-	    // height: 30px;
-	    // border-radius: 17px;
-	    color: black;
-	    vertical-align: middle;
-	    text-align: center;
-	    // background-color:rgba(255,255,255,0.8)
-	    padding:5px 0px 0px 0px;
-	    img { width:2.3em; }
+	.pitypes { 
+		padding:0px;
+		margin:0px;
+		.dot {
+		    // display: table-cell;
+		    // width: 30px;
+		    // height: 30px;
+		    // border-radius: 17px;
+		    color: black;
+		    vertical-align: middle;
+		    text-align: center;
+		    // background-color:rgba(255,255,255,0.8)
+		    // padding:5px 0px 0px 0px;
+		    img { 
+		    	width:2.3em; 
+		    }
+		    padding:8px 3px;
+		    margin:20px;
+		    border-radius:200px;
+		}		
 	}
 	@tonealpha:1.0;
 	.app { 
-		background-color:rgba(52, 152, 219, @tonealpha); 
+		.pitypes .dot { background-color:rgba(52, 152, 219, @tonealpha); }
 		.companyname, .category { color:rgba(52, 152, 219,1.0); }
 	}	
 	.marketing { 
 		// yellow
-		background-color:rgba(241, 196, 15, @tonealpha);
+		.pitypes .dot { background-color:rgba(241, 196, 15, @tonealpha); }
 		.companyname, .category { color:rgba(241, 196, 15, 1.0); }
 		// orange :: background-color:rgba(230, 126, 34,@tonealpha);
 	}
 	.usage { 
 		// wisteria
-		background-color:rgba(142, 68, 173,@tonealpha);
+		.pitypes .dot { background-color:rgba(142, 68, 173,@tonealpha); }
 		.companyname, .category { color:rgba(142, 68, 173, 1.0); }
 
 	}
 	.security { 
-		background-color:rgba(192, 57, 43,@tonealpha);
+		.pitypes .dot { background-color:rgba(192, 57, 43,@tonealpha); }
 		.companyname, .category { color:rgba(192, 57, 43, 1.0); }		
 	}
 	.payments {
-		background-color:rgba(46, 204, 113, @tonealpha);
+		.pitypes .dot { background-color:rgba(46, 204, 113, @tonealpha); }
 		.companyname, .category { color:rgba(46, 204, 113, 1.0); }		
 	}
 	.other {
-		background-color:rgba(149, 165, 166, @tonealpha);
+		.pitypes .dot { background-color:rgba(149, 165, 166, @tonealpha); }
 		.companyname, .category { color:rgba(149, 165, 166, 1.0); }		
 	}
 }
