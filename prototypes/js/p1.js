@@ -22,6 +22,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 				$scope.data = data;
 				$scope.showPDCI = {showing:false};
 				$scope.apps = _.uniq(data.map((x) => x.app));
+				// $scope.size = (obj) => _.toPairs(obj).length;
 			}
 		});
 		// base dci state
@@ -47,6 +48,13 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 					'dci.sankey': 'sankey',
 					'dci.table' : 'table'
 				}[$state.$current.toString()];
+
+				$scope.$watch('pdciAppsObj', 
+					() => {
+						console.log('updating pdciApps ', $scope.pdciAppsObj);
+						$scope.pdciApps = _.keys($scope.pdciAppsObj).filter((k) => $scope.pdciAppsObj[k]);
+					});
+
 			}
 		  });
 	}).component('companyInfo', {
@@ -84,7 +92,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 	  templateUrl: 'tmpl/pdci-app-selector.html',
 	  bindings: { apps: '=', selected:'=', showing:"=" },	  	  
 	  controller: function($scope) { 
-	  	console.log('pdciAppSelector', this.apps, this.appsUsed); 
+	  	console.log('pdciAppSelector', this.apps, this.selected); 
 	  	if (this.selected === undefined) { this.selected = {}; }
 	  	// debug crap
 	  	$scope.$watch(() => this.selected, () => { console.log('select watch ! ', this.selected); });
