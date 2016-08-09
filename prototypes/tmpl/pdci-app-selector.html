@@ -1,8 +1,8 @@
 <div class="pdci-app-selector" ng-if="$ctrl.showing">
-	<h3> Please select the apps that you use regularly: </h3>
+	<h3> Please select the apps that have installed : </h3>
 	<div class="scrollable">
 		<ol class="applist">
-			<li ng-repeat="a in $ctrl.apps" ng-click="$ctrl.selected[a] = !$ctrl.selected[a]" ng-class="{selected:$ctrl.selected[a]}">{{a}}</li>
+			<li ng-repeat="a in $ctrl.apps" ng-click="$ctrl.selected[a] = !$ctrl.selected[a]" ng-class="{selected:$ctrl.selected[a]}"><input type="checkbox" ng-model="$ctrl.selected[a]">{{a}}</li>
 		</ol>
 	</div>
 	<div class="buttons">
