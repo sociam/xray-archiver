@@ -20,6 +20,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 				$scope.pitypes = pitypes;
 				$scope.hosts = hosts;
 				$scope.data = data;
+				$scope.showPDCI = {showing:false};
 				$scope.apps = _.uniq(data.map((x) => x.app));
 			}
 		});
@@ -65,7 +66,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 	  }
    }).component('toolbar', { 
 	  templateUrl: 'tmpl/toolbar.html',
-	  bindings: { apps: '=', selected:'=', mode:'=', showCompanyDetails:'=' },
+	  bindings: { apps: '=', selected:'=', mode:'=', showCompanyDetails:'=', showpdci:'=' },
 	  controller:function($scope, $state) {
 	  	// console.log('selected ', this.selected);
 	  	$scope.$watch(() => this.selected + this.mode, () => { 
@@ -77,5 +78,15 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 		  	}
 	  	});
 	  	if (this.showCompanyDetails === undefined) { this.showCompanyDetails = 'hide'; 	}
+	  	$scope.$watch(() => this.showPDCI, () => console.log('showPDCI ', this.showPDCI));
 	  }
-   })
+   }).component('pdciAppSelector', {
+	  templateUrl: 'tmpl/pdci-app-selector.html',
+	  bindings: { apps: '=', selected:'=', showing:"=" },	  	  
+	  controller: function($scope) { 
+	  	console.log('pdciAppSelector', this.apps, this.appsUsed); 
+	  	$scope.$watch(() => this.selected, () => { console.log('select watch ! ', this.selected); });
+	  	$scope.$watch(() => this.showing, () => { console.log('showing watch ! ', this.showing); });
+
+	  }
+   });

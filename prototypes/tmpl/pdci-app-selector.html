@@ -1,0 +1,8 @@
+<div class="pdci-app-selector" ng-if="$ctrl.showing">
+	<h3> Please select the apps that you use regularly: </h3>
+	<select multiple ng-model="$ctrl.selected">
+		<option value="{{a}}" ng-repeat="a in $ctrl.apps">{{a}}</option>
+	</select>
+	<button ng-click="$ctrl.selected=[]">Clear</button>	
+	<button ng-click="$ctrl.showing=false">Ok</button>
+</div>

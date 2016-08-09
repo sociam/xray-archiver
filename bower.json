@@ -32,6 +32,7 @@
     "moment": "",
     "fastclick": "^1.0.6",
     "d3-sankey": "*",
-    "glyphicons": "^0.0.2"
+    "glyphicons": "^0.0.2",
+    "chosen": "^1.6.2"
   }
 }

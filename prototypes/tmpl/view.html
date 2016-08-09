@@ -1,5 +1,6 @@
 <div class="dci">
-	<toolbar apps="apps" selected="app" mode="mode" show-company-details='companyDetails'></toolbar>
+	<toolbar apps="apps" selected="app" mode="mode" show-company-details='companyDetails' showpdci="showPDCI.showing"></toolbar>
+	<pdci-app-selector apps="apps" selected="appsUsed" showing="showPDCI.showing"></pdci-app-selector>
 	<div class="about">
 		<h1>{{app}}</h1>
 		<h2 ng-if='appcompany'>by <a>{{ appcompany }}</a></h2>
