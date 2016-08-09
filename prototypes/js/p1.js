@@ -49,11 +49,13 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 					'dci.table' : 'table'
 				}[$state.$current.toString()];
 
-				$scope.$watch('pdciAppsObj', 
+				$scope.$watchCollection('pdciAppsObj', 
 					() => {
 						console.log('updating pdciApps ', $scope.pdciAppsObj);
 						$scope.pdciApps = _.keys($scope.pdciAppsObj).filter((k) => $scope.pdciAppsObj[k]);
 					});
+
+				window._sD = $scope;
 
 			}
 		  });
@@ -74,7 +76,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 	  }
    }).component('toolbar', { 
 	  templateUrl: 'tmpl/toolbar.html',
-	  bindings: { apps: '=', selected:'=', mode:'=', showCompanyDetails:'=', showpdci:'=' },
+	  bindings: { apps: '=', selected:'=', mode:'=', showCompanyDetails:'=', showpdci:'=', pdciapps:'=' },
 	  controller:function($scope, $state) {
 	  	// console.log('selected ', this.selected);
 	  	$scope.$watch(() => this.selected + this.mode, () => { 
@@ -90,12 +92,12 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 	  }
    }).component('pdciAppSelector', {
 	  templateUrl: 'tmpl/pdci-app-selector.html',
-	  bindings: { apps: '=', selected:'=', showing:"=" },	  	  
+	  bindings: { apps: '=', selected:'=', showing:"=", pdciapps:'=' },	  	  
 	  controller: function($scope) { 
 	  	console.log('pdciAppSelector', this.apps, this.selected); 
 	  	if (this.selected === undefined) { this.selected = {}; }
 	  	// debug crap
-	  	$scope.$watch(() => this.selected, () => { console.log('select watch ! ', this.selected); });
+	  	$scope.$watchCollection(() => this.selected, () => { console.log('select watch ! ', this.selected); });
 	  	$scope.$watch(() => this.showing, () => { console.log('showing watch ! ', this.showing); });
 	  }
    });

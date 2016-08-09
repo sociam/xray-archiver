@@ -14,5 +14,7 @@
 		<option>sankey</option>		
 		<option>table</option>
 	</select>
-	<button class="btn" ng-click="$ctrl.showpdci = true"> personalise </button>
+	<button ng-class="{btn:true, highlight:$ctrl.pdciapps && $ctrl.pdciapps.length > 0}" ng-click="$ctrl.showpdci = true"> 
+		{{ $ctrl.pdciapps && $ctrl.pdciapps.length > 0 ? 'personalisation on' : 'personalise' }} 
+	</button>
 </toolbar>
