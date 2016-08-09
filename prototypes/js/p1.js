@@ -85,8 +85,9 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 	  bindings: { apps: '=', selected:'=', showing:"=" },	  	  
 	  controller: function($scope) { 
 	  	console.log('pdciAppSelector', this.apps, this.appsUsed); 
+	  	if (this.selected === undefined) { this.selected = {}; }
+	  	// debug crap
 	  	$scope.$watch(() => this.selected, () => { console.log('select watch ! ', this.selected); });
 	  	$scope.$watch(() => this.showing, () => { console.log('showing watch ! ', this.showing); });
-
 	  }
    });
