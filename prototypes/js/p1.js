@@ -27,7 +27,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 		});
 		// base dci state
 		$stateProvider.state('dci', {
-		  	url: '/dci?app',
+		  	url: '/dci?app&pdciapps',
 		  	templateUrl:'tmpl/view.html',
 		  	resolve: {
 				data: ($http) => $http.get('../mitm_out/data_all.json').then((x) => x.data)
@@ -35,6 +35,11 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 			controller:function($scope, $state, data, $stateParams) {
 				$scope.apps = _.uniq(data.map((x) => x.app));
 				data = $scope.data = data.filter((x) => x.app === $stateParams.app);				
+
+				var refreshpdciApps = () => {
+					console.log('updating pdciApps ', $scope.pdciAppsObj);
+					$scope.pdciApps = _.keys($scope.pdciAppsObj).filter((k) => $scope.pdciAppsObj[k]);
+				};
 
 				if (!data.length) { $scope.error = 'no data for app ' + $stateParams.app; }
 				
@@ -49,14 +54,14 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 					'dci.table' : 'table'
 				}[$state.$current.toString()];
 
-				$scope.$watchCollection('pdciAppsObj', 
-					() => {
-						console.log('updating pdciApps ', $scope.pdciAppsObj);
-						$scope.pdciApps = _.keys($scope.pdciAppsObj).filter((k) => $scope.pdciAppsObj[k]);
-					});
+				$scope.$watchCollection('pdciAppsObj', refreshpdciApps);
+
+				if ($stateParams.pdciapps && $stateParams.pdciapps.length > 0) {
+					console.log('got pdciapps ', $stateParams.pdciapps);
+					$scope.pdciAppsObj = $stateParams.pdciapps.reduce((a, app) => { a[app] = true; return a; }, {});
+				}
 
 				window._sD = $scope;
-
 			}
 		  });
 	}).component('companyInfo', {
@@ -80,11 +85,11 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 	  controller:function($scope, $state) {
 	  	// console.log('selected ', this.selected);
 	  	$scope.$watch(() => this.selected + this.mode, () => { 
-	  		console.info('new selected app ', this.selected, 'mode: ', this.mode);
+	  		console.info('new selected app ', this.selected, 'mode: ', this.mode, this.pdciapps);
 	  		if (this.selected && this.mode) { 
 	  			var modemap = { box: 'dci.box', sankey: 'dci.sankey', table: 'dci.table' };
 		  		console.info('go ', this.selected, this.mode);
-		  		$state.go(modemap[this.mode], {app:this.selected}); 
+		  		$state.go(modemap[this.mode], {app:this.selected, pdciapps:this.pdciapps}); 
 		  	}
 	  	});
 	  	if (this.showCompanyDetails === undefined) { this.showCompanyDetails = 'hide'; 	}
