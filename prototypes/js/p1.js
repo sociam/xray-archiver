@@ -102,7 +102,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 	  	console.log('pdciAppSelector', this.apps, this.selected); 
 	  	if (this.selected === undefined) { this.selected = {}; }
 	  	// debug crap
-	  	$scope.$watchCollection(() => this.selected, () => { console.log('select watch ! ', this.selected); });
-	  	$scope.$watch(() => this.showing, () => { console.log('showing watch ! ', this.showing); });
+	  	// $scope.$watchCollection(() => this.selected, () => { console.log('select watch ! ', this.selected); });
+	  	// $scope.$watch(() => this.showing, () => { console.log('showing watch ! ', this.showing); });
 	  }
    });
