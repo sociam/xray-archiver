@@ -57,8 +57,8 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 				$scope.$watchCollection('pdciAppsObj', refreshpdciApps);
 
 				if ($stateParams.pdciapps && $stateParams.pdciapps.length > 0) {
-					console.log('got pdciapps ', $stateParams.pdciapps);
-					$scope.pdciAppsObj = $stateParams.pdciapps.reduce((a, app) => { a[app] = true; return a; }, {});
+					var param = typeof $stateParams.pdciapps == 'string' ? [$stateParams.pdciapps] : $stateParams.pdciapps;
+					$scope.pdciAppsObj = param.reduce((a, app) => { a[app] = true; return a; }, {});
 				}
 
 				window._sD = $scope;
