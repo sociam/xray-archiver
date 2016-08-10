@@ -65,6 +65,16 @@ angular.module('dci').factory('utils', () => {
 				return r;
 			}, {});
 		},
+		makePDCIc2pi: (apps, data, hosts, pitypes, threshold) => {
+			return apps.reduce((result, app) => {
+				var c2pi = utils.makeCompany2pi(app, data, hosts, pitypes, threshold);
+				// merge with result
+				_.map(c2pi, (pis, company) => { 
+					result[company] = _.union(result[company]||[],pis);
+				});
+				return result;
+			}, {});
+		},
 		makeCategories:(appCompany, details, c2pi) => { 
 			return {
 				'app-publisher': _.pickBy(c2pi, (pis, company) => 

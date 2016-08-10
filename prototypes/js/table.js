@@ -12,7 +12,13 @@ angular.module('dci')
 				data: ($http) => $http.get('../mitm_out/data_all.json').then((x) => x.data)
 			},
 			controller:function($scope, pitypes, hosts, details, data, utils, $stateParams) {
-				console.info('hello table');
+
+				var pdciData;
+				if ($scope.pdciApps) { 
+					pdciData = data.filter((x) => $scope.pdciApps.indexOf(x.app) >= 0);
+					console.info('pdci data got rows ', pdciData.length);
+				}
+
 				data = $scope.data = data.filter((x) => x.app === $stateParams.app);
 
 				$scope.toPairs = (o) => _.toPairs(o).map((x) => { return { key:x[0], val:x[1] }; });
@@ -21,8 +27,8 @@ angular.module('dci')
 					appcompany = $scope.appcompany = data[0].company,
 					getName = $scope.getName = (id) => details[id] && details[id].company || id,
 					c2pi = $scope.c2pi = utils.makeCompany2pi(app, data, hosts, pitypes, 0),
+					pdcic2pi = $scope.pdcic2pi = $scope.pdciApps && $scope.pdciApps.length ? utils.makePDCIc2pi($scope.pdciApps, pdciData, hosts, pitypes, 0) : {},
 					cat2c2pi = $scope.cat2c2pi = utils.makeCategories(appcompany, details, c2pi),
-					// isCat = $scope.isCat = (c,cat) => cat2c2pi[cat] && cat2c2pi[cat][c] !== undefined,
 					recompute = () => {					
 						// each of the boxes
 						$scope.pilabels = utils.pilabels;
