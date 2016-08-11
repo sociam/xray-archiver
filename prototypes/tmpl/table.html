@@ -15,7 +15,7 @@
 			</td>
 		</tr>
 		<tr ng-if="pdci_companies" class="pdciboundary"><td colspan="{{pitypes.length+2}}"></td></tr>
-		<tr ng-if="pdci_companies" ng-repeat="company in pdci_companies" ng-class="{pdciapp:true, app:company.category==='app-publisher' || company.category ==='app-functionality', marketing:company.category==='marketing', security:company.category==='security', payments:company.category==='payments', usage:company.category==='usage tracking', other:company.category==='other'}">
+		<tr ng-if="pdci_companies" ng-repeat="company in pdci_companies" ng-class="{pdciapp:!company.relevant_to_app, app:company.category==='app-publisher' || company.category ==='app-functionality', marketing:company.category==='marketing', security:company.category==='security', payments:company.category==='payments', usage:company.category==='usage tracking', other:company.category==='other'}">
 			<td class="companyname">{{getName(company.id)}} 
 				<div ng-if="getName(company.id) !== company.id">{{company.id}}</div>
 			</td>

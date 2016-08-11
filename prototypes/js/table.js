@@ -45,9 +45,10 @@ angular.module('dci')
 						}).flatten().value();
 
 						$scope.pdci_companies = isPDCI && _(pdcicat2c2pi).keys().map((catname) => {
-							return _(pdcicat2c2pi[catname]).keys().filter((cn) => pdcic2pi[cn] && pdcic2pi[cn].length).map((cn) => {
+							return _(pdcicat2c2pi[catname]).keys().map((cn) => { // .filter((cn) => pdcic2pi[cn] && pdcic2pi[cn].length).
 								return { 
 									id: cn,
+									relevant_to_app:c2pi[cn] !== undefined,
 									category:catname,
 									pitypes:pdcic2pi[cn]
 								};
