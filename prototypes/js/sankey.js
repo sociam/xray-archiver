@@ -12,7 +12,7 @@ angular.module('dci')
 					details: ($http) => $http.get('../mitm_out/company_details.json').then((x) => x.data),
 					data: ($http) => $http.get('../mitm_out/data_all.json').then((x) => x.data)
 				},
-				controller:function($scope, pitypes, hosts, details, data, $stateParams) {
+				controller:function($scope, pitypes, hosts, details, data, utils, $stateParams) {
 					$scope.apps = _.uniq(data.map((x) => x.app));
 					data = $scope.data = data.filter((x) => x.app === $stateParams.app);
 
@@ -46,81 +46,13 @@ angular.module('dci')
 
 					var app = $scope.app = $stateParams.app,
 						appcompany = $scope.appcompany = data[0].company,
-						hTc = $scope.hTc = data.reduce((r,a) => {
-							if (a.host_company) { 
-								r[a.host] = a.host_company; 
-								r[a.host_2ld] = a.host_company;
-							}
-							return r;
-						}, {}),
-						hTh = $scope.hTh = data.reduce((r,a) => {
-							// host -> 2ld
-							if (a.host_2ld) { 
-								r[a.host] = a.host_2ld;
-							} else { console.error('warning no 2ld ', a.host); }
-							return r;
-						}, {}),
-						matchCompany = (x) => appcompany && ((x || '').toLowerCase() === appcompany.toLowerCase()),
-						isType = $scope.isType = (id, type) => id && 
-							details[id] && 
-							details[id].typetag && 
-							details[id].typetag.indexOf(type) >= 0,
-						getName = $scope.getName = (id) => details[id] && details[id].company || id,
-						is3rdPartyType = $scope.is3rdPartyType = (id, type) => isType(id,type) &&
-								!_.some([getName(id), id].map(matchCompany)),
 						recompute = () => {
 							var apphosts = _(hosts[$scope.app]).keys().value();
+
 							// next we wanna group together all the pi_types, and consolidate around company
 							// console.info('threshold', $scope.threshold, 'apphosts', apphosts.length);
-							$scope.company2pi = apphosts.reduce((r,host) => {
-								var company = hTc[host], 
-									host_pis = pitypes[host] || [];
-								if (!company) { 
-									var mfirst = hTh[host].match(/^([^\.]+)\./);
-									if (mfirst) { 
-										company = mfirst[1]; 
-									} else {
-										console.error('no company for host ', host); return r; 
-									}
-								} 
-								r[company] = _.union(r[company] || [], host_pis);
-								return r;
-							}, {});
-
-							// each of the boxes
-							$scope.categories = {
-								'app-publisher': _.pickBy($scope.company2pi, (pis, company) => 
-										matchCompany(company)),
-								'app-functionality': _.pickBy($scope.company2pi, (pis, company) => 
-										!isType(company, 'ignore') && 
-										!isType(company, 'platform') && 
-										is3rdPartyType(company,'app')),
-								'marketing': _.pickBy($scope.company2pi, (pis, company) => 
-										!isType(company, 'ignore') && 
-										!isType(company, 'platform') && 
-										is3rdPartyType(company,'marketing')),
-								'usage tracking': _.pickBy($scope.company2pi, (pis, company) => 
-										!isType(company, 'ignore') && 
-										!isType(company, 'platform') && 
-										is3rdPartyType(company, 'usage')),
-								'payments':_.pickBy($scope.company2pi, (pis, company) => 
-										!isType(company, 'ignore') && 
-										!isType(company, 'platform') && 
-										is3rdPartyType(company, 'payments')),
-								'security':_.pickBy($scope.company2pi, (pis, company) => 
-										!isType(company, 'ignore') && 
-										!isType(company, 'platform') && 
-										is3rdPartyType(company, 'security')),
-								'other': _.pickBy($scope.company2pi, (pis, company) => 
-									!matchCompany(company) &&							
-									!isType(company, 'ignore') && 							
-									!isType(company, 'app') && 							
-									!isType(company,'marketing') &&
-									!isType(company, 'platform') && 							
-									!isType(company, 'usage') &&
-									!isType(company, 'payments') &&
-									!isType(company, 'security'))
-							};
+							$scope.company2pi = utils.makeCompany2pi(app, data, hosts, pitypes, 0);
+							$scope.categories = utils.makeCategories(appcompany, details, $scope.company2pi);
 
 							// let's start making nodes
 							// start with the pitypes
@@ -140,13 +72,7 @@ angular.module('dci')
 									links.push({source:from, target:to, value:width || 1});
 									return l;
 								},
-								pilabels = {
-									USER_PERSONAL_DETAILS: 'personal details',
-									USER_LOCATION: 'your location',
-									USER_COARSE_LOCATION: 'your city/town',
-									DEVICE_ID:'phone id',
-									DEVICE_SOFT:'phone characteristics'
-								};
+								pilabels = utils.pilabels;
 
 							pitypes_set.map((pitype) => pushNode(pitype, pilabels[pitype]));
 
@@ -158,7 +84,6 @@ angular.module('dci')
 								var company = pair[0], 
 									pitypes = pair[1],
 									company_nid = pushNode(company);
-
 								pitypes.map((pitype) => { 
 									var pitype_id = nodemap[pitype];
 									console.info('adding pitype-company link ', pitype, pitype_id, ' -> ', company, company_nid);
