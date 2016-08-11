@@ -63,6 +63,8 @@ angular.module('dci')
 				recompute();
 				$scope.hosts = hosts;
 				$scope.data = data;
+
+				$scope.$watch('pdciApps', recompute);
 				// $scope.pitypes = pitypes;
 				// $scope.details = details;
 				window._ss = $scope;
