@@ -13,12 +13,15 @@ angular.module('dci')
 					data: ($http) => $http.get('../mitm_out/data_all.json').then((x) => x.data)
 				},
 				controller:function($scope, pitypes, hosts, details, data, utils, $stateParams) {
-					$scope.apps = _.uniq(data.map((x) => x.app));
-					data = $scope.data = data.filter((x) => x.app === $stateParams.app);
 
-					var margin = {top: 1, right: 1, bottom: 6, left: 1},
+					var allData = data,
+						margin = {top: 1, right: 1, bottom: 6, left: 1},
 						width = 960 - margin.left - margin.right,
-						height = 500 - margin.top - margin.bottom;
+						height = 500 - margin.top - margin.bottom,
+						app = $scope.app = $stateParams.app,
+						appcompany = $scope.appcompany = data[0].company;
+
+					data = $scope.data = data.filter((x) => x.app === $stateParams.app);
 
 					var formatNumber = d3.format(",.0f"),
 						format = function(d) { return formatNumber(d) + " TWh"; },
@@ -43,16 +46,17 @@ angular.module('dci')
 					    };
 
 					if (!data.length) { $scope.error = 'no data for app ' + $stateParams.app; }
+					var recompute = () => {
+						var apphosts = _(hosts[$scope.app]).keys().value(),
+							c2pi = $scope.company2pi = utils.makeCompany2pi(app, data, hosts, pitypes, 0),
+							cat2c2pi = $scope.categories = utils.makeCategories(appcompany, details, c2pi),					
+							isPDCI = $scope.pdciApps && $scope.pdciApps.length,
+							pdciData = isPDCI && allData.filter((x) => $scope.pdciApps.indexOf(x.app) >= 0),							
+							pdcic2pi = $scope.pdcic2pi = isPDCI ? utils.makePDCIc2pi($scope.pdciApps, pdciData, hosts, pitypes, 0) : {},
+							pdcicat2c2pi = isPDCI ? utils.makeCategories(appcompany, details, pdcic2pi) : {};
 
-					var app = $scope.app = $stateParams.app,
-						appcompany = $scope.appcompany = data[0].company,
-						recompute = () => {
-							var apphosts = _(hosts[$scope.app]).keys().value();
-
-							// next we wanna group together all the pi_types, and consolidate around company
-							// console.info('threshold', $scope.threshold, 'apphosts', apphosts.length);
-							$scope.company2pi = utils.makeCompany2pi(app, data, hosts, pitypes, 0);
-							$scope.categories = utils.makeCategories(appcompany, details, $scope.company2pi);
+							// $scope.company2pi = utils.makeCompany2pi(app, data, hosts, pitypes, 0);
+							// $scope.categories = utils.makeCategories(appcompany, details, $scope.company2pi);
 
 							// let's start making nodes
 							// start with the pitypes
@@ -126,8 +130,8 @@ angular.module('dci')
 							  .enter().append("path")
 							  .attr("class", "link")
 							  .attr("d", path)
-							  .style("stroke-width", function(d) { return Math.max(1, d.dy); })
-							  .sort(function(a, b) { return b.dy - a.dy; });
+							  .style("stroke-width", (d) => Math.max(1, d.dy))
+							  .sort((a, b) => b.dy - a.dy);
 
 							link.append("title")
 						    	.text(function(d) { return d.source.name + " → " + d.target.name; });
