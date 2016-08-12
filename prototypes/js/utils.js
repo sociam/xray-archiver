@@ -66,14 +66,14 @@ angular.module('dci').factory('utils', () => {
 			}, {});
 		},
 		makeApp2company:(apps, data, c2pi, hosts, threshold)  => {
-			var apphosts = _.fromPairs(apps.map((app) => [app, _(hosts[app]).pickBy((val) => val > threshold || 0).keys().value()])),
-				hTc = utils.makeHTC(data),
+			var hTc = utils.makeHTC(data),
+				apphosts = _.fromPairs(apps.map((app) => [app, _(hosts[app]).pickBy((val, key) => (val > threshold || 0) && hTc[key]).keys().value()])),
 				app2pairs = _.map(apphosts, (hosts, app) => [app, _(hosts).map((host) => hTc[host]).uniq().value()]);
 			return _.fromPairs(app2pairs);
 		},
 		makeApp2pi:(apps, data, c2pi, hosts, threshold)  => {
-			var apphosts = _(apps).map((app) => [app, _(hosts[app]).pickBy((val) => val > threshold || 0).keys().value()]).fromPairs().value(),
-				hTc = utils.makeHTC(data);
+			var hTc = utils.makeHTC(data),
+				apphosts = _(apps).map((app) => [app, _(hosts[app]).pickBy((val, key) => (val > threshold || 0) && hTc[key]).keys().value()]).fromPairs().value();				
 			return _.map(apphosts).map((hosts, app) => [app, _(hosts).map((host) => c2pi[hTc[host]]).flatten().uniq().value()]).fromPairs().value();
 		},
 		makePDCIc2pi: (apps, data, hosts, pitypes, threshold) => {

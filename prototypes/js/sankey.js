@@ -14,6 +14,9 @@ angular.module('dci')
 				},
 				controller:function($scope, pitypes, hosts, details, data, utils, $stateParams) {
 					window._s = $scope;
+					$scope.hosts = hosts;
+					$scope.pitypes = pitypes;
+					$scope.details = details;
 
 					var ADD_APP_LEVEL = true, // add app level
 						allData = data,
@@ -51,8 +54,8 @@ angular.module('dci')
 					var recompute = () => {
 
 						var isPDCI = $scope.pdciApps && $scope.pdciApps.length || false,
-							pdciApps = $scope.pdciApps && $scope.pdciApps.length || [],						
-							apps = isPDCI ? _.union(pdciApps,[app]) : [app],
+							pdciApps = isPDCI ? $scope.pdciApps : [],		
+							apps = $scope.apps = isPDCI ? _.union(pdciApps,[app]) : [app],
 							c2pi = $scope.company2pi = $scope.c2pi = utils.makeCompany2pi(app, data, hosts, pitypes, 0),
 							cat2c2pi = $scope.categories = utils.makeCategories(appcompany, details, c2pi),
 							aTc = $scope.aTc = utils.makeApp2company(apps, data, c2pi, hosts, 0);
@@ -61,7 +64,7 @@ angular.module('dci')
 
 						if (isPDCI) { 
 							// redefine data - to include all pdci apps as well
-							data = allData.filter((x) => $scope.pdciApps.indexOf(x.app) >= 0);
+							data = $scope.data = allData.filter((x) => x.app === app || $scope.pdciApps.indexOf(x.app) >= 0);
 							c2pi = $scope.c2pi = utils.makePDCIc2pi(apps, data, hosts, pitypes, 0);
 							cat2c2pi = $scope.categories = utils.makeCategories(appcompany, details, c2pi);
 							aTc = $scope.aTc = utils.makeApp2company(apps, data, c2pi, hosts, 0);
@@ -90,7 +93,7 @@ angular.module('dci')
 
 						// build the nodes ->
 						// 1. register the apps as nodes
-						if (ADD_APP_LEVEL) { apps.map(pushNode); }
+						if (ADD_APP_LEVEL) { apps.map((id) => pushNode(id)); }
 						// pitypes 
 						pitypes_set.map((pitype) => pushNode(pitype, pilabels[pitype]));
 						// 2. companies
@@ -114,7 +117,7 @@ angular.module('dci')
 
 								_.map(pi2c, (count, pi_type) => {
 									var pit_id = nodemap[pi_type];
-									console.info('adding app link of ', appid, ' -> ', pi_type, ' id:', pit_id, ' ~ count: 	', count);
+									console.info('adding app link of ', appid, 'id: ', app_nid, ' -> ', pi_type, ' id:', pit_id, ' ~ count: 	', count);
 									pushLink(app_nid, pit_id, count, appid === app);
 								});
 							});
@@ -212,12 +215,9 @@ angular.module('dci')
 					$scope.size = (l) => _.keys(l).length;
 					// $scope.$watch('app', () => { if (app) { recompute(); } });
 					recompute();
+					$scope.$watch('pdciApps', recompute);
 					console.info('sankey');
 
-					$scope.hosts = hosts;
-					$scope.data = data;
-					$scope.pitypes = pitypes;
-					$scope.details = details;
 				}
 		}); // controller
 	});
