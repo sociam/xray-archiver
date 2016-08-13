@@ -133,20 +133,19 @@ angular.module('dci')
 								pitypes = pair[1],
 								company_nid = nodemap[company];
 
+							// find the weight, find all apps that lead to this pi
+							var n_apps = apps.filter((a)=> aTc[a].indexOf(company) >= 0).length;
+							// console.info('n_apps with this ', n_apps );
+
 							// add pitype -> company
 							pitypes.map((pitype) => { 
 								var pitype_id = nodemap[pitype];
 								console.info('adding pitype-company link ', pitype, pitype_id, ' -> ', company, company_nid);
-								// find the weight, find all apps
-
-								var n_apps = apps.filter((a)=> aTc[a].indexOf(company) >= 0).length;
-								console.info('n_apps with this ', n_apps );
-
 								pushLink(pitype_id, company_nid, n_apps);
 							});
 							_.keys($scope.categories).filter((cname) => $scope.categories[cname][company]).map((cname) => {
 								console.info('adding purpose link ', company, company_nid, ' -> ', cname, nodemap[cname]);
-								pushLink(company_nid, nodemap[cname], $scope.c2pi[company].length || 1);
+								pushLink(company_nid, nodemap[cname], n_apps); // $scope.c2pi[company].length || 1);
 							});
 							if ($scope.c2pi[company].length === 0) {
 								console.info('adding other_PI link ', nodemap[OTHERPITYPE], ' -> ', company, ' ', company_nid);
