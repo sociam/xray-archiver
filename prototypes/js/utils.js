@@ -17,6 +17,7 @@ angular.module('dci').factory('utils', () => {
 				if (a.host_company) { 
 					r[a.host] = r[a.host_2ld] = a.host_company; 
 				} else {
+					// no host company provided
 					var mfirst = hTh[a.host].match(/^([^\.]+)\./);
 					if (mfirst) { 
 						r[a.host] = r[a.host_2ld] = mfirst[1];
@@ -70,16 +71,17 @@ angular.module('dci').factory('utils', () => {
 			}, {});
 		},
 		makeApp2company:(apps, data, c2pi, hosts, threshold)  => {
+			// WARNING this transforms keys into appname + "_app"
 			var hTc = utils.makeHTC(data),
 				apphosts = _.fromPairs(apps.map((app) => [app, _(hosts[app]).pickBy((val, key) => (val > threshold || 0) && hTc[key]).keys().value()])),
-				app2pairs = _.map(apphosts, (hosts, app) => [app, _(hosts).map((host) => hTc[host]).uniq().value()]);
+				app2pairs = _.map(apphosts, (hosts, app) => [app+"_app", _(hosts).map((host) => hTc[host]).uniq().value()]);
 			return _.fromPairs(app2pairs);
 		},
-		makeApp2pi:(apps, data, c2pi, hosts, threshold)  => {
-			var hTc = utils.makeHTC(data),
-				apphosts = _(apps).map((app) => [app, _(hosts[app]).pickBy((val, key) => (val > threshold || 0) && hTc[key]).keys().value()]).fromPairs().value();				
-			return _.map(apphosts).map((hosts, app) => [app, _(hosts).map((host) => c2pi[hTc[host]]).flatten().uniq().value()]).fromPairs().value();
-		},
+		// makeApp2pi:(apps, data, c2pi, hosts, threshold)  => {
+		// 	var hTc = utils.makeHTC(data),
+		// 		apphosts = _(apps).map((app) => [app, _(hosts[app]).pickBy((val, key) => (val > threshold || 0) && hTc[key]).keys().value()]).fromPairs().value();				
+		// 	return _.map(apphosts).map((hosts, app) => [app, _(hosts).map((host) => c2pi[hTc[host]]).flatten().uniq().value()]).fromPairs().value();
+		// },
 		makePDCIc2pi: (apps, data, hosts, pitypes, threshold) => {
 			return apps.reduce((result, app) => {
 				var c2pi = utils.makeCompany2pi(app, data, hosts, pitypes, threshold);

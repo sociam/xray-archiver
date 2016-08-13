@@ -56,10 +56,11 @@ angular.module('dci')
 
 						var isPDCI = $scope.pdciApps && $scope.pdciApps.length || false,
 							pdciApps = isPDCI ? $scope.pdciApps : [],		
-							apps = $scope.apps = isPDCI ? _.union(pdciApps,[app]) : [app],
+							apps = $scope.apps = (isPDCI ? _.union(pdciApps,[app]) : [app]),
 							c2pi = $scope.c2pi = utils.makeCompany2pi(app, data, hosts, pitypes, 0),
 							cat2c2pi = $scope.categories = utils.makeCategories(appcompany, details, c2pi),
-							aTc = $scope.aTc = utils.makeApp2company(apps, data, c2pi, hosts, 0);
+							aTc = $scope.aTc = utils.makeApp2company(apps, data, c2pi, hosts, 0),
+							app_ids = _.keys(aTc);
 
 						console.info("isPDCI is ", isPDCI);
 
@@ -72,12 +73,13 @@ angular.module('dci')
 							c2pi = $scope.c2pi = utils.makePDCIc2pi(apps, data, hosts, pitypes, 0);
 							cat2c2pi = $scope.categories = utils.makeCategories(appcompany, details, c2pi);
 							aTc = $scope.aTc = utils.makeApp2company(apps, data, c2pi, hosts, 0);
+							app_ids = _.keys(aTc);							
 						}
 
 						// let's start making nodes
 						// start with the pitypes
 						var OTHERPITYPE = 'OTHER_PI',
-							pitypes_set = _(pitypes).values().flatten().uniq().value().concat([OTHERPITYPE]),
+							pitypes_set = _(pitypes).values().flatten().uniq().value(); // .concat([OTHERPITYPE]),
 							nodemap = $scope.nodemap = {},
 							nodes = $scope.nodes = [], 
 							links = $scope.links = [],
@@ -97,7 +99,7 @@ angular.module('dci')
 
 						// build the nodes ->
 						// 1. register the apps as nodes
-						if (ADD_APP_LEVEL) { apps.map((id) => pushNode(id)); }
+						if (ADD_APP_LEVEL) { app_ids.map((id) => pushNode(id)); }
 						// pitypes 
 						pitypes_set.map((pitype) => pushNode(pitype, pilabels[pitype]));
 						// 2. companies
@@ -109,9 +111,12 @@ angular.module('dci')
 
 						if (ADD_APP_LEVEL) { 
 							// app -> pitype count
-							apps.map((appid) => {
+							app_ids.map((appid) => {
 								// first compile { pitype -> count  } to determine thickness
 								console.info('app adding app level ', appid, aTc[appid]);
+
+								// apps out -> 1 -> company, company -> pi...
+								// 
 								var pi2c = _.flatten(aTc[appid].map((c) => c2pi[c]))
 									.reduce((picounts,pit) => { 
 										picounts[pit] = picounts[pit] && picounts[pit]+1 || 1;
@@ -121,7 +126,7 @@ angular.module('dci')
 
 								_.map(pi2c, (count, pi_type) => {
 									var pit_id = nodemap[pi_type];
-									console.info('adding app link of ', appid, 'id: ', app_nid, ' -> ', pi_type, ' id:', pit_id, ' ~ count: 	', count);
+									console.info('adding app link of ', appid, 'id: ', app_nid, ' → ', pi_type, ' id:', pit_id, ' ~ count: 	', count);
 									pushLink(app_nid, pit_id, count, appid === app);
 								});
 							});
@@ -134,23 +139,33 @@ angular.module('dci')
 								company_nid = nodemap[company];
 
 							// find the weight, find all apps that lead to this pi
-							var n_apps = apps.filter((a)=> aTc[a].indexOf(company) >= 0).length;
-							// console.info('n_apps with this ', n_apps );
+							var n_apps = app_ids.filter((a)=> aTc[a].indexOf(company) >= 0).length;
 
 							// add pitype -> company
 							pitypes.map((pitype) => { 
 								var pitype_id = nodemap[pitype];
-								console.info('adding pitype-company link ', pitype, pitype_id, ' -> ', company, company_nid);
+								console.info('adding pitype-company link ', pitype, pitype_id, '→', company, company_nid);
 								pushLink(pitype_id, company_nid, n_apps);
 							});
-							_.keys($scope.categories).filter((cname) => $scope.categories[cname][company]).map((cname) => {
-								console.info('adding purpose link ', company, company_nid, ' -> ', cname, nodemap[cname]);
-								pushLink(company_nid, nodemap[cname], n_apps); // $scope.c2pi[company].length || 1);
+							// disable "other"
+							// if ($scope.c2pi[company].length === 0) {
+							// 	console.info('adding other_PI link ', nodemap[OTHERPITYPE], ' -> ', company, ' ', company_nid);
+							// 	pushLink(nodemap[OTHERPITYPE], company_nid);
+							// }
+						});
+
+						// everything going into pitype pi = 
+						var pic_weight = (company) => c2pi[company].length;
+						_.map($scope.categories, (c2pi, category) => {
+							var category_nid = nodemap[category];
+							_.map(c2pi,(pitypes, company) => {
+								var company_nid = nodemap[company];
+								if (pitypes.length > 0) { 
+									var pww = pic_weight(company);
+									console.info("adding pitype link ", company, '→', category);
+									pushLink(company_nid, category_nid, pww); 
+								}
 							});
-							if ($scope.c2pi[company].length === 0) {
-								console.info('adding other_PI link ', nodemap[OTHERPITYPE], ' -> ', company, ' ', company_nid);
-								pushLink(nodemap[OTHERPITYPE], company_nid);
-							}
 						});
 
 						console.log('old nodes ', nodes.length, JSON.stringify({nodes:nodes}));
@@ -169,11 +184,14 @@ angular.module('dci')
 
 						console.log('new nodes ', newnodes.length, JSON.stringify({nodes:newnodes}));
 						console.log('new links ', newlinks.length, JSON.stringify({links:newlinks}));
+						console.log('do it one ');
 
 						// do it
 						sankey.nodes(newnodes)
 						    .links(newlinks)
-						    .layout(32);
+						    .layout(128);
+
+						console.log('do it link ');
 
 						link = svg.append("g").selectAll(".link")
 						  .data(newlinks)
@@ -183,8 +201,12 @@ angular.module('dci')
 						  .style("stroke-width", (d) => Math.max(1, d.dy))
 						  .sort((a, b) => b.dy - a.dy);
 
+						console.log('do it app ');
+
 						link.append("title")
 					    	.text(function(d) { return d.source.name + " → " + d.target.name + " ("+d.value+")"; });
+
+						console.log('do it node ');
 
 						var node = svg.append("g").selectAll(".node")
 							.data(newnodes)
@@ -196,6 +218,8 @@ angular.module('dci')
 						  		.on("dragstart", function() { this.parentNode.appendChild(this); })
 						  		.on("drag", dragmove));
 
+						console.log('do it nodeapp ');
+
 						node.append("rect")
 						    .attr("height", function(d) { return d.dy; })
 						    .attr("width", sankey.nodeWidth())
@@ -203,6 +227,8 @@ angular.module('dci')
 						    .style("stroke", function(d) { return d3.rgb(d.color).darker(2); })
 						    .append("title")
 						    .text(function(d) { return d.name + "\n" + format(d.value); });
+
+						console.log('do it nodeapptext ');
 
 						node.append("text")
 						    .attr("x", -6)
@@ -214,6 +240,8 @@ angular.module('dci')
 						    .filter(function(d) { return d.x < width / 2; })
 						    .attr("x", 6 + sankey.nodeWidth())
 						    .attr("text-anchor", "start");							
+
+						console.log('do it done ');
 
 						};
 
