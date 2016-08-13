@@ -57,14 +57,14 @@ angular.module('dci')
 						var isPDCI = $scope.pdciApps && $scope.pdciApps.length || false,
 							pdciApps = isPDCI ? $scope.pdciApps : [],		
 							apps = $scope.apps = isPDCI ? _.union(pdciApps,[app]) : [app],
-							c2pi = $scope.company2pi = $scope.c2pi = utils.makeCompany2pi(app, data, hosts, pitypes, 0),
+							c2pi = $scope.c2pi = utils.makeCompany2pi(app, data, hosts, pitypes, 0),
 							cat2c2pi = $scope.categories = utils.makeCategories(appcompany, details, c2pi),
 							aTc = $scope.aTc = utils.makeApp2company(apps, data, c2pi, hosts, 0);
 
 						console.info("isPDCI is ", isPDCI);
 
 						// clear from last drawing
-						$("#sankey-chart").find("svg g.root").children().remove();
+						$("#sankey-chart").find("svg g.root").children().remove(); // something like svg.remove(); would be more elegant
 
 						if (isPDCI) { 
 							// redefine data - to include all pdci apps as well
@@ -112,7 +112,7 @@ angular.module('dci')
 							apps.map((appid) => {
 								// first compile { pitype -> count  } to determine thickness
 								console.info('app adding app level ', appid, aTc[appid]);
-								var pi2c = _.flatten(_.uniq(aTc[appid]).map((c) => c2pi[c]))
+								var pi2c = _.flatten(aTc[appid].map((c) => c2pi[c]))
 									.reduce((picounts,pit) => { 
 										picounts[pit] = picounts[pit] && picounts[pit]+1 || 1;
 										return picounts;
@@ -128,7 +128,7 @@ angular.module('dci')
 						}
 						// build the links -> 
 						// next we want to link these types to companies
-						_.toPairs($scope.company2pi).map((pair) => {
+						_.toPairs($scope.c2pi).map((pair) => {
 							var company = pair[0], 
 								pitypes = pair[1],
 								company_nid = nodemap[company];
@@ -137,13 +137,18 @@ angular.module('dci')
 							pitypes.map((pitype) => { 
 								var pitype_id = nodemap[pitype];
 								console.info('adding pitype-company link ', pitype, pitype_id, ' -> ', company, company_nid);
-								pushLink(pitype_id, company_nid);
+								// find the weight, find all apps
+
+								var n_apps = apps.filter((a)=> aTc[a].indexOf(company) >= 0).length;
+								console.info('n_apps with this ', n_apps );
+
+								pushLink(pitype_id, company_nid, n_apps);
 							});
 							_.keys($scope.categories).filter((cname) => $scope.categories[cname][company]).map((cname) => {
 								console.info('adding purpose link ', company, company_nid, ' -> ', cname, nodemap[cname]);
-								pushLink(company_nid, nodemap[cname], $scope.company2pi[company].length || 1);
+								pushLink(company_nid, nodemap[cname], $scope.c2pi[company].length || 1);
 							});
-							if ($scope.company2pi[company].length === 0) {
+							if ($scope.c2pi[company].length === 0) {
 								console.info('adding other_PI link ', nodemap[OTHERPITYPE], ' -> ', company, ' ', company_nid);
 								pushLink(nodemap[OTHERPITYPE], company_nid);
 							}
@@ -180,7 +185,7 @@ angular.module('dci')
 						  .sort((a, b) => b.dy - a.dy);
 
 						link.append("title")
-					    	.text(function(d) { return d.source.name + " → " + d.target.name; });
+					    	.text(function(d) { return d.source.name + " → " + d.target.name + " ("+d.value+")"; });
 
 						var node = svg.append("g").selectAll(".node")
 							.data(newnodes)
