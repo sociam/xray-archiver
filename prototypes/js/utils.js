@@ -11,13 +11,22 @@ angular.module('dci').factory('utils', () => {
 			}, {}),
 
 		// returns { host -> companyid }
-		makeHTC:(data) => data.reduce((r,a) => {
-			if (a.host_company) { 
-				r[a.host] = a.host_company; 
-				r[a.host_2ld] = a.host_company;
-			}
-			return r;
-		}, {}),
+		makeHTC:function(data) {
+			var hTh = this.makeHTH(data);
+			return data.reduce((r,a) => {
+				if (a.host_company) { 
+					r[a.host] = r[a.host_2ld] = a.host_company; 
+				} else {
+					var mfirst = hTh[a.host].match(/^([^\.]+)\./);
+					if (mfirst) { 
+						r[a.host] = r[a.host_2ld] = mfirst[1];
+					} else {	
+						console.error('no company for host ', a.host); return r; 
+					}
+				}
+				return r;
+			}, {});
+		},
 
 		// returns { host -> host_2ld }
 		makeHTH:(data) => data.reduce((r,a) => {
@@ -45,22 +54,17 @@ angular.module('dci').factory('utils', () => {
 
 		// compile { company_id -> [pitype1,pitype2] .. } filtering by optional threshold
 		makeCompany2pi: (app, data, hosts, pitypes, threshold) => {
-			var apphosts = _(hosts[app]).pickBy((val) => val > threshold || 0).keys().value(),
-				hTh = utils.makeHTH(data),
-				hTc = utils.makeHTC(data);
+			var hTc = utils.makeHTC(data),
+				apphosts = _(hosts[app]).pickBy((val, key) => (val > threshold || 0) && hTc[key]).keys().value();
+				
 			// next we wanna group together all the pi_types, and consolidate around company
 			// console.info('threshold', $scope.threshold, 'apphosts', apphosts.length);
 			return apphosts.reduce((r,host) => {
-				var company = hTc[host], 
-					host_pis = pitypes[host] || [];
+				var company = hTc[host], host_pis = pitypes[host] || [];
+
 				if (!company) { 
-					var mfirst = hTh[host].match(/^([^\.]+)\./);
-					if (mfirst) { 
-						company = mfirst[1]; 
-					} else {	
-						console.error('no company for host ', host); return r; 
-					}
-				} 
+					console.error('no company for host ', host); return r; 
+				} 				
 				r[company] = _.union(r[company] || [], host_pis);
 				return r;
 			}, {});
