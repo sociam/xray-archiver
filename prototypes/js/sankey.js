@@ -36,6 +36,7 @@ angular.module('dci')
 					    .attr("width", width + margin.left + margin.right)
 					    .attr("height", height + margin.top + margin.bottom)
 					  .append("g")
+					  	.attr("class","root")
 					    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 					var sankey = d3.sankey()
@@ -61,6 +62,9 @@ angular.module('dci')
 							aTc = $scope.aTc = utils.makeApp2company(apps, data, c2pi, hosts, 0);
 
 						console.info("isPDCI is ", isPDCI);
+
+						// clear from last drawing
+						$("#sankey-chart").find("svg g.root").children().remove();
 
 						if (isPDCI) { 
 							// redefine data - to include all pdci apps as well
@@ -108,7 +112,7 @@ angular.module('dci')
 							apps.map((appid) => {
 								// first compile { pitype -> count  } to determine thickness
 								console.info('app adding app level ', appid, aTc[appid]);
-								var pi2c = _.flatten(aTc[appid].map((c) => c2pi[c]))
+								var pi2c = _.flatten(_.uniq(aTc[appid]).map((c) => c2pi[c]))
 									.reduce((picounts,pit) => { 
 										picounts[pit] = picounts[pit] && picounts[pit]+1 || 1;
 										return picounts;
@@ -217,7 +221,6 @@ angular.module('dci')
 					recompute();
 					$scope.$watch('pdciApps', recompute);
 					console.info('sankey');
-
 				}
 		}); // controller
 	});
