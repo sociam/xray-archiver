@@ -48,6 +48,8 @@ angular.module('dci').factory('utils', () => {
 		cimatch : (appcompany, x) => appcompany && 
 			(x || '').toLowerCase() === appcompany.toLowerCase(),
 
+		toAppId : (appname) => appname + " app",
+
 		// isType and not 1st party
 		is3rdPartyType: (appcompany, details, id, type) => 
 			utils.isType(details,id,type) && 
@@ -70,11 +72,11 @@ angular.module('dci').factory('utils', () => {
 				return r;
 			}, {});
 		},
-		makeApp2company:(apps, data, c2pi, hosts, threshold)  => {
-			// WARNING this transforms keys into appname + "_app"
+		makeApp2company:function(apps, data, c2pi, hosts, threshold) {
+			// WARNING this transforms keys into toApp(appname)
 			var hTc = utils.makeHTC(data),
 				apphosts = _.fromPairs(apps.map((app) => [app, _(hosts[app]).pickBy((val, key) => (val > threshold || 0) && hTc[key]).keys().value()])),
-				app2pairs = _.map(apphosts, (hosts, app) => [app+"_app", _(hosts).map((host) => hTc[host]).uniq().value()]);
+				app2pairs = _.map(apphosts, (hosts, app) => [this.toAppId(app), _(hosts).map((host) => hTc[host]).uniq().value()]);
 			return _.fromPairs(app2pairs);
 		},
 		// makeApp2pi:(apps, data, c2pi, hosts, threshold)  => {
