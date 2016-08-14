@@ -3,33 +3,44 @@
 
 	.node rect {
 	  cursor: move;
-	  fill-opacity: .1;
+	  fill-opacity: .4;
+	  stroke-opacity: 1;
 	  shape-rendering: crispEdges;
+	}
+	.pdci.node rect { 
+	   fill-opacity: .1;
+	   stroke-opacity:.2;
+	}
+	.pdci.node.isapp rect { 
+		fill-opacity: 1 !important;
+		stroke-opacity: 1 !important;
 	}
 
 	.node text {
 	  pointer-events: none;
 	  text-shadow: 0 1px 0 #fff;
 	}
-
+	.pdci.node text {
+		fill-opacity:0.4;
+	}
+	.pdci.isapp.node text {
+		fill-opacity:1;
+	}
 	.link {
 	  fill: none;
 	  stroke: #000;
-	  // stroke-opacity: .2;
-	  stroke-opacity:0.05;
+	  stroke-opacity: .2;
+	}
+	.pdci.link {
+	   stroke-opacity:0.05;
+	}
+	.pdci.isapp.link { 
+		stroke: pink;
+		stroke-opacity:0.5;
 	}
 
 	.link:hover {
 	  stroke-opacity: .5;
 	}
 
-	.node.isapp rect { 
-		// stroke:pink !important;
-		// stroke-width:8px !important;
-		fill-opacity: 1 !important;
-	}
-	.isapp.link { 
-		stroke: pink;
-		stroke-opacity:0.4;
-	}
 }

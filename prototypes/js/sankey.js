@@ -98,7 +98,7 @@ angular.module('dci')
 							},
 							pilabels = utils.pilabels,
 							a2pi = (aid) => _.flatten(aTc[aid].map((company) => c2pi[company])),
-							a2cat = (aid) => _.keys(cat2c2pi).filter((cat) => _.intersection(c2pi[cat], aTc[aid]).length > 0);
+							a2cat = $scope.a2cat = (aid) => _.keys(cat2c2pi).filter((cat) => _.intersection(_.keys(cat2c2pi[cat] || {}), aTc[aid]).length > 0);
 
 						////////////////////// nodes /////////////////////////
 						// 1. register the apps as nodes
@@ -198,7 +198,7 @@ angular.module('dci')
 						link = svg.append("g").selectAll(".link")
 						  .data(newlinks)
 						  .enter().append("path")
-						  .attr("class", (d) => d.isapp ? "link isapp" : "link")
+						  .attr("class", (d) => "link " + (isPDCI ? "pdci " : " ") + (d.isapp ? "isapp " : " "))
 						  .attr("d", path)
 						  .style("stroke-width", (d) => Math.max(1, d.dy))
 						  .sort((a, b) => b.dy - a.dy);
@@ -213,7 +213,7 @@ angular.module('dci')
 						var node = svg.append("g").selectAll(".node")
 							.data(newnodes)
 							.enter().append("g")
-								.attr("class", (d) => d.isapp ? "node isapp" : "node")
+								.attr("class", (d) => "node " + (isPDCI ? "pdci " : " ") + (d.isapp ? "isapp " : " "))
 								.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
 							.call(d3.behavior.drag()
 						  		.origin(function(d) { return d; })
