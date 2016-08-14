@@ -21,8 +21,8 @@ angular.module('dci')
 					var ADD_APP_LEVEL = true, // add app level
 						allData = data,
 						margin = {top: 1, right: 1, bottom: 6, left: 1},
-						width = 960 - margin.left - margin.right,
-						height = 800 - margin.top - margin.bottom,
+						width = $('body').width() - 140, // 960 - margin.left - margin.right,
+						height = $('body').height() - 140, // 800 - margin.top - margin.bottom,
 						app = $scope.app = $stateParams.app,
 						app_id = utils.toAppId(app),
 						appcompany = $scope.appcompany = data[0].company;
