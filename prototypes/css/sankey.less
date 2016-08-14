@@ -1,6 +1,8 @@
 #sankey-chart {
   height: 500px;
 
+    // nodes: 
+    // first, normal (non-pdci)
 	.node rect {
 	  cursor: move;
 	  fill-opacity: .4;
@@ -16,6 +18,7 @@
 		stroke-opacity: 1 !important;
 	}
 
+	// node text
 	.node text {
 	  pointer-events: none;
 	  text-shadow: 0 1px 0 #fff;
@@ -26,6 +29,8 @@
 	.pdci.isapp.node text {
 		fill-opacity:1;
 	}
+
+	// links -----------------> 
 	.link {
 	  fill: none;
 	  stroke: #000;
