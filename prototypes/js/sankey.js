@@ -22,8 +22,9 @@ angular.module('dci')
 						allData = data,
 						margin = {top: 1, right: 1, bottom: 6, left: 1},
 						width = 960 - margin.left - margin.right,
-						height = 500 - margin.top - margin.bottom,
+						height = 800 - margin.top - margin.bottom,
 						app = $scope.app = $stateParams.app,
+						app_id = utils.toAppId(app),
 						appcompany = $scope.appcompany = data[0].company;
 
 					data = data.filter((x) => x.app === $stateParams.app);
@@ -79,14 +80,14 @@ angular.module('dci')
 						// let's start making nodes
 						// start with the pitypes
 						var OTHERPITYPE = 'OTHER_PI',
-							pitypes_set = _(pitypes).values().flatten().uniq().value(); // .concat([OTHERPITYPE]),
+							pitypes_set = _(pitypes).values().flatten().uniq().value(), // .concat([OTHERPITYPE]),
 							nodemap = $scope.nodemap = {},
 							nodes = $scope.nodes = [], 
 							links = $scope.links = [],
-							pushNode = (id, label) => {
+							pushNode = (id, label, isapp) => {
 								console.log('pushing node ', id);
 								var l = nodes.length;
-								nodes.push({name:id, label:label});
+								nodes.push({name:id, label:label, isapp:isapp});
 								nodemap[id] = l;
 								return l;
 							},
@@ -95,44 +96,45 @@ angular.module('dci')
 								links.push({source:from, target:to, value:width || 1, isapp:isApp});
 								return l;
 							},
-							pilabels = utils.pilabels;
+							pilabels = utils.pilabels,
+							a2pi = (aid) => _.flatten(aTc[aid].map((company) => c2pi[company])),
+							a2cat = (aid) => _.keys(cat2c2pi).filter((cat) => _.intersection(c2pi[cat], aTc[aid]).length > 0);
 
-						// build the nodes ->
+						////////////////////// nodes /////////////////////////
 						// 1. register the apps as nodes
-						if (ADD_APP_LEVEL) { app_ids.map((id) => pushNode(id)); }
+						if (ADD_APP_LEVEL) { apps.map((appname) => pushNode(utils.toAppId(appname),appname,appname===app)); }
 						// pitypes 
-						pitypes_set.map((pitype) => pushNode(pitype, pilabels[pitype]));
+						pitypes_set.map((pitype) => pushNode(pitype, pilabels[pitype], a2pi(app_id).indexOf(pitype) >= 0));
 						// 2. companies
-						_.keys(c2pi).map((c) => pushNode(c));
+						_.keys(c2pi).map((c) => pushNode(c, c, aTc[app_id].indexOf(c) >= 0));
 						// 3. categories
-						_.keys($scope.categories).map((cname) => pushNode(cname));
+						_.keys($scope.categories).map((cname) => pushNode(cname, cname, a2cat(app_id).indexOf(cname) >= 0));
 
-						// first let's put the app -> pitypes
-
+						///////////////// app -> company links ////////////////////////////////
 						if (ADD_APP_LEVEL) { 
 							// app -> pitype count
-							app_ids.map((appid) => {
+							app_ids.map((aid) => {
 								// first compile { pitype -> count  } to determine thickness
-								console.info('app adding app level ', appid, aTc[appid]);
+								console.info('app adding app level ', aid, aTc[aid]);
 
 								// apps out -> 1 -> company, company -> pi...
 								// 
-								var pi2c = _.flatten(aTc[appid].map((c) => c2pi[c]))
+								var pi2c = _.flatten(aTc[aid].map((c) => c2pi[c]))
 									.reduce((picounts,pit) => { 
 										picounts[pit] = picounts[pit] && picounts[pit]+1 || 1;
 										return picounts;
 									}, {}),
-									app_nid = nodemap[appid];
+									app_nid = nodemap[aid];
 
 								_.map(pi2c, (count, pi_type) => {
 									var pit_id = nodemap[pi_type];
-									console.info('adding app link of ', appid, 'id: ', app_nid, ' → ', pi_type, ' id:', pit_id, ' ~ count: 	', count);
-									pushLink(app_nid, pit_id, count, appid === app);
+									console.info('adding app link of ', aid, 'id: ', app_nid, ' → ', pi_type, ' id:', pit_id, ' ~ count: 	', count);
+									pushLink(app_nid, pit_id, count, aid === app_id);
 								});
 							});
 						}
-						// build the links -> 
-						// next we want to link these types to companies
+
+						//////////////// pitype -> company links /////////////////
 						_.toPairs($scope.c2pi).map((pair) => {
 							var company = pair[0], 
 								pitypes = pair[1],
@@ -145,7 +147,7 @@ angular.module('dci')
 							pitypes.map((pitype) => { 
 								var pitype_id = nodemap[pitype];
 								console.info('adding pitype-company link ', pitype, pitype_id, '→', company, company_nid);
-								pushLink(pitype_id, company_nid, n_apps);
+								pushLink(pitype_id, company_nid, n_apps, aTc[app_id].indexOf(company) >= 0);
 							});
 							// disable "other"
 							// if ($scope.c2pi[company].length === 0) {
@@ -153,17 +155,17 @@ angular.module('dci')
 							// 	pushLink(nodemap[OTHERPITYPE], company_nid);
 							// }
 						});
-
-						// everything going into pitype pi = 
+						//////////////// company -> category links ///////////////
 						var pic_weight = (company) => c2pi[company].length;
 						_.map($scope.categories, (c2pi, category) => {
 							var category_nid = nodemap[category];
 							_.map(c2pi,(pitypes, company) => {
-								var company_nid = nodemap[company];
+								var company_nid = nodemap[company],
+									relates_to_app = aTc[app_id].indexOf(company) >= 0;
 								if (pitypes.length > 0) { 
 									var pww = pic_weight(company);
 									console.info("adding pitype link ", company, '→', category);
-									pushLink(company_nid, category_nid, pww); 
+									pushLink(company_nid, category_nid, pww, relates_to_app); 
 								}
 							});
 						});
@@ -196,7 +198,7 @@ angular.module('dci')
 						link = svg.append("g").selectAll(".link")
 						  .data(newlinks)
 						  .enter().append("path")
-						  .attr("class", "link")
+						  .attr("class", (d) => d.isapp ? "link isapp" : "link")
 						  .attr("d", path)
 						  .style("stroke-width", (d) => Math.max(1, d.dy))
 						  .sort((a, b) => b.dy - a.dy);
@@ -211,7 +213,7 @@ angular.module('dci')
 						var node = svg.append("g").selectAll(".node")
 							.data(newnodes)
 							.enter().append("g")
-								.attr("class", "node")
+								.attr("class", (d) => d.isapp ? "node isapp" : "node")
 								.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
 							.call(d3.behavior.drag()
 						  		.origin(function(d) { return d; })

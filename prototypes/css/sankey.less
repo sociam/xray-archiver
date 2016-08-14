@@ -3,7 +3,7 @@
 
 	.node rect {
 	  cursor: move;
-	  fill-opacity: .9;
+	  fill-opacity: .1;
 	  shape-rendering: crispEdges;
 	}
 
@@ -15,10 +15,21 @@
 	.link {
 	  fill: none;
 	  stroke: #000;
-	  stroke-opacity: .2;
+	  // stroke-opacity: .2;
+	  stroke-opacity:0.05;
 	}
 
 	.link:hover {
 	  stroke-opacity: .5;
+	}
+
+	.node.isapp rect { 
+		// stroke:pink !important;
+		// stroke-width:8px !important;
+		fill-opacity: 1 !important;
+	}
+	.isapp.link { 
+		stroke: pink;
+		stroke-opacity:0.4;
 	}
 }
