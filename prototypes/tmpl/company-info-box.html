@@ -1,16 +1,18 @@
 <div class='company-info-box' ng-if="selected" ng-style="{top:$ctrl.y, left:$ctrl.x}">
 	<div class="title company" ng-if="selected.company">
 		<div class="box" style="background-color:{{selected.color}};"></div>	
-		<div class="name">{{ selected.company }} <span ng-if="selected.id !== selected.company">({{selected.company}})</span></div>
+		<div class="name" style="color:{{selected.color}};">{{ selected.company }} <span ng-if="selected.label !== selected.name">({{selected.company}})</span></div>
 	</div>
 	<div class="props" ng-if="selected.company">
-		<div class="property equity textonly" ng-if="selected.equity">${{ selected.equity }}</div>
-		<div class="property jurisdiction" ng-if="selected.jurisdiction"> {{ selected.jurisdiction.toUpperCase() }} &#x1f310;</div>
-		<div class="property size" ng-if="selected.size">{{ selected.size }} &#x1f466;</div>
-		<div class="property founded textonly" ng-if="selected.founded">(est. {{ selected.founded }})</div>
+		<ul>
+			<li class="property equity textonly" ng-if="selected.equity">equity: ${{ selected.equity }}</li>
+			<li class="property jurisdiction" ng-if="selected.jurisdiction">country: {{ selected.jurisdiction.toUpperCase() }} &#x1f310;</li>
+			<li class="property size" ng-if="selected.size"> employees: {{ selected.size }} &#x1f466;</li>
+			<li class="property founded textonly" ng-if="selected.founded">founded: {{ selected.founded }}</li>
+		</ul>
 	</div>
 	<div class="title company" ng-if="!selected.company">
 		<div class="box" style="background-color:{{selected.color}};"></div>	
-		<div class="name">{{ selected.label }}</div>
+		<div class="name"><span ng-if="selected.type=='app'">app:</span> {{ selected.label }}</div>
 	</div>
 </div>
