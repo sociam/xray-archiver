@@ -64,12 +64,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 				window._sD = $scope;
 			}
 		  });
-	}).component('companyInfo', {
-	  templateUrl: 'tmpl/company-info.html',
-	  replace:true,
-	  bindings: { company: '=', companyName:'=', details:'=', showDetails:'=' },	  
-	  controller: function($scope) { console.log('company id:', this.company, 'name: ', this.companyName, this.details); }
-   }).component('piTypesDisplay', {
+	}).component('piTypesDisplay', {
 	  templateUrl: 'tmpl/pi-types-display.html',
 	  bindings: { types: '=' },	  	  
 	  controller: function($scope) { 
@@ -104,5 +99,26 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 	  	// debug crap
 	  	// $scope.$watchCollection(() => this.selected, () => { console.log('select watch ! ', this.selected); });
 	  	// $scope.$watch(() => this.showing, () => { console.log('showing watch ! ', this.showing); });
+	  }
+   }).component('companyInfo', { // used by the box display
+	  templateUrl: 'tmpl/company-info.html',
+	  replace:true,
+	  bindings: { company: '=', companyName:'=', details:'=', showDetails:'=' },	  
+	  controller: function($scope) { console.log('company id:', this.company, 'name: ', this.companyName, this.details); }
+   }).component('companyInfoBox', { // used by sankey and table
+	  templateUrl: 'tmpl/company-info-box.html',
+	  bindings: { selected: '=', x:'=', y:'=' },	  	  
+	  controller: function($scope) { 
+		 $scope.close = () => { delete $scope.selected; };
+		 $scope.$watch(() => this.selected, () => { 
+		 	if (this.selected) { 
+			 	var s = $scope.selected = _.clone(this.selected);
+				if (s.company && s.equity && s.equity.length) {
+					var n = parseNumber(s.equity);
+					if (n > 1e6) { s.equity = Math.round(n/1.0e5)/10.0 + " m"; }
+					if (n > 1e9) { s.equity = Math.round(n/1.0e8)/10.0 + " bn"; } 
+				}		 
+			}		 	
+		 });
 	  }
    });

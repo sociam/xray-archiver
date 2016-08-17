@@ -1,0 +1,15 @@
+<div class='company-info-box' ng-if="selected" ng-style="{top:$ctrl.y, left:$ctrl.x}">
+<!-- 	<div class="titlebar">
+		<div class="close" ng-click="close()">&#10005;</div>
+	</div>
+ -->	<div class="title company" ng-if="selected.company">
+		<div class="box" style="background-color:{{selected.color}};"></div>	
+		<div class="name">{{ selected.company }} <span ng-if="selected.id !== selected.company">({{selected.company}})</span></div>
+	</div>
+	<div class="props" ng-if="selected.company">
+		<div class="property equity textonly" ng-if="selected.equity">$ {{ selected.equity }}</div>
+		<div class="property jurisdiction" ng-if="selected.jurisdiction"> {{ selected.jurisdiction.toUpperCase() }} &#x1f310;</div>
+		<div class="property size" ng-if="selected.size">{{ selected.size }} &#x1f466;</div>
+		<div class="property founded textonly" ng-if="selected.founded">(est. {{ selected.founded }})</div>
+	</div>
+</div>

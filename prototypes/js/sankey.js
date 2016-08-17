@@ -5,7 +5,7 @@ angular.module('dci')
 	.config(function ($stateProvider, $urlRouterProvider) {
 			$stateProvider.state('dci.sankey', {
 				url: '/sankey',
-				template:'<div id="sankey-chart"></div>',
+				template:'<div id="sankey-chart"><company-info-box selected="selected" x="infoboxx" y="infoboxy"></company-info-box></div>',
 				resolve: {
 					pitypes:($http) => $http.get('../mitm_out/pi_by_host.json').then((x) => x.data),
 					hosts: ($http) => $http.get('../mitm_out/host_by_app.json').then((x) => x.data),
@@ -84,10 +84,10 @@ angular.module('dci')
 							nodemap = $scope.nodemap = {},
 							nodes = $scope.nodes = [], 
 							links = $scope.links = [],
-							pushNode = (id, label, isapp) => {
+							pushNode = (id, label, isapp, type) => {
 								console.log('pushing node ', id);
 								var l = nodes.length;
-								nodes.push({name:id, label:label, isapp:isapp});
+								nodes.push({name:id, label:label, isapp:isapp, type:type});
 								nodemap[id] = l;
 								return l;
 							},
@@ -102,13 +102,13 @@ angular.module('dci')
 
 						////////////////////// nodes /////////////////////////
 						// 1. register the apps as nodes
-						if (ADD_APP_LEVEL) { apps.map((appname) => pushNode(utils.toAppId(appname),appname,appname===app)); }
+						if (ADD_APP_LEVEL) { apps.map((appname) => pushNode(utils.toAppId(appname),appname,appname===app, 'app')); }
 						// pitypes 
-						pitypes_set.map((pitype) => pushNode(pitype, pilabels[pitype], a2pi(app_id).indexOf(pitype) >= 0));
+						pitypes_set.map((pitype) => pushNode(pitype, pilabels[pitype], a2pi(app_id).indexOf(pitype) >= 0, 'pitype'));
 						// 2. companies
-						_.keys(c2pi).map((c) => pushNode(c, c, aTc[app_id].indexOf(c) >= 0));
+						_.keys(c2pi).map((c) => pushNode(c, c, aTc[app_id].indexOf(c) >= 0, 'company'));
 						// 3. categories
-						_.keys($scope.categories).map((cname) => pushNode(cname, cname, a2cat(app_id).indexOf(cname) >= 0));
+						_.keys($scope.categories).map((cname) => pushNode(cname, cname, a2cat(app_id).indexOf(cname) >= 0, 'category'));
 
 						///////////////// app -> company links ////////////////////////////////
 						if (ADD_APP_LEVEL) { 
@@ -164,7 +164,6 @@ angular.module('dci')
 									relates_to_app = aTc[app_id].indexOf(company) >= 0;
 								if (pitypes.length > 0) { 
 									var pww = pic_weight(company);
-									console.info("adding pitype link ", company, '→', category);
 									pushLink(company_nid, category_nid, pww, relates_to_app); 
 								}
 							});
@@ -215,6 +214,17 @@ angular.module('dci')
 							.enter().append("g")
 								.attr("class", (d) => "node " + (isPDCI ? "pdci " : " ") + (d.isapp ? "isapp " : " "))
 								.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+							    .on('mouseover', function(d) { 
+							    	console.log('click! ', d, d3.mouse(this));
+							    	$scope.$apply(() => { 
+							    		console.info('got a click, trying to selected');
+							    		if (d.type === 'company') { 
+								    		$scope.selected=_.extend({}, details[d.name], {color:d.color});
+								    		$scope.infoboxx = d.x + 25;
+								    		$scope.infoboxy = d.y + 25;
+								    	}
+								    }); 
+							    })								
 							.call(d3.behavior.drag()
 						  		.origin(function(d) { return d; })
 						  		.on("dragstart", function() { this.parentNode.appendChild(this); })
@@ -228,7 +238,7 @@ angular.module('dci')
 						    .style("fill", function(d) { return d.color = color(d.name.replace(/ .*/, "")); })
 						    .style("stroke", function(d) { return d3.rgb(d.color).darker(2); })
 						    .append("title")
-						    .text(function(d) { return d.name + "\n" + format(d.value); });
+							.text(function(d) { return d.name + "\n" + format(d.value); });
 
 						console.log('do it nodeapptext ');
 
