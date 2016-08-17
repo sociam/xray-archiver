@@ -218,10 +218,12 @@ angular.module('dci')
 							    	console.log('click! ', d, d3.mouse(this));
 							    	$scope.$apply(() => { 
 							    		console.info('got a click, trying to selected');
+							    		$scope.infoboxx = d.x + 22;
+							    		$scope.infoboxy = d.y + 22;							    		
 							    		if (d.type === 'company') { 
 								    		$scope.selected=_.extend({}, details[d.name], {color:d.color});
-								    		$scope.infoboxx = d.x + 25;
-								    		$scope.infoboxy = d.y + 25;
+								    	} else {
+								    		$scope.selected=_.extend({}, d);
 								    	}
 								    }); 
 							    }).on('mouseleave', function() { 
