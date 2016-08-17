@@ -214,7 +214,7 @@ angular.module('dci')
 							.enter().append("g")
 								.attr("class", (d) => "node " + (isPDCI ? "pdci " : " ") + (d.isapp ? "isapp " : " "))
 								.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
-							    .on('mouseover', function(d) { 
+							    .on('mouseenter', function(d) { 
 							    	console.log('click! ', d, d3.mouse(this));
 							    	$scope.$apply(() => { 
 							    		console.info('got a click, trying to selected');
@@ -224,7 +224,10 @@ angular.module('dci')
 								    		$scope.infoboxy = d.y + 25;
 								    	}
 								    }); 
-							    })								
+							    }).on('mouseleave', function() { 
+							    	console.log('mouseleave');
+							    	$scope.$apply(() => { $scope.selected=0; });
+							    })
 							.call(d3.behavior.drag()
 						  		.origin(function(d) { return d; })
 						  		.on("dragstart", function() { this.parentNode.appendChild(this); })
