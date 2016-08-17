@@ -1,8 +1,10 @@
 .company-info-box { 
+	transition-property:all; // top, left, opacity, bottom, right;
+	&.hiding { opacity:0; }
+	transition-duration:0.3s;
 	position:absolute;
 	width:380px;
 	height:200px;
-
 	color:black;
 	background-color:white;
 	padding:12px 15px 15px 50px;

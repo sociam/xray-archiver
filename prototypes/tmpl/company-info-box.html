@@ -1,6 +1,6 @@
-<div class='company-info-box' ng-if="selected" ng-style="{top:$ctrl.y, left:$ctrl.x}">
+<div class='company-info-box' ng-class="{hiding:!selected}" ng-style="{top:$ctrl.y, left:$ctrl.x}">
 	<div class="title company" ng-if="selected.company">
-		<div class="box" style="background-color:{{selected.color}};"></div>	
+		<div class="box" style="background-color:{{selected.color}}"></div>	
 		<div class="name" style="color:{{selected.color}};">{{ selected.company }} <span ng-if="selected.label !== selected.name">({{selected.company}})</span></div>
 	</div>
 	<div class="props" ng-if="selected.company">

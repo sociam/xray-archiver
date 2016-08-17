@@ -221,14 +221,14 @@ angular.module('dci')
 							    		$scope.infoboxx = d.x + 22;
 							    		$scope.infoboxy = d.y + 22;							    		
 							    		if (d.type === 'company') { 
-								    		$scope.selected=_.extend({}, details[d.name], {color:d.color});
+								    		$scope.selected=_.extend({}, details[d.name], d);
 								    	} else {
 								    		$scope.selected=_.extend({}, d);
 								    	}
 								    }); 
 							    }).on('mouseleave', function() { 
-							    	console.log('mouseleave');
-							    	$scope.$apply(() => { $scope.selected=0; });
+							    	// console.log('mouseleave');
+							    	// $scope.$apply(() => { $scope.selected=0; });
 							    })
 							.call(d3.behavior.drag()
 						  		.origin(function(d) { return d; })
