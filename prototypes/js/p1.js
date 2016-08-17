@@ -113,9 +113,9 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 		 $scope.$watch(() => this.selected, () => { 
 		 	var s = $scope.selected = this.selected && _.clone(this.selected) || this.selected;
 			if (s && s.company && s.equity && s.equity.length) {
-				var n = parseNumber(s.equity);
-				if (n > 1e6) { s.equity = Math.round(n/1.0e5)/10.0 + " m"; }
-				if (n > 1e9) { s.equity = Math.round(n/1.0e8)/10.0 + " bn"; } 
+				var n = parseInt(s.equity);
+				if (n > 1e6) { s.equity = Math.round(n/1.0e5)/10.0 + "m"; }
+				if (n > 1e9) { s.equity = Math.round(n/1.0e8)/10.0 + "bn"; } 
 			}		 
 		 });
 	  }

@@ -4,7 +4,7 @@
 		<div class="name">{{ selected.company }} <span ng-if="selected.id !== selected.company">({{selected.company}})</span></div>
 	</div>
 	<div class="props" ng-if="selected.company">
-		<div class="property equity textonly" ng-if="selected.equity">$ {{ selected.equity }}</div>
+		<div class="property equity textonly" ng-if="selected.equity">${{ selected.equity }}</div>
 		<div class="property jurisdiction" ng-if="selected.jurisdiction"> {{ selected.jurisdiction.toUpperCase() }} &#x1f310;</div>
 		<div class="property size" ng-if="selected.size">{{ selected.size }} &#x1f466;</div>
 		<div class="property founded textonly" ng-if="selected.founded">(est. {{ selected.founded }})</div>
