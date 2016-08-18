@@ -38,6 +38,7 @@ angular.module('dci')
 							return _(cat2c2pi[catname]).keys().filter((cn) => !isPDCI || !pdcic2pi[cn] || !pdcic2pi[cn].length).map((cn) => {
 								return { 
 									id: cn,
+									details: details[cn],
 									category:catname,
 									pitypes: c2pi[cn]
 								};
@@ -48,6 +49,7 @@ angular.module('dci')
 							return _(pdcicat2c2pi[catname]).keys().map((cn) => { // .filter((cn) => pdcic2pi[cn] && pdcic2pi[cn].length).
 								return { 
 									id: cn,
+									details: details[cn],									
 									relevant_to_app:c2pi[cn] !== undefined,
 									category:catname,
 									pitypes:pdcic2pi[cn]
@@ -55,6 +57,16 @@ angular.module('dci')
 							}).value();
 						}).flatten().value();
 					};
+
+				$scope.showInfoBox = function(data, type, $event) { 
+					// figure out x and y 
+					// console.info('showinfobox ', $event.target, $($event.target).position());
+					var position = $event && $event.target && $($event.target).position();
+					$scope.infoboxx = position.left + 20;
+					$scope.infoboxy = position.top + 40;
+					$scope.infobox = type === 'pitype' ? { label: data, type:'pitype' } : data.details;
+					console.log("scope infobox is ", $scope.infobox);
+				};
 
 				$scope.numCompanies = (cat) => ($scope.cat2c2pi[cat] && _.keys($scope.cat2c2pi[cat]).length) || 0;
 

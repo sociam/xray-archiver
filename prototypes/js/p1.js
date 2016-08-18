@@ -110,6 +110,15 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 	  bindings: { selected: '=', x:'=', y:'=' },	  	  
 	  controller: function($scope) { 
 		 $scope.close = () => { delete $scope.selected; };
+		 var emoji_table = { 
+			 US : '&#x1F1FA;&#x1F1F8;',
+			 UK : '&#x1F1EC;&#x1F1E7;',
+			 AT : '&#x1F1E6;&#x1F1F9;',
+			 CN : '&#x1F1E8;&#x1F1F3;',
+			 FR : '&#x1F1EB;&#x1F1F7;',
+			 CA : '&#x1F1E8;&#x1F1E6;',
+			 DE : '&#x1F1E9;&#x1F1EA;'
+		};
 		 $scope.$watch(() => this.selected, () => { 
 		 	var s = $scope.selected = this.selected && _.clone(this.selected) || this.selected;
 			if (s && s.company && s.equity && s.equity.length) {
@@ -117,6 +126,9 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 				if (n > 1e6) { s.equity = Math.round(n/1.0e5)/10.0 + "m"; }
 				if (n > 1e9) { s.equity = Math.round(n/1.0e8)/10.0 + "bn"; } 
 			}		 
+			if (s && s.company && s.jurisdiction_code && emoji_table[s.jurisdiction_code.toUpperCase()]) { 
+				s.jurisdiction_flag = emoji_table[s.jurisdiction_code.toUpperCase()];
+			}
 		 });
 	  }
    });

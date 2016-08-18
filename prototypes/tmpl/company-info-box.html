@@ -6,7 +6,7 @@
 	<div class="props" ng-if="selected.company">
 		<ul>
 			<li class="property equity textonly" ng-if="selected.equity">equity: ${{ selected.equity }}</li>
-			<li class="property jurisdiction" ng-if="selected.jurisdiction">country: {{ selected.jurisdiction.toUpperCase() }} &#x1f310;</li>
+			<li class="property jurisdiction" ng-if="selected.jurisdiction">country: {{ selected.jurisdiction.toUpperCase() }} <span ng-bind-html='selected.jurisdiction_flag'></span> </li>
 			<li class="property size" ng-if="selected.size"> employees: {{ selected.size }} &#x1f466;</li>
 			<li class="property founded textonly" ng-if="selected.founded">founded: {{ selected.founded }}</li>
 		</ul>
