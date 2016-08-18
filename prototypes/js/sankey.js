@@ -5,7 +5,7 @@ angular.module('dci')
 	.config(function ($stateProvider, $urlRouterProvider) {
 			$stateProvider.state('dci.sankey', {
 				url: '/sankey',
-				template:'<div id="sankey-chart"><company-info-box selected="selected" x="infoboxx" y="infoboxy"></company-info-box></div>',
+				template:'<div class="sankey" id="sankey-chart"><company-info-box selected="selected" x="infoboxx" y="infoboxy"></company-info-box></div>',
 				resolve: {
 					pitypes:($http) => $http.get('../mitm_out/pi_by_host.json').then((x) => x.data),
 					hosts: ($http) => $http.get('../mitm_out/host_by_app.json').then((x) => x.data),

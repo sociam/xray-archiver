@@ -7,12 +7,7 @@
 	height:170px;
 	color:black;
 	background-color:white;
-	padding:12px 15px 15px 32px;
 	border:1px solid #efefef;
-
-	// left:auto;
-	// right:auto;
-	border:1px solid #eee;
 	.titlebar { 
 		position:absolute;
 		padding:5px 15px;
@@ -25,11 +20,6 @@
 		border:none;
 	}	
 	.company.title { 
-		.box { 
-			position:absolute;
-			left:8px; top: 8px;
-			width:20px; height:150px;
-		}
 		font-weight:100;
 		font-size:21pt;
 		padding:0px 5px 5px 5px;
@@ -37,9 +27,6 @@
 		border-bottom:1px solid #eee;
 		width:100%;
 	}
-	.company {
-	}
-
 	.props {
 		font-size:14pt;
 		ul { 
@@ -52,5 +39,20 @@
 				line-height:22px;
 			}
 		}
+	}
+}
+
+.table .company-info-box { 
+	padding:12px 15px;
+	.company.title .box { 
+		display:none;
+	}
+}
+.sankey .company-info-box {
+	padding:12px 15px 15px 32px;
+	.company.title .box { 
+		position:absolute;
+		left:8px; top: 8px;
+		width:20px; height:150px;
 	}
 }
