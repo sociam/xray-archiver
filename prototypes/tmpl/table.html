@@ -4,10 +4,10 @@
 		<tr>
 			<th></th>
 			<th>company type</th>
-			<th ng-repeat="pit in pitypes" ng-bind="pilabels[pit]" ng-mouseover="showInfoBox(pit, 'pitype', $event)"></th>
+			<th ng-repeat="pit in pitypes" ng-bind="pilabels[pit]" ng-mouseenter="showInfoBox(pit, 'pitype', $event)" ng-mouseleave='hideInfoBox(pit)'></th>
 		</tr>
 		<tr ng-repeat="company in companies | orderBy:category" ng-class="{app:company.category==='app-publisher' || company.category ==='app-functionality', marketing:company.category==='marketing', security:company.category==='security', payments:company.category==='payments', usage:company.category==='usage tracking', other:company.category==='other'}">
-			<td class="companyname" ng-mouseover="showInfoBox(company, 'company', $event)">{{getName(company.id)}} 
+			<td class="companyname" ng-mouseenter="showInfoBox(company, 'company', $event)" ng-mouseleave='hideInfoBox(pit)'>{{getName(company.id)}} 
 				<div ng-if="getName(company.id) !== company.id">{{company.id}}</div>
 			</td>
 			<td class="category">{{company.category}}</td>				
@@ -17,7 +17,7 @@
 		</tr>
 		<tr ng-if="pdci_companies" class="pdciboundary"><td colspan="{{pitypes.length+2}}"></td></tr>
 		<tr ng-if="pdci_companies" ng-repeat="company in pdci_companies" ng-class="{pdciapp:!company.relevant_to_app, app:company.category==='app-publisher' || company.category ==='app-functionality', marketing:company.category==='marketing', security:company.category==='security', payments:company.category==='payments', usage:company.category==='usage tracking', other:company.category==='other'}">
-			<td class="companyname" ng-mouseover="showInfoBox(company, 'company', $event)">{{getName(company.id)}} 
+			<td class="companyname" ng-mouseenter="showInfoBox(company, 'company', $event)" ng-mouseleave='hideInfoBox(pit)'>{{getName(company.id)}} 
 				<div ng-if="getName(company.id) !== company.id">{{company.id}}</div>
 			</td>
 			<td class="category">{{company.category}}</td>				

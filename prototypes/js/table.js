@@ -11,7 +11,7 @@ angular.module('dci')
 				details: ($http) => $http.get('../mitm_out/company_details.json').then((x) => x.data),
 				data: ($http) => $http.get('../mitm_out/data_all.json').then((x) => x.data)
 			},
-			controller:function($scope, pitypes, hosts, details, data, utils, $stateParams) {
+			controller:function($scope, pitypes, hosts, details, data, utils, $stateParams, $timeout) {
 				var allData = data;
 				$scope.toPairs = (o) => _.toPairs(o).map((x) => { return { key:x[0], val:x[1] }; });
 				$scope.pilabels = utils.pilabels;
@@ -58,14 +58,20 @@ angular.module('dci')
 						}).flatten().value();
 					};
 
+				var hide_Timer;
 				$scope.showInfoBox = function(data, type, $event) { 
 					// figure out x and y 
 					// console.info('showinfobox ', $event.target, $($event.target).position());
+					if (hide_Timer) { $timeout.cancel(hide_Timer); hide_Timer = undefined; }
 					var position = $event && $event.target && $($event.target).position();
 					$scope.infoboxx = position.left + 20;
 					$scope.infoboxy = position.top + 40;
 					$scope.infobox = type === 'pitype' ? { label: data, type:'pitype' } : data.details;
 					console.log("scope infobox is ", $scope.infobox);
+				};
+				$scope.hideInfoBox = function(data, type, $event) { 
+					console.info('ng mouse leave ', data);
+					hide_Timer = $timeout(() => delete $scope.infobox, 200);
 				};
 
 				$scope.numCompanies = (cat) => ($scope.cat2c2pi[cat] && _.keys($scope.cat2c2pi[cat]).length) || 0;
