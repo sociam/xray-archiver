@@ -64,14 +64,15 @@ angular.module('dci')
 					// console.info('showinfobox ', $event.target, $($event.target).position());
 					if (hide_Timer) { $timeout.cancel(hide_Timer); hide_Timer = undefined; }
 					var position = $event && $event.target && $($event.target).position();
-					$scope.infoboxx = position.left + 20;
-					$scope.infoboxy = position.top + 40;
-					$scope.infobox = type === 'pitype' ? { label: data, type:'pitype' } : data.details;
+					$scope.infoboxx = position.left + 180;
+					$scope.infoboxy = position.top;
+					$scope.infobox = type === 'pitype' || type === 'category' ? 
+						{ name:data, label: data, type:type } : data.details;
 					console.log("scope infobox is ", $scope.infobox);
 				};
 				$scope.hideInfoBox = function(data, type, $event) { 
 					console.info('ng mouse leave ', data);
-					hide_Timer = $timeout(() => delete $scope.infobox, 200);
+					hide_Timer = $timeout(() => delete $scope.infobox, 100);
 				};
 
 				$scope.numCompanies = (cat) => ($scope.cat2c2pi[cat] && _.keys($scope.cat2c2pi[cat]).length) || 0;

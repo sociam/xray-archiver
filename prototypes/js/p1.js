@@ -33,6 +33,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 				data: ($http) => $http.get('../mitm_out/data_all.json').then((x) => x.data)
 			},
 			controller:function($scope, $state, data, $stateParams) {
+				
 				$scope.apps = _.uniq(data.map((x) => x.app));
 				data = $scope.data = data.filter((x) => x.app === $stateParams.app);				
 

@@ -220,7 +220,7 @@ angular.module('dci')
 							    	$scope.$apply(() => { 
 							    		console.info('got a click, trying to selected', d);
 							    		$scope.infoboxx = d.x + 22;
-							    		$scope.infoboxy = d.y + d.dy/2 - 170/2; // 22;							    		
+							    		$scope.infoboxy = d.y + d.dy/2 - 190/2; // 22;							    		
 							    		if (d.type === 'company') { 
 								    		$scope.selected=_.extend({}, details[d.name], d);
 								    	} else {
