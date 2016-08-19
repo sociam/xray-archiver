@@ -11,8 +11,17 @@
 			<li class="property founded textonly" ng-if="selected.founded">founded: {{ selected.founded }}</li>
 		</ul>
 	</div>
-	<div class="title company" ng-if="!selected.company">
+	<!-- apps -->
+	<div class="title company" ng-if="selected.type=='app'">
 		<div class="box" style="background-color:{{selected.color}};"></div>	
-		<div class="name"><span ng-if="selected.type=='app'">app:</span> {{ selected.label }}</div>
+		<div class="name"><span >app:</span> {{ selected.label }}</div>
+	</div>
+	<!-- everything else: pitypes, categories --> 
+	<div class="title company" 	ng-if="selected && selected.type!=='app' && !selected.company">
+		<div class="box" style="background-color:{{selected.color}};"></div>
+		<div class="name" ng-bind="getDesc(selected).title"></div>
+	</div>
+	<div class="props" ng-if="selected && selected.type!=='app' && !selected.company">
+		<div ng-bind="getDesc(selected).desc"></div>
 	</div>
 </div>

@@ -108,7 +108,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
    }).component('companyInfoBox', { // used by sankey and table
 	  templateUrl: 'tmpl/company-info-box.html',
 	  bindings: { selected: '=', x:'=', y:'=' },	  	  
-	  controller: function($scope) { 
+	  controller: function($scope, utils) { 
 		 $scope.close = () => { delete $scope.selected; };
 		 var emoji_table = { 
 			 US : '&#x1F1FA;&#x1F1F8;',
@@ -118,6 +118,19 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 			 FR : '&#x1F1EB;&#x1F1F7;',
 			 CA : '&#x1F1E8;&#x1F1E6;',
 			 DE : '&#x1F1E9;&#x1F1EA;'
+		};
+		$scope.getDesc = (x) => {
+			console.log('get desc ', x, x.type);
+			if (x.type === 'pitype') {
+				console.info(' PITYPE returning ', { title: utils.pilabels[x.name], desc: utils.pi_desc[x.name] });
+				return { title: utils.pilabels[x.name], desc: utils.pi_desc[x.name] };
+			}
+			if (x.type === 'category') {
+				console.info(" CAT returning", { title: x.name, desc: utils.cat_desc[x.name] });
+				return { title: x.name, desc: utils.cat_desc[x.name] };
+			}
+			console.error('aint got nothing for ', x.type);
+			return {};
 		};
 		 $scope.$watch(() => this.selected, () => { 
 		 	var s = $scope.selected = this.selected && _.clone(this.selected) || this.selected;

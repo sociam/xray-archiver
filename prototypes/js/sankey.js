@@ -12,7 +12,7 @@ angular.module('dci')
 					details: ($http) => $http.get('../mitm_out/company_details.json').then((x) => x.data),
 					data: ($http) => $http.get('../mitm_out/data_all.json').then((x) => x.data)
 				},
-				controller:function($scope, pitypes, hosts, details, data, utils, $stateParams) {
+				controller:function($scope, pitypes, hosts, details, data, utils, $stateParams, $timeout) {
 					window._s = $scope;
 					$scope.hosts = hosts;
 					$scope.pitypes = pitypes;
@@ -20,9 +20,9 @@ angular.module('dci')
 
 					var ADD_APP_LEVEL = true, // add app level
 						allData = data,
-						margin = {top: 1, right: 1, bottom: 6, left: 1},
-						width = $('body').width() - 140, // 960 - margin.left - margin.right,
-						height = $('body').height() - 140, // 800 - margin.top - margin.bottom,
+						margin = {top: 1, right: 420, bottom: 6, left: 1},
+						width = $('body').width() - margin.left - margin.right, // 960 - margin.left - margin.right,
+						height = $('body').height() - margin.top - margin.bottom, // 800 - margin.top - margin.bottom,
 						app = $scope.app = $stateParams.app,
 						app_id = utils.toAppId(app),
 						appcompany = $scope.appcompany = data[0].company;
@@ -209,17 +209,18 @@ angular.module('dci')
 
 						console.log('do it node ');
 
+
 						var node = svg.append("g").selectAll(".node")
 							.data(newnodes)
 							.enter().append("g")
 								.attr("class", (d) => "node " + (isPDCI ? "pdci " : " ") + (d.isapp ? "isapp " : " "))
 								.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
 							    .on('mouseenter', function(d) { 
-							    	console.log('click! ', d, d3.mouse(this));
+							    	// console.log('click! ', d, d3.mouse(this));
 							    	$scope.$apply(() => { 
-							    		console.info('got a click, trying to selected');
+							    		console.info('got a click, trying to selected', d);
 							    		$scope.infoboxx = d.x + 22;
-							    		$scope.infoboxy = d.y + 22;							    		
+							    		$scope.infoboxy = d.y + d.dy/2 - 170/2; // 22;							    		
 							    		if (d.type === 'company') { 
 								    		$scope.selected=_.extend({}, details[d.name], d);
 								    	} else {
@@ -227,8 +228,7 @@ angular.module('dci')
 								    	}
 								    }); 
 							    }).on('mouseleave', function() { 
-							    	// console.log('mouseleave');
-							    	// $scope.$apply(() => { $scope.selected=0; });
+							    	$scope.$apply(() => { delete $scope.selected; });
 							    })
 							.call(d3.behavior.drag()
 						  		.origin(function(d) { return d; })
@@ -266,6 +266,7 @@ angular.module('dci')
 					if (!hosts[$scope.app]) { $scope.error = 'No hosts known for app'; }
 
 					$scope.size = (l) => _.keys(l).length;
+
 					// $scope.$watch('app', () => { if (app) { recompute(); } });
 					recompute();
 					$scope.$watch('pdciApps', recompute);

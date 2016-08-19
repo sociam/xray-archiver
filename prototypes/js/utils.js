@@ -132,9 +132,24 @@ angular.module('dci').factory('utils', () => {
 		pilabels: {
 			USER_PERSONAL_DETAILS: 'personal details',
 			USER_LOCATION: 'your location',
-			USER_LOCATION_COARSE: 'your approximate location',
+			USER_LOCATION_COARSE: 'coarse location (town/city)',
 			DEVICE_ID:'phone id',
 			DEVICE_SOFT:'phone characteristics'
+		},
+		pi_desc: { 
+			USER_PERSONAL_DETAILS: 'Your personal attributes, such as your age and gender.',
+			USER_LOCATION: 'Your precise location (sensed via GPS).',
+			USER_LOCATION_COARSE: 'Your location to the nearest town or city.',
+			DEVICE_ID:"Your phone's globally unique idenifier that can be used to identify you",
+			DEVICE_SOFT:"Your phone's characteristics, such as the model number, and manufacturer, version of software."			
+		},
+		cat_desc: { 
+			'app-publisher': "The app company, for realising essential functionality.",
+			'app-functionality': "Third party functionality relating to making the app work.",
+			'marketing': "Targeted advertising and marketing, including conducting market research based on personal demographics.",
+			'usage tracking': "To help app developers (and others) understand how you much and which parts of the app you use.",
+			'payments': "Functionality related to payments",
+			'security': "Functionality related to ensuring data remains secure",				
 		}
 	};
 	return utils;		
