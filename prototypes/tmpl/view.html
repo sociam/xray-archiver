@@ -9,6 +9,10 @@
 		</div>
 	</div>
 	<h2 ng-if="error" class="error"> Error: {{ error }} </h2>
-	<div ng-if="!error" class="all"  ui-view></div>
+	<div ng-if="!error" class="all">
+		<dci-sankey app="app" ng-if="mode==='sankey'"></dci-sankey>
+		<dci-table app="app" ng-if="mode==='table'"></dci-table>
+		<dci-box app="app" ng-if="mode==='box'"></dci-box>
+	</div>
 </div>
 

@@ -27,18 +27,31 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 		});
 		// base dci state
 		$stateProvider.state('dci', {
-		  	url: '/dci?app&pdciapps',
+		  	url: '/dci?app&pdciapps&mode',
 		  	templateUrl:'tmpl/view.html',
 		  	resolve: {
+				pitypes:($http) => $http.get('../mitm_out/pi_by_host.json').then((x) => x.data),
+				hosts: ($http) => $http.get('../mitm_out/host_by_app.json').then((x) => x.data),
+				details: ($http) => $http.get('../mitm_out/company_details.json').then((x) => x.data),
 				data: ($http) => $http.get('../mitm_out/data_all.json').then((x) => x.data)
 			},
-			controller:function($scope, $state, data, $stateParams) {
-				
-				$scope.apps = _.uniq(data.map((x) => x.app));
+			controller:function($scope, $state, pitypes, hosts, details, data, utils, $stateParams, $timeout) {
+				var allData = $scope.allData = data,
+					app = $scope.app = $stateParams.app,
+					apps = $scope.apps = _.uniq(data.map((x) => x.app)),
+					appcompany = $scope.appcompany = data.filter((x) => x.app === app)[0].company, // crashes if app has no data
+					getName = $scope.getName = (id) => details[id] && details[id].company || id;
+
+				$scope.details = details;
+				$scope.u = utils;
+				$scope.hosts = hosts;
+				$scope.pilabels = utils.pilabels;
+				$scope.pitypes = pitypes;
+				$scope.toPairs = (o) => _.toPairs(o).map((x) => { return { key:x[0], val:x[1] }; });
+
 				data = $scope.data = data.filter((x) => x.app === $stateParams.app);				
 
 				var refreshpdciApps = () => {
-					console.log('updating pdciApps ', $scope.pdciAppsObj);
 					$scope.pdciApps = _.keys($scope.pdciAppsObj).filter((k) => $scope.pdciAppsObj[k]);
 				};
 
@@ -49,19 +62,13 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 				$scope.appcompany = data[0].company;
 
 				// sets mode for toolbar
-				$scope.mode = {
-					'dci.box': 'box',
-					'dci.sankey': 'sankey',
-					'dci.table' : 'table'
-				}[$state.$current.toString()];
-
+				$scope.mode = $stateParams.mode || 'box';
 				$scope.$watchCollection('pdciAppsObj', refreshpdciApps);
 
 				if ($stateParams.pdciapps && $stateParams.pdciapps.length > 0) {
 					var param = typeof $stateParams.pdciapps == 'string' ? [$stateParams.pdciapps] : $stateParams.pdciapps;
 					$scope.pdciAppsObj = param.reduce((a, app) => { a[app] = true; return a; }, {});
 				}
-
 				window._sD = $scope;
 			}
 		  });
@@ -83,13 +90,9 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 	  	$scope.$watch(() => this.selected + this.mode, () => { 
 	  		console.info('new selected app ', this.selected, 'mode: ', this.mode, this.pdciapps);
 	  		if (this.selected && this.mode) { 
-	  			var modemap = { box: 'dci.box', sankey: 'dci.sankey', table: 'dci.table' };
-		  		console.info('go ', this.selected, this.mode);
-		  		$state.go(modemap[this.mode], {app:this.selected, pdciapps:this.pdciapps}); 
+		  		$state.go('dci', {app:this.selected, pdciapps:this.pdciapps, mode: this.mode}); 
 		  	}
 	  	});
-	  	if (this.showCompanyDetails === undefined) { this.showCompanyDetails = 'hide'; 	}
-	  	$scope.$watch(() => this.showPDCI, () => console.log('showPDCI ', this.showPDCI));
 	  }
    }).component('pdciAppSelector', {
 	  templateUrl: 'tmpl/pdci-app-selector.html',
