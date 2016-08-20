@@ -6,19 +6,19 @@ angular.module('dci')
 			restrict:'E',
 			scope:{app:'='},
 			controller:function($scope, $timeout, utils) {
-				var hosts = $scope.hosts,
-					details = $scope.details,
-					pitypes = $scope.pitypes,
-					allData = $scope.allData,
-					app = $scope.app,
-					appcompany = $scope.appcompany,
+				var hosts = $scope.$parent.hosts,
+					details = $scope.$parent.details,
+					pitypes = $scope.pitypes = $scope.$parent.pitypes,
+					allData = $scope.$parent.allData,
+					app = $scope.$parent.app,
+					appcompany = $scope.$parent.appcompany,
 					recompute = () => {					
 						var data = $scope.data = allData.filter((x) => x.app === $scope.app);
 						var c2pi = $scope.c2pi = utils.makeCompany2pi(app, data, hosts, pitypes, 0),
 							cat2c2pi = $scope.cat2c2pi = utils.makeCategories(appcompany, details, c2pi),					
-							isPDCI = $scope.pdciApps && $scope.pdciApps.length,
-							pdciData = isPDCI && allData.filter((x) => $scope.pdciApps.indexOf(x.app) >= 0),							
-							pdcic2pi = $scope.pdcic2pi = isPDCI ? utils.makePDCIc2pi($scope.pdciApps, pdciData, hosts, pitypes, 0) : {},
+							isPDCI = $scope.$parent.pdciApps && $scope.$parent.pdciApps.length,
+							pdciData = isPDCI && allData.filter((x) => $scope.$parent.pdciApps.indexOf(x.app) >= 0),							
+							pdcic2pi = $scope.pdcic2pi = isPDCI ? utils.makePDCIc2pi($scope.$parent.pdciApps, pdciData, hosts, pitypes, 0) : {},
 							pdcicat2c2pi = isPDCI ? utils.makeCategories(appcompany, details, pdcic2pi) : {};
 
 						// each of the boxes
@@ -79,14 +79,14 @@ angular.module('dci')
 					$scope.numCompanies = (cat) => ($scope.cat2c2pi[cat] && _.keys($scope.cat2c2pi[cat]).length) || 0;
 
 					if (!appcompany) { $scope.error = 'Captured data for ' + app + ' is in old data format without company field'; }
-					if (!hosts[$scope.app]) { $scope.error = 'No hosts known for app'; }
+					if (!hosts[$scope.$parent.app]) { $scope.error = 'No hosts known for app'; }
+
 					$scope.size = (l) => _.keys(l).length;
 					recompute();
 
-					$scope.$watch('pdciApps', recompute);
-					// $scope.pitypes = pitypes;
-					// $scope.details = details;
+					$scope.$watch(() => $scope.$parent.pdciApps, recompute);
 					window._ss = $scope;
+					$scope.pilabels = utils.pilabels;
 				}
 		};
 	});

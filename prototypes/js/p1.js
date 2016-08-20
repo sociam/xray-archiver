@@ -48,8 +48,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 				$scope.pilabels = utils.pilabels;
 				$scope.pitypes = pitypes;
 				$scope.toPairs = (o) => _.toPairs(o).map((x) => { return { key:x[0], val:x[1] }; });
-
-				data = $scope.data = data.filter((x) => x.app === $stateParams.app);				
+				$scope.data = data.filter((x) => x.app === $stateParams.app);				
 
 				var refreshpdciApps = () => {
 					$scope.pdciApps = _.keys($scope.pdciAppsObj).filter((k) => $scope.pdciAppsObj[k]);
