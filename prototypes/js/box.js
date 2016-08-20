@@ -1,32 +1,18 @@
-/* global angular, _, $, d3 */
-
+/* global angular, _ */
 angular.module('dci')
-	.config(function ($stateProvider, $urlRouterProvider) {
-		$stateProvider.state('dci.box', {
-			url: '/box',
+	.directive('dciBox', function() {
+		return {
 			templateUrl: 'tmpl/box-dci.html',
-			resolve: {
-				pitypes:($http) => $http.get('../mitm_out/pi_by_host.json').then((x) => x.data),
-				hosts: ($http) => $http.get('../mitm_out/host_by_app.json').then((x) => x.data),
-				details: ($http) => $http.get('../mitm_out/company_details.json').then((x) => x.data),
-				data: ($http) => $http.get('../mitm_out/data_all.json').then((x) => x.data)
-			},
-			controller:function($scope, pitypes, hosts, details, data, $stateParams) {
-				console.log('boxdci stateparams', $stateParams);
-				console.log('got relevant ', data.length);
-				$scope.$parent.mode = 'box';
+			restrict:'E',
+			scope:{app:'=', appcompany:'='},
+			controller:function($scope) {
 
-				// $scope.apps = _.uniq(data.map((x) => x.app));
-				data = $scope.data = data.filter((x) => x.app === $stateParams.app);
-				// console.log('before filter ', data.length);
-				// data = $scope.data = data.filter((x) => ((details[x.host_company] || {}).typetag || '').indexOf('ignore') < 0);
-				// console.log('after filter ', data.length);				
+				var hosts = $scope.$parent.hosts,
+					data = $scope.$parent.data,	
+					details = $scope.$parent.details,
+					pitypes = $scope.$parent.pitypes;
 
-				if (!data.length) { $scope.error = 'no data for app ' + $stateParams.app; }
-
-				var app = $scope.app = $stateParams.app,
-					appcompany = $scope.appcompany = data[0].company,
-					id2names = $scope.id2names = _.keys(details).reduce((a,id) => { 
+				var id2names = $scope.id2names = _.keys(details).reduce((a,id) => { 
 						a[id] = details[id].company; return a; 
 					}, {}),
 					hTc = $scope.hTc = data.reduce((r,a) => {
@@ -44,7 +30,7 @@ angular.module('dci')
 						return r;
 					}, {}),
 					checkSize = () => {},
-					matchCompany = (x) => appcompany && ((x || '').toLowerCase() === appcompany.toLowerCase()),
+					matchCompany = (x) => $scope.appcompany && ((x || '').toLowerCase() === $scope.appcompany.toLowerCase()),
 					isType = $scope.isType = (id, type) => id && 
 						details[id] && 
 						details[id].typetag && 
@@ -138,7 +124,7 @@ angular.module('dci')
 						checkSize();
 					};
 
-				if (!appcompany) { $scope.error = 'Captured data for ' + app + ' is in old data format without company field'; }
+				if (!$scope.appcompany) { $scope.error = 'Captured data for ' + $scope.app + ' is in old data format without company field'; }
 				if (!hosts[$scope.app]) { $scope.error = 'No hosts known for app'; }
 
 				$scope.size = (l) => _.keys(l).length;
@@ -151,5 +137,5 @@ angular.module('dci')
 				$scope.details = details;
 				window._s = $scope;
 			}
-		});
-});
+		};
+	});
