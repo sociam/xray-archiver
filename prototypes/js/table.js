@@ -4,22 +4,20 @@ angular.module('dci')
 		return {
 			templateUrl:'tmpl/table.html',
 			restrict:'E',
-			scope:{app:'='},
+			scope:{app:'=', appcompany:'='},
 			controller:function($scope, $timeout, utils) {
 				var hosts = $scope.$parent.hosts,
 					details = $scope.$parent.details,
 					pitypes = $scope.pitypes = $scope.$parent.pitypes,
 					allData = $scope.$parent.allData,
-					app = $scope.$parent.app,
-					appcompany = $scope.$parent.appcompany,
 					recompute = () => {					
-						var data = $scope.data = allData.filter((x) => x.app === $scope.app);
-						var c2pi = $scope.c2pi = utils.makeCompany2pi(app, data, hosts, pitypes, 0),
-							cat2c2pi = $scope.cat2c2pi = utils.makeCategories(appcompany, details, c2pi),					
+						var data = $scope.data = allData.filter((x) => x.app === $scope.app),
+							c2pi = $scope.c2pi = utils.makeCompany2pi($scope.app, data, hosts, pitypes, 0),
+							cat2c2pi = $scope.cat2c2pi = utils.makeCategories($scope.appcompany, details, c2pi),					
 							isPDCI = $scope.$parent.pdciApps && $scope.$parent.pdciApps.length,
 							pdciData = isPDCI && allData.filter((x) => $scope.$parent.pdciApps.indexOf(x.app) >= 0),							
 							pdcic2pi = $scope.pdcic2pi = isPDCI ? utils.makePDCIc2pi($scope.$parent.pdciApps, pdciData, hosts, pitypes, 0) : {},
-							pdcicat2c2pi = isPDCI ? utils.makeCategories(appcompany, details, pdcic2pi) : {};
+							pdcicat2c2pi = isPDCI ? utils.makeCategories($scope.appcompany, details, pdcic2pi) : {};
 
 						// each of the boxes
 						$scope.pitypes = _(c2pi).values().flatten().union(_(pdcic2pi).values().flatten().value()).uniq().sort((x) => utils.pilabels[x]).value();
@@ -78,7 +76,7 @@ angular.module('dci')
 
 					$scope.numCompanies = (cat) => ($scope.cat2c2pi[cat] && _.keys($scope.cat2c2pi[cat]).length) || 0;
 
-					if (!appcompany) { $scope.error = 'Captured data for ' + app + ' is in old data format without company field'; }
+					if (!$scope.appcompany) { $scope.error = 'Captured data for ' + $scope.app + ' is in old data format without company field'; }
 					if (!hosts[$scope.$parent.app]) { $scope.error = 'No hosts known for app'; }
 
 					$scope.size = (l) => _.keys(l).length;

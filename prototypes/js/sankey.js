@@ -5,18 +5,16 @@ angular.module('dci')
 		return {
 			template:'<div class="sankey" id="sankey-chart"><company-info-box selected="selected" x="infoboxx" y="infoboxy"></company-info-box></div>',
 			restrict:'E',
-			scope:{app:'='},
+			scope:{app:'=', appcompany:'='},
 			controller:function($scope, $timeout, utils) {
 
 					var ADD_APP_LEVEL = true, // add app level
 						allData = $scope.$parent.allData,
 						hosts = $scope.$parent.hosts,
 						data = $scope.$parent.data,	
-						app = $scope.$parent.app,
 						details = $scope.$parent.details,
 						pitypes = $scope.$parent.pitypes,
-						app_id = utils.toAppId(app),
-						appcompany = $scope.$parent.appcompany,											
+						app_id = utils.toAppId($scope.app),
 						margin = {top: 1, right: 420, bottom: 6, left: 1},
 						width = $('body').width() - margin.left - margin.right, // 960 - margin.left - margin.right,
 						height = $('body').height() - margin.top - margin.bottom; // 800 - margin.top - margin.bottom,
@@ -51,9 +49,9 @@ angular.module('dci')
 
 						var isPDCI = $scope.$parent.pdciApps && $scope.$parent.pdciApps.length || false,
 							pdciApps = isPDCI ? $scope.$parent.pdciApps : [],		
-							apps = (isPDCI ? _.union(pdciApps,[app]) : [app]),
-							c2pi = utils.makeCompany2pi(app, data, hosts, pitypes, 0),
-							cat2c2pi = utils.makeCategories(appcompany, details, c2pi),
+							apps = (isPDCI ? _.union(pdciApps,[$scope.app]) : [$scope.app]),
+							c2pi = utils.makeCompany2pi($scope.app, data, hosts, pitypes, 0),
+							cat2c2pi = utils.makeCategories($scope.appcompany, details, c2pi),
 							aTc = utils.makeApp2company(apps, data, c2pi, hosts, 0),
 							app_ids = _.keys(aTc);
 
@@ -64,9 +62,9 @@ angular.module('dci')
 
 						if (isPDCI) { 
 							// redefine data - to include all pdci apps as well
-							data = allData.filter((x) => x.app === app || $scope.$parent.pdciApps.indexOf(x.app) >= 0);
+							data = allData.filter((x) => x.app === $scope.app || $scope.$parent.pdciApps.indexOf(x.app) >= 0);
 							c2pi = utils.makePDCIc2pi(apps, data, hosts, pitypes, 0);
-							cat2c2pi = utils.makeCategories(appcompany, details, c2pi);
+							cat2c2pi = utils.makeCategories($scope.appcompany, details, c2pi);
 							aTc = utils.makeApp2company(apps, data, c2pi, hosts, 0);
 							app_ids = _.keys(aTc);							
 						}
@@ -96,7 +94,7 @@ angular.module('dci')
 
 						////////////////////// nodes /////////////////////////
 						// 1. register the apps as nodes
-						if (ADD_APP_LEVEL) { apps.map((appname) => pushNode(utils.toAppId(appname),appname,appname===app, 'app')); }
+						if (ADD_APP_LEVEL) { apps.map((appname) => pushNode(utils.toAppId(appname),appname,appname===$scope.app, 'app')); }
 						// pitypes 
 						pitypes_set.map((pitype) => pushNode(pitype, pilabels[pitype], a2pi(app_id).indexOf(pitype) >= 0, 'pitype'));
 						// 2. companies
@@ -256,7 +254,7 @@ angular.module('dci')
 
 						};
 
-					if (!appcompany) { $scope.error = 'Captured data for ' + app + ' is in old data format without company field'; }
+					if (!$scope.appcompany) { $scope.error = 'Captured data for ' + $scope.app + ' is in old data format without company field'; }
 					if (!hosts[$scope.app]) { $scope.error = 'No hosts known for app'; }
 
 					// $scope.size = (l) => _.keys(l).length;
