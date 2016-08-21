@@ -1,0 +1,46 @@
+<div class="config">
+	<h2>DCI experiment</h2>
+	<dl>
+		<dt>study identifier </dt>
+		<dd><input type="text" ng-model="runid"><button ng-click="runid='run-'+genID()">Generate</button></dd>
+		<dt>participant id</dt>
+		<dd><input type="text" ng-model="participantid"><button ng-click="participantid='participant-'+genID()">Generate</button></dd>
+		<dt>DCI rounds<dt>
+		<dd><input type="number" ng-model="nDciRounds"></dd>
+		<dt>pDCI rounds<dt>
+		<dd><input type="number" ng-model="nPDciRounds"></dd>
+	</dl>
+	<h2>DCI Rounds:</h2>
+	<table>
+		<thead>
+			<th>round</th><th>app A</th><th>app B</th>
+		</thead>
+		<tr ng-repeat="round in rounds.dci">
+			<td>
+				{{ rounds.dci.indexOf(round) }}
+			</td>		
+			<td ng-repeat="side in ['a','b']">
+				<select id="soflow" ng-model="round[side]">
+					<option ng-repeat="a in apps">{{a}}</option>		
+				</select>
+			</td>
+		</tr>
+	</table>
+	<h2>PDCI Rounds:</h2>
+	<table>
+		<thead>
+			<th>round</th><th>app A</th><th>app B</th>
+		</thead>
+		<tr ng-repeat="round in rounds.pdci">
+			<td>
+				{{ rounds.pdci.indexOf(round) }}
+			</td>
+			<td ng-repeat="side in ['a','b']">
+				<select id="soflow" ng-model="round[side]">
+					<option ng-repeat="a in apps">{{a}}</option>		
+				</select>
+			</td>
+		</tr>
+	</table>
+	<button ng-click="run()" class="runstudy"> run study </button>
+</div>
