@@ -150,6 +150,19 @@ angular.module('dci').factory('utils', () => {
 			'usage tracking': "To help app developers (and others) understand how you much and which parts of the app you use.",
 			'payments': "Functionality related to payments",
 			'security': "Functionality related to ensuring data remains secure",				
+		},
+		range: function (l,h) {
+			var a = [];
+			if (_.isUndefined(h)) { h = l; l = 0; }
+			for (var i = l; i < h; i++) { a.push(i); }
+			return a;
+		},
+		guid: function(len) {
+			len = len || 16;
+			var alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ-';
+			return Date.now() + '-' + this.range(0,len).map(function () {
+				return alpha[Math.floor(Math.random() * alpha.length)];
+			}).join('');
 		}
 	};
 	return utils;		
