@@ -1,5 +1,5 @@
 <div class="config">
-	<h2>DCI experiment</h2>
+	<h2>Configure New Experiment</h2>
 	<dl>
 		<dt>study identifier </dt>
 		<dd><input type="text" ng-model="runid"><button ng-click="runid='run-'+genID()">Generate</button></dd>
@@ -24,12 +24,17 @@
 					<option ng-repeat="a in apps">{{a}}</option>		
 				</select>
 			</td>
+			<td>
+				<select ng-model="round.iface">
+					<option ng-repeat="a in ifaces">{{a}}</option>		
+				</select>
+			</td>
 		</tr>
 	</table>
 	<h2>PDCI Rounds:</h2>
 	<table>
 		<thead>
-			<th>round</th><th>app A</th><th>app B</th>
+			<th>round</th><th>app A</th><th>app B</th><th>interface</th>
 		</thead>
 		<tr ng-repeat="round in rounds.pdci">
 			<td>
@@ -40,7 +45,12 @@
 					<option ng-repeat="a in apps">{{a}}</option>		
 				</select>
 			</td>
+			<td>
+				<select ng-model="round.iface">
+					<option ng-repeat="a in ifaces">{{a}}</option>		
+				</select>
+			</td>			
 		</tr>
 	</table>
-	<button ng-click="run()" class="runstudy"> run study </button>
+	<button ng-click="save()"> Save </button>
 </div>

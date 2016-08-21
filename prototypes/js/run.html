@@ -1,0 +1,32 @@
+<div class="run">
+	<h2>Run Experiment</h2>
+	<h5>id: <span ng-bind="e._id"></span></h4>
+	<h5>participant: <span ng-bind="e.participant"></span>
+
+	<h3>apps <span ng-if="e.pdciApps">({{ e.pdciApps.length }} selected)</span></h3>
+	<button ng-click="selectApps()"></button>
+
+	<!-- todo -->
+	dci rounds:
+	<table>
+		<thead>
+			<th>round</th><th>condition</th><th>a</th><th>b</th><th></th>
+		</thead>
+		<tr ng-repeat="x in e.rounds.dci" ng-class="{done:x.selected && x.doneTime}">
+			<td>{{ e.rounds.dci.indexOf(x) }}</td>
+			<td>{{ x.interface }}</td>
+			<td>{{ x.a }}</td>
+			<td>{{ x.b }}</td>
+			<td>{{ x.selected && x.doneTime || '' }}</td>
+			<td><button ng-click="run(x)">Run/Replace</button></td>
+		</tr>
+	</table>
+
+	pdci rounds:
+	<table>
+		<thead>
+			<th>round</th><th>condition</th><th>done</th>
+		</thead>
+	</table>
+
+</div>

@@ -1,0 +1,19 @@
+<div class="manage">
+	<h2>Manage Experiments</h2>
+	<table>
+		<thead>
+			<th>experiment</th><th>participant</th><th>created</th>
+		</thead>
+		<tr ng-repeat="e in experiments" ng-class="{selected:selected == e._id}">
+			<td ng-bind="e._id"></td>
+			<td ng-bind="e.participant"></td>
+			<td ng-bind="e.created.toISOSTring()"></td>
+			<td>
+				<button ng-click="load(e)">Load</button>
+				<button ng-click="delete(e)">Delete</button>
+				<button ng-click="export(e)">Export</button>
+			</td>
+		</tr>
+	</table>
+	<pre ng-if="exportData" ng-bind-"exportData"></pre>
+</div>

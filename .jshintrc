@@ -18,7 +18,7 @@
   "singleGroups": true,
   "strict": false,
   "undef": true,
-  "unused": true,
+  "unused": false,
   "node": true,
   "indent": 1
 }

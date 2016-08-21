@@ -1,6 +1,6 @@
 /* global angular, _, jQuery, Backbone */
 
-angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
+angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize', 'pouchdb'])
 	.controller('p1', function () {})
 	.config(function ($stateProvider, $urlRouterProvider) {
 	    $urlRouterProvider.otherwise('/chooseapp');
@@ -65,7 +65,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 				$scope.$watchCollection('pdciAppsObj', refreshpdciApps);
 
 				if ($stateParams.pdciapps && $stateParams.pdciapps.length > 0) {
-					var param = typeof $stateParams.pdciapps == 'string' ? [$stateParams.pdciapps] : $stateParams.pdciapps;
+					var param = typeof $stateParams.pdciapps === 'string' ? [$stateParams.pdciapps] : $stateParams.pdciapps;
 					$scope.pdciAppsObj = param.reduce((a, app) => { a[app] = true; return a; }, {});
 				}
 				window._sD = $scope;
@@ -147,4 +147,6 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize'])
 			}
 		 });
 	  }
+   }).factory('storage', function(pouchDB) { 
+   		return { db : new pouchDB('experiment') };
    });
