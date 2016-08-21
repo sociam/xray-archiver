@@ -87,11 +87,15 @@ angular.module('dci')
 		  	url: '/run',
 		  	templateUrl:'tmpl/run.html',
 			controller:function($scope, $state, $stateParams, utils) {
-				if ($stateParams.id) { 
-					console.info('got id ', $stateParams.id);
+				if (!$stateParams.id) { 
+					$state.go('experiment.manage');
+					return;
 				}
+				$scope.load($stateParams.id).then((experiment) => { $scope.e = experiment; });
+				$scope.selectApps = () => $state.go('experiment.runselect');
 			}
 		});
+
 		$stateProvider.state('experiment.runselect', {
 		  	url: '/runselect',
 		  	templateUrl:'tmpl/run-select.html',
@@ -108,9 +112,9 @@ angular.module('dci')
 				};
 			}
 		});
-		$stateProvider.state('experiment.runchoose', {
-		  	url: '/runchoose',
-		  	templateUrl:'tmpl/runchoose.html',
+		$stateProvider.state('experiment.runtask', {
+		  	url: '/runtask',
+		  	templateUrl:'tmpl/run-task.html',
 			controller:function($scope, $state, utils) {
 			}
 		});
