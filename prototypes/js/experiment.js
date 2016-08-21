@@ -78,14 +78,14 @@ angular.module('dci')
 						$scope.experiments = docs_arr.rows.map((x) => x.doc) || [];
 					});
 				};
+				$scope.toDateStr = (ds) => new Date(parseInt(ds)).toDateString() + ' ' + new Date(parseInt(ds)).toLocaleTimeString();
 				$scope.load = (e) => { 	$state.go('experiment.run', { id: e._id }); };
 				$scope.delete = (e) => { 
 					console.info('delete ', e);
 					storage.db.get(e._id).then((doc) => storage.db.remove(doc)).then(refresh_docs);
 				};
 				$scope.export = (e) => { 
-					console.info('export ', e);
-					$scope.exportData = JSON.stringify(e);	
+					$scope.exportData = JSON.stringify(e, null, 2);	
 				};
 				$scope.new = () => {
 					$scope.setExperiment({});
@@ -150,6 +150,7 @@ angular.module('dci')
 							_id: $scope.runid,
 							participant:$scope.participantid,
 							rounds: $scope.rounds,
+							created: new Date().valueOf(),
 							configured:true
 						});
 

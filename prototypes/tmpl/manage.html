@@ -1,4 +1,4 @@
-<div class="experimemt manage">
+<div class="experiment manage">
 	<h2>Manage Experiments</h2>
 	<table>
 		<thead>
@@ -7,7 +7,7 @@
 		<tr ng-repeat="e in experiments" ng-class="{selected:selected == e._id}">
 			<td ng-bind="e._id"></td>
 			<td ng-bind="e.participant"></td>
-			<td ng-bind="e.created.toISOSTring()"></td>
+			<td ng-bind="toDateStr(e.created)"></td>
 			<td>
 				<button ng-click="load(e)">Load</button>
 				<button ng-click="delete(e)">Delete</button>

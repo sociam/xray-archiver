@@ -10,6 +10,8 @@ angular.module('dci').factory('utils', () => {
 				return a; 
 			}, {}),
 
+		assert:(x) => { if (!x) { throw new Error(x); } },
+
 		// returns { host -> companyid }
 		makeHTC:function(data) {
 			var hTh = this.makeHTH(data);
@@ -187,5 +189,5 @@ angular.module('dci').factory('utils', () => {
 
             return match.charAt(0).toUpperCase() + match.substr(1);
         });
-    }
+    };
 });
