@@ -1,4 +1,4 @@
-<div class="manage">
+<div class="experimemt manage">
 	<h2>Manage Experiments</h2>
 	<table>
 		<thead>
@@ -15,5 +15,6 @@
 			</td>
 		</tr>
 	</table>
-	<pre ng-if="exportData" ng-bind-"exportData"></pre>
+	<button ng-click="new()">New Experiment</button>
+	<textarea ng-if="exportData" ng-model="exportData"></textarea>
 </div>

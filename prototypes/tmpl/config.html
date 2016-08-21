@@ -1,4 +1,4 @@
-<div class="config">
+<div class="experiment config">
 	<h2>Configure New Experiment</h2>
 	<dl>
 		<dt>study identifier </dt>
@@ -25,7 +25,7 @@
 				</select>
 			</td>
 			<td>
-				<select ng-model="round.iface">
+				<select ng-model="round.cond">
 					<option ng-repeat="a in ifaces">{{a}}</option>		
 				</select>
 			</td>
@@ -46,11 +46,11 @@
 				</select>
 			</td>
 			<td>
-				<select ng-model="round.iface">
+				<select ng-model="round.cond">
 					<option ng-repeat="a in ifaces">{{a}}</option>		
 				</select>
 			</td>			
 		</tr>
 	</table>
-	<button ng-click="save()"> Save </button>
+	<button ng-click="doSave()"> Save </button>
 </div>

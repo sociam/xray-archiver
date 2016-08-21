@@ -1,0 +1,49 @@
+.experiment { 
+	background-color:white;
+	font-family:'helvetica neue';
+	padding:20px;
+	h1, h2, h3 { font-weight:bold; color:#ee01aa !important; }
+	padding:200px;
+	font-size:14pt;
+	input { font-size:14pt; }
+	input[type='text'] { width:500px !important; color:#ee01aa; }
+	button { 
+		font-size:12pt;		
+		background-color:white;
+		margin:5px;
+		&.runstudy { 
+			font-size:100pt;
+			color:#ee01aa;
+			padding:50px;
+			margin:20px 0px;
+		}
+	}
+	&.config {
+		dd{ padding:0px; margin:0px 0px 10px 0px;}
+	}
+	&.manage {}
+	&.run {}
+	&.run-select  {
+		.scrollable { 
+			border:1px solid #eee;
+			overflow-y:scroll; 
+			height:80%;
+			.applist {
+				padding:3px 0px 0px 10px; margin:0px;
+				font-weight:100;
+				li { 
+					list-style-type:none;
+					padding:5px 0px 5px 2px; 
+					input[type='checkbox']  {
+						font-size:14pt;
+						margin:4px 14px;
+					}
+					&.selected { background-color:yellow; }
+				}
+			}		
+		}
+	}
+	&.run-task {
+
+	}
+}

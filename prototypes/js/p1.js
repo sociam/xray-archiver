@@ -3,7 +3,7 @@
 angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize', 'pouchdb'])
 	.controller('p1', function () {})
 	.config(function ($stateProvider, $urlRouterProvider) {
-	    $urlRouterProvider.otherwise('/chooseapp');
+	    $urlRouterProvider.otherwise('/experiment');
 		$stateProvider.state('chooseApp', {
 			url: '/chooseapp',
 			templateUrl: 'tmpl/choose-app.html',

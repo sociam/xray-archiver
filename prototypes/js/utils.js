@@ -50,6 +50,8 @@ angular.module('dci').factory('utils', () => {
 
 		toAppId : (appname) => appname + " app",
 
+		deAngular: (obj) => _.pickBy(obj, (v,k) => k.indexOf('$$') < 0),
+
 		// isType and not 1st party
 		is3rdPartyType: (appcompany, details, id, type) => 
 			utils.isType(details,id,type) && 
