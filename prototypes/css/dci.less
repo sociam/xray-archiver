@@ -6,6 +6,9 @@
 body, html {
 	font-size:18pt;
 	padding:0px; margin:0px;
+	width:100%; height:100%;
+	.app { width:100%; height:100%; }
+	
 }
 .error { 
 	color:red !important;
@@ -38,6 +41,7 @@ body, html {
 	margin: 50px 0% 50px 0%; 
 	padding: 50px 5%;
 	position:relative;
+	width:100%; height:100%;
 	// app name
 	h1 { 
 		font-size:42pt; 
@@ -61,7 +65,17 @@ body, html {
 		margin:0em 0em 1em 10px;
 		.pappfeedback { display: inline-block; padding:3px 5px; background-color:yellow; margin:0px 5px; }
 	}
+	.all {
+		width:100%; height:80%;
+		.sankey { 
+			width:100%; height:100%;
+		}
+		align-items:center; // cross
+		align-content:stretch;
+	}
 }
+
+
 
 .pdci-app-selector {
 	z-index:1000;
