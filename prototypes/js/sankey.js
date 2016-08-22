@@ -13,10 +13,9 @@ angular.module('dci')
 			},
 			controller:function($scope, $timeout, utils) {
 				var ADD_APP_LEVEL = true, // add app level
-					heightPCT = ($scope.heightpct && parseFloat($scope.heightpct) / 100.0) || 1.0;
+					heightPCT = $scope.heightpct && parseFloat($scope.heightpct) / 100.0 || 1.0,
 					allData = $scope.$parent.allData,
 					hosts = $scope.$parent.hosts,
-					data = $scope.$parent.data,	
 					details = $scope.$parent.details,
 					pitypes = $scope.$parent.pitypes,
 					app_id = utils.toAppId($scope.app),
@@ -33,7 +32,7 @@ angular.module('dci')
 					format = function(d) { return formatNumber(d) + " TWh"; },
 					color = d3.scale.category20();
 
-				if (!data.length) { $scope.error = 'no data for app ' + $scope.app; }
+				// if (!data.length) { $scope.error = 'no data for app ' + $scope.app; }
 
 				var recompute = $scope.recompute = () => {
 					// clear from last drawing
@@ -58,19 +57,22 @@ angular.module('dci')
 						    sankey.relayout();
 						    link.attr("d", path);
 						},
+						data = $scope.$parent.allData.filter((x) => x.app === $scope.app),
+
 						isPDCI = $scope.$parent.pdciApps && $scope.$parent.pdciApps.length || false,
 						pdciApps = isPDCI ? $scope.$parent.pdciApps : [],		
-						apps = isPDCI ? _.union(pdciApps,[$scope.app]) : [$scope.app],
-						c2pi = utils.makeCompany2pi($scope.app, data, hosts, pitypes, 0),
-						cat2c2pi = utils.makeCategories($scope.appcompany, details, c2pi),
-						aTc = utils.makeApp2company(apps, data, c2pi, hosts, 0),
+						apps = $scope.apps = isPDCI ? _.union(pdciApps,[$scope.app]) : [$scope.app],
+						c2pi = $scope.c2pi = utils.makeCompany2pi($scope.app, data, hosts, pitypes, 0),
+						cat2c2pi = $scope.cat2c2pi = utils.makeCategories($scope.appcompany, details, c2pi),
+						aTc = $scope.aTc = utils.makeApp2company(apps, data, c2pi, hosts, 0),
 						app_ids = _.keys(aTc);
 
-					console.info("isPDCI is ", isPDCI);
-
+					console.info("APPIS ", $scope.app, 'aTc is ', aTc, ' - data is:', data, ' c2pi ', c2pi);
 
 					if (isPDCI) { 
+						console.info("APPIS isPDCI", isPDCI);						
 						// redefine data - to include all pdci apps as well
+
 						data = allData.filter((x) => x.app === $scope.app || $scope.$parent.pdciApps.indexOf(x.app) >= 0);
 						c2pi = utils.makePDCIc2pi(apps, data, hosts, pitypes, 0);
 						cat2c2pi = utils.makeCategories($scope.appcompany, details, c2pi);
@@ -98,7 +100,7 @@ angular.module('dci')
 							return l;
 						},
 						pilabels = utils.pilabels,
-						a2pi = (aid) => _.flatten(aTc[aid].map((company) => c2pi[company])),
+						a2pi = (aid) => aTc[aid] ? _.flatten(aTc[aid].map((company) => c2pi[company])) : [],
 						a2cat = (aid) => _.keys(cat2c2pi).filter((cat) => _.intersection(_.keys(cat2c2pi[cat] || {}), aTc[aid]).length > 0);
 
 					////////////////////// nodes /////////////////////////
@@ -219,13 +221,13 @@ angular.module('dci')
 						    .on('mouseenter', function(d) { 
 						    	// console.log('click! ', d, d3.mouse(this));
 						    	$scope.$apply(() => { 
-						    		console.info('got a click, trying to selected', d);
+						    		// console.info('got a click, trying to selected', d);
 						    		var newX = d.x + lOff() + 52;
 						    		if (newX + 320 > parentWidth()) { 
 						    			newX = d.x + lOff() - 320 + 22;
 						    		}
 						    		$scope.infoboxx = newX;
-						    		$scope.infoboxy = d.y + tOff() + d.dy/2 - 190/2;; //  + d.dy/2 - 190/2; // 22;							    		
+						    		$scope.infoboxy = d.y + tOff() + d.dy/2 - 190/2; //  + d.dy/2 - 190/2; // 22;							    		
 						    		if (d.type === 'company') { 
 							    		$scope.selected=_.extend({}, details[d.name], d);
 							    	} else {
@@ -275,8 +277,10 @@ angular.module('dci')
 				// recompute();
 				$scope.$watch(() => $scope.$parent.pdciApps, recompute);
 				$scope.$watch(() => parentWidth() + parentHeight(), recompute);
+
 				console.info('sankey');
-				window._c = $scope;
+				if (!window._c) { window._c = {}; }
+				window._c[$scope.app] = $scope;
 			} // controller
 		}; // directive return
 	});

@@ -6,7 +6,7 @@ angular.module('dci')
 
 		$stateProvider.state('experiment', {
 		  	url: '/experiment?id',
-		  	template:'<div ui-view></div>',
+		  	template:'<div class="experiment-main" ui-view></div>',
 		  	resolve: {
 				pitypes:($http) => $http.get('../mitm_out/pi_by_host.json').then((x) => x.data),
 				hosts: ($http) => $http.get('../mitm_out/host_by_app.json').then((x) => x.data),

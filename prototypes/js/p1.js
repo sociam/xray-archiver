@@ -123,16 +123,16 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize', 'pouch
 			 DE : '&#x1F1E9;&#x1F1EA;'
 		};
 		$scope.getDesc = (x) => {
-			console.log('get desc ', x, x.type);
+			// console.log('get desc ', x, x.type);
 			if (x.type === 'pitype') {
-				console.info(' PITYPE returning ', { title: utils.pilabels[x.name], desc: utils.pi_desc[x.name] });
+				// console.info(' PITYPE returning ', { title: utils.pilabels[x.name], desc: utils.pi_desc[x.name] });
 				return { title: utils.pilabels[x.name], desc: utils.pi_desc[x.name] };
 			}
 			if (x.type === 'category') {
-				console.info(" CAT returning", { title: x.name, desc: utils.cat_desc[x.name] });
+				// console.info(" CAT returning", { title: x.name, desc: utils.cat_desc[x.name] });
 				return { title: x.name, desc: utils.cat_desc[x.name] };
 			}
-			console.error('aint got nothing for ', x.type);
+			// console.error('aint got nothing for ', x.type);
 			return {};
 		};
 		 $scope.$watch(() => this.selected, () => { 

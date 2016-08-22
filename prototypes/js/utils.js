@@ -36,7 +36,7 @@ angular.module('dci').factory('utils', () => {
 			// host -> 2ld
 			if (a.host_2ld) { 
 				r[a.host] = a.host_2ld;
-			} else { console.error('warning no 2ld ', a.host); }
+			} else { console.error('warning no 2ld ', a, a.host); }
 			return r;
 		}, {}),
 

@@ -1,6 +1,6 @@
 <div class="experiment run-task">
 	<div class="time" ng-bind="elapsed/1000"></div>
-	<div ng-if="t.cond === 'sankey'">
+	<div class="cond" ng-if="t.cond === 'sankey'">
 		<div class="appname">{{ t.a }} <span class="appcompany">{{companies.a}}</span></div>	
 		<dci-sankey app="t.a" appcompany='companies.a'></dci-sankey>
 		<button ng-click="choiceMade(t.a)">Choose {{t.a}}</button>				
@@ -9,7 +9,7 @@
 		<dci-sankey app="t.b" appcompany='companies.b'></dci-sankey>
 		<button ng-click="choiceMade(t.b)">Choose {{t.b}}</button>
 	</div>
-	<div ng-if="t.cond === 'table'">
+	<div class="cond" ng-if="t.cond === 'table'">
 		<div class="appname">{{ t.a }} <span class="appcompany">{{companies.a}}</span></div>
 		<dci-table app="t.a" appcompany='companies.a'></dci-table>
 		<button ng-click="choiceMade(t.a)">Choose {{t.a}}</button>		
@@ -18,7 +18,7 @@
 		<dci-table app="t.b" appcompany='companies.b'></dci-table>
 		<button ng-click="choiceMade(t.b)">Choose {{t.b}}</button>
 	</div>
-	<div ng-if="t.cond === 'box'">
+	<div class="cond" ng-if="t.cond === 'box'">
 		<div class="appname">{{ t.a }} <span class="appcompany">{{companies.a}}</span></div>
 		<dci-sankey app="t.a" appcompany='companies.a'></dci-sankey>
 		<button ng-click="choiceMade(t.a)">Choose {{t.a}}</button>				
