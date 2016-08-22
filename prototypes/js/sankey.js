@@ -3,9 +3,14 @@
 angular.module('dci')
 	.directive('dciSankey', function() {
 		return {
-			template:'<div class="sankey" id="sankey-chart"><company-info-box selected="selected" x="infoboxx" y="infoboxy"></company-info-box></div>',
+			template:'<div class="sankey"><company-info-box selected="selected" x="infoboxx" y="infoboxy"></company-info-box></div>',
 			restrict:'E',
 			scope:{app:'=', appcompany:'='},
+			link:function($scope, element) {
+				$scope.el = element.find('.sankey')[0];
+				window._ls = $scope.el;
+				console.log('link scope ', $scope.el);
+			},
 			controller:function($scope, $timeout, utils) {
 
 					var ADD_APP_LEVEL = true, // add app level
@@ -25,13 +30,6 @@ angular.module('dci')
 						format = function(d) { return formatNumber(d) + " TWh"; },
 						color = d3.scale.category20();
 
-					var svg = d3.select("#sankey-chart").append("svg")
-					    .attr("width", width + margin.left + margin.right)
-					    .attr("height", height + margin.top + margin.bottom)
-					  .append("g")
-					  	.attr("class","root")
-					    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
 					var sankey = d3.sankey()
 					    .nodeWidth(15)
 					    .nodePadding(10)
@@ -46,6 +44,13 @@ angular.module('dci')
 
 					if (!data.length) { $scope.error = 'no data for app ' + $scope.app; }
 					var recompute = () => {
+						
+						var svg = d3.select($scope.el).append("svg")
+						    .attr("width", width + margin.left + margin.right)
+						    .attr("height", height + margin.top + margin.bottom)
+						  .append("g")
+						  	.attr("class","root")
+						    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");							
 
 						var isPDCI = $scope.$parent.pdciApps && $scope.$parent.pdciApps.length || false,
 							pdciApps = isPDCI ? $scope.$parent.pdciApps : [],		
@@ -58,7 +63,7 @@ angular.module('dci')
 						console.info("isPDCI is ", isPDCI);
 
 						// clear from last drawing
-						$("#sankey-chart").find("svg g.root").children().remove(); // something like svg.remove(); would be more elegant
+						$($scope.el).find("svg g.root").children().remove(); // something like svg.remove(); would be more elegant
 
 						if (isPDCI) { 
 							// redefine data - to include all pdci apps as well

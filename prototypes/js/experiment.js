@@ -45,8 +45,9 @@ angular.module('dci')
 						doc = _.extend({}, doc, utils.deAngular($scope.experiment));
 						console.info("Document found, updating ", doc);
 						return storage.db.put(doc).then(() => doc);
-					}).catch(() => {
+					}).catch((e) => {
 						// document not found
+						console.error('error ', e);
 						var doc = utils.deAngular($scope.experiment);
 						console.info("Document not found ", doc);
 						return storage.db.put(doc);
@@ -153,7 +154,7 @@ angular.module('dci')
 					} else if ($scope.rounds.pdci.length < pN) { 
 						console.info(' lengthening ', $scope.rounds.pdci.length, ' pN ', pN);
 						range(pN - $scope.rounds.pdci.length).map(() => {
-							$scope.rounds.pdci.push({a:apps[0],b:apps[0],cond:ifaces[0],pdci:true});
+							$scope.rounds.pdci.push({a:apps[0],b:apps[0],cond:ifaces[0]});
 						});
 						console.info(' >> new PDCI rounds length ', $scope.rounds.pdci.length);
 					}
@@ -206,8 +207,9 @@ angular.module('dci')
 				$scope.run = (task) => {
 					var tid = $scope.makeTaskId(task);
 					console.info('got task id ', tid);
-					$state.go('experiment.runtask', {tid:tid});
+					$state.go('experiment.runtask', {tid:tid, pdci:$scope.experiment.rounds.pdci.indexOf(task)>=0});
 				};
+				window._r = $scope;
 			}
 		});
 
@@ -238,7 +240,7 @@ angular.module('dci')
 		});
 
 		$stateProvider.state('experiment.runtask', {
-		  	url: '/runtask?tid',
+		  	url: '/runtask?tid&pdci',
 		  	templateUrl:'tmpl/run-task.html',
 			controller:function($scope, $state, $stateParams, $interval, utils) {
 				if (!$stateParams.id) { $state.go('experiment.manage'); return;	}
@@ -258,21 +260,37 @@ angular.module('dci')
 						b:data.filter((x) => x.app === task.b)[0].appcompany,
 					};
 
+					if ($stateParams.pdci) {
+						// console.info("TASK PDCI setting ", $scope.experiment.pdciApps);
+						$scope.pdciApps = $scope.experiment.pdciApps;
+					} else {
+						delete $scope.pdciApps;
+					}
+
+					delete task.result;
+
 					$scope.choiceMade = (choice) => {
+						console.log('choicemade ', choice);
 						var end_time = (new Date()).valueOf();
+						$interval.cancel(timer_int);
 						task.result = { 
 							chosen:choice,
 							start_time: start_time,
 							elapsed: end_time-start_time,
 							end_time: end_time,
 						};
-						$scope.save().then(() => { $scope.chosen = choice; });
+						$scope.save().then(() => { 
+							console.info('save done ', task);
+							$scope.chosen = choice; 
+						});
 					};
 					// todo
-					$scope.gotoNextTask = () => { $state.go('experiment.manage'); };
-					$scope.gotoManage = () => { $state.go('experiment.manage'); };
+					$scope.next = () => { $state.go('experiment.manage'); };
+					$scope.back = () => { $state.go('experiment.run', {id:$scope.experiment._id}); };
+
 					$scope.$on('$destroy', () => $interval.cancel(timer_int));
 				});
+				window._rs = $scope;
 			}
 		});
 		console.log('yolo');

@@ -25,6 +25,10 @@
 			padding:50px;
 			margin:20px 0px;
 		}
+		&:disabled {
+			background-color:#eee;
+			opacity:0.4;
+		}
 	}
 	&.config {
 		dd{ padding:0px; margin:0px 0px 10px 0px;}
@@ -61,6 +65,13 @@
 		}
 	}
 	&.run-task {
-
+		// position:relative;
+		.time {
+			color:#ee01aa !important;
+			position:absolute;
+			right:50px;
+			top:50px;
+			font-size:12pt;
+		}
 	}
 }
