@@ -24,11 +24,8 @@ angular.module('dci')
 					parentWidth = () => selector().width(),
 					parentHeight = () => selector().height() * heightPCT,
 					lOff = () => selector().position().left,
-					tOff = () => selector().position().top;
-
-				window._ds = $scope;
-
-				var formatNumber = d3.format(",.0f"),
+					tOff = () => selector().position().top,
+					formatNumber = d3.format(",.0f"),
 					format = function(d) { return formatNumber(d) + " TWh"; },
 					color = d3.scale.category20();
 
@@ -205,13 +202,8 @@ angular.module('dci')
 					  .style("stroke-width", (d) => Math.max(1, d.dy))
 					  .sort((a, b) => b.dy - a.dy);
 
-					console.log('do it app ');
-
 					link.append("title")
 				    	.text(function(d) { return d.source.name + " → " + d.target.name + " ("+d.value+")"; });
-
-					console.log('do it node ');
-
 
 					var node = svg.append("g").selectAll(".node")
 						.data(newnodes)
