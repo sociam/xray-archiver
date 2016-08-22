@@ -19,7 +19,7 @@ angular.module('dci')
 					range = $scope.range = utils.range;				
 
 				console.log('experiment framework > ', apps.length, 'apps');				
-				$scope.data = data;
+				$scope.data = $scope.allData = data;
 				$scope.pitypes = pitypes;
 				$scope.hosts = hosts;
 				$scope.details = details;
@@ -28,7 +28,7 @@ angular.module('dci')
 				$scope.load = function(eId) { 	
 					// sets current experiment to be this experiment
 					utils.assert(eId, "eID not defined" + eId);
-					return storage.get(eId).then((doc) => { 
+					return storage.db.get(eId).then((doc) => { 
 						$scope.experiment = doc; 
 						return $scope.experiment; 
 					});
@@ -42,8 +42,8 @@ angular.module('dci')
 					window.exp = $scope.experiment;
 					var id = $scope.experiment._id;
 					return storage.db.get(id).then((doc) => {
-						console.info("Document found, updating");
-						_(doc).extend(utils.deAngular($scope.experiment));
+						doc = _.extend({}, doc, utils.deAngular($scope.experiment));
+						console.info("Document found, updating ", doc);
 						return storage.db.put(doc).then(() => doc);
 					}).catch(() => {
 						// document not found
@@ -55,6 +55,23 @@ angular.module('dci')
 						return x;
 					});
 				};
+				$scope.getTask = (taskid) => {
+					var tasksplit = taskid.split('::'),
+						pdciopt = tasksplit[0],
+						round = parseInt(tasksplit[1]);
+
+					console.info('getTask choosing ', pdciopt, ' - round#', round);
+					return $scope.experiment.rounds[pdciopt][round];
+				};
+				$scope.makeTaskId = (task) => {
+					var dciidx = $scope.experiment.rounds.dci.indexOf(task);
+					if (dciidx >= 0) { 
+						return ['dci',''+dciidx].join('::');
+					}
+					dciidx = $scope.experiment.rounds.pdci.indexOf(task);
+					return ['pdci',''+dciidx].join('::');
+				};
+
 				// delegate to a substate ::
 				//   if run then we go and run otherwise manage
 				if ($stateParams.id) { 
@@ -62,6 +79,8 @@ angular.module('dci')
 				} else {
 					$state.go('experiment.manage');
 				}
+
+
 			}			
 		});
 
@@ -180,8 +199,15 @@ angular.module('dci')
 					$state.go('experiment.manage');
 					return;
 				}
-				$scope.load($stateParams.id).then((experiment) => { $scope.e = experiment; });
+				if (!$scope.experiment || $scope.experiment._id !== $stateParams.id) { 
+					$scope.load($stateParams.id);
+				}
 				$scope.selectApps = () => $state.go('experiment.runselect');
+				$scope.run = (task) => {
+					var tid = $scope.makeTaskId(task);
+					console.info('got task id ', tid);
+					$state.go('experiment.runtask', {tid:tid});
+				};
 			}
 		});
 
@@ -192,18 +218,18 @@ angular.module('dci')
 				// allow people to select apps they're using
 				if (!$stateParams.id) { $state.go('experiment.manage'); return;	}
 				var init = Promise.resolve();				
-				if ($scope.experiment._id !== $stateParams.id) { 
+				if (!$scope.experiment || $scope.experiment._id !== $stateParams.id) { 
 					init = $scope.load($stateParams.id).then(() => console.log('loaded'));
 				}
 				init.then(() => {
 					// now we've loaded
-					$scope.selected = {};
-					$scope.save = () => {
-						var selected = _($scope.selected).pickBy((v,k) => v).keys();
+					$scope.selected = ($scope.experiment.pdciApps || []).reduce((obj,k) => { obj[k] = true; return obj; }, {});
+					$scope.doSave = () => {
+						var selected = _($scope.selected).pickBy((v,k) => v).keys().value();
 						console.info('setting selected apps to be ', selected);
 						$scope.experiment.pdciApps = selected;
 						$scope.save().then(() => {
-							console.info('experiment saved >> ');
+							console.info('<< experiment saved', $scope.experiment);
 							$state.go('experiment.run', {id:$scope.experiment._id});
 						});
 					};
@@ -217,34 +243,35 @@ angular.module('dci')
 			controller:function($scope, $state, $stateParams, $interval, utils) {
 				if (!$stateParams.id) { $state.go('experiment.manage'); return;	}
 				var init = Promise.resolve();				
-				if ($scope.experiment._id !== $stateParams.id) { 
+				if (!$scope.experiment || $scope.experiment._id !== $stateParams.id) { 
 					init = $scope.load($stateParams.id);
 				}
 				init.then(() => {
 					var start_time = new Date().valueOf(),
 						data = $scope.data,
-						task = $scope.task = $scope.getTask($stateParams.tid),
+						task = $scope.t = $scope.getTask($stateParams.tid),
 						timer_int = $interval(() => { $scope.elapsed = (new Date()).valueOf() - start_time; });
 
-					console.info("initialising timer ", start_time);
+					console.info("GOT task ", task);
 					$scope.companies = {
 						a:data.filter((x) => x.app === task.a)[0].appcompany,
 						b:data.filter((x) => x.app === task.b)[0].appcompany,
 					};
 
 					$scope.choiceMade = (choice) => {
+						var end_time = (new Date()).valueOf();
 						task.result = { 
-							choice:choice,
-							elapsed: (new Date()).valueOf()-start_time
+							chosen:choice,
+							start_time: start_time,
+							elapsed: end_time-start_time,
+							end_time: end_time,
 						};
-						$scope.save().then(() => {
-							$scope.chosen = choice;
-						});
+						$scope.save().then(() => { $scope.chosen = choice; });
 					};
 					// todo
 					$scope.gotoNextTask = () => { $state.go('experiment.manage'); };
 					$scope.gotoManage = () => { $state.go('experiment.manage'); };
-					$scope.on('$destroy', () => $interval.cancel(timer_int));
+					$scope.$on('$destroy', () => $interval.cancel(timer_int));
 				});
 			}
 		});
