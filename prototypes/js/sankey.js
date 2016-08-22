@@ -5,7 +5,7 @@ angular.module('dci')
 		return {
 			template:'<div class="sankey"><company-info-box selected="selected" x="infoboxx" y="infoboxy"></company-info-box></div>',
 			restrict:'E',
-			scope:{app:'=', appcompany:'='},
+			scope:{app:'=', appcompany:'=', heightpct:'@'},
 			link:function($scope, element) {
 				$scope.el = element.find('.sankey')[0];
 				window._ls = $scope.el;
@@ -13,6 +13,7 @@ angular.module('dci')
 			},
 			controller:function($scope, $timeout, utils) {
 				var ADD_APP_LEVEL = true, // add app level
+					heightPCT = ($scope.heightpct && parseFloat($scope.heightpct) / 100.0) || 1.0;
 					allData = $scope.$parent.allData,
 					hosts = $scope.$parent.hosts,
 					data = $scope.$parent.data,	
@@ -20,10 +21,11 @@ angular.module('dci')
 					pitypes = $scope.$parent.pitypes,
 					app_id = utils.toAppId($scope.app),
 					margin = {top: 1, right: 30, bottom: 6, left: 30},
-					parentWidth = () => $($scope.el).closest('.all').width(),
-					parentHeight = () => $($scope.el).closest('.all').height(),
-					lOff = () => $($scope.el).closest('.all').position().left,
-					tOff = () => $($scope.el).closest('.all').position().top;
+					selector = () => $($scope.el).closest('.sankey'),
+					parentWidth = () => selector().width(),
+					parentHeight = () => selector().height() * heightPCT,
+					lOff = () => selector().position().left,
+					tOff = () => selector().position().top;
 
 				window._ds = $scope;
 
