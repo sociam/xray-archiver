@@ -27,6 +27,15 @@
 		<dci-sankey app="t.b" appcompany='companies.b'></dci-sankey>
 		<button ng-click="choiceMade(t.b)">Choose {{t.b}}</button>
 	</div>
+	<div class="cond" ng-if="t.cond === 'tablepl'">
+		<div class="appname">{{ t.a }} <span class="appcompany">{{companies.a}}</span></div>
+		<dci-table-privacy-leaks app="t.a" appcompany='companies.a'></dci-table-privacy-leaks>
+		<button ng-click="choiceMade(t.a)">Choose {{t.a}}</button>				
+		<hr>
+		<div class="appname">{{ t.b }} <span class="appcompany">{{companies.b}}</span></div>				
+		<dci-table-privacy-leaks app="t.b" appcompany='companies.b'></dci-table-privacy-leaks>
+		<button ng-click="choiceMade(t.b)">Choose {{t.b}}</button>
+	</div>
 	<div>
 		<button ng-click="next()" ng-disabled="!(t.result && t.result.chosen)">Next Round</button>
 		<button ng-click="back()">Exit</button>

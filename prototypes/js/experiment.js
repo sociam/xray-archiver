@@ -124,7 +124,7 @@ angular.module('dci')
 				console.log('config');
 				var apps = $scope.apps,
 					range = $scope.range,
-					ifaces = $scope.ifaces = ['table','sankey','box'];
+					ifaces = $scope.ifaces = ['table','sankey','box', 'tablepl'];
 				$scope.genID = utils.guid;
 				$scope.participantid = 'part-'+utils.guid(4);
 				$scope.runid = 'run-'+utils.guid(4);
