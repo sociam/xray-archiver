@@ -15,7 +15,7 @@ angular.module('dci')
 						c2pi = $scope.c2pi = utils.makeCompany2pi($scope.app, data, hosts, pitypes, 0),
 						cat2c2pi = utils.makeCategories($scope.appcompany, details, c2pi),
 						pits = $scope.pits = _(c2pi).values().flatten().uniq(),
-						pi2cat = $scope.pi2cap = pits.reduce((red, pit) => {
+						pi2cat = $scope.pi2cat = pits.reduce((red, pit) => {
 							var cats = _.keys(cat2c2pi).filter((cat) => {
 								return _(cat2c2pi[cat]).values().flatten().uniq().indexOf(pit) >= 0;
 							});
