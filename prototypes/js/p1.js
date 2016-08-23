@@ -57,8 +57,8 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize', 'pouch
 				if (!data.length) { $scope.error = 'no data for app ' + $stateParams.app; }
 				
 				// set app name / company
-				$scope.app = $stateParams.app;
-				$scope.appcompany = data[0].company;
+				// $scope.app = $stateParams.app;
+				// $scope.appcompany = data[0].company;
 
 				// sets mode for toolbar
 				$scope.mode = $stateParams.mode || 'box';
