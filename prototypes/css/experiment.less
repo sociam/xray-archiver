@@ -72,8 +72,14 @@
 	}
 	&.run-task {
 		width:100%; height:100% !important;
+		.appname { 
+			color:#ee01aa;
+			font-size:28pt;
+			font-weight:200;
+			text-align:center;
+			margin:5px 0px;
+		}
 		.cond { width:100%; height:100%; }
-		// position:relative;
 		.time {
 			color:#ee01aa !important;
 			position:absolute;
@@ -84,6 +90,13 @@
 		.sankey { 
 			width:100%;
 			height:50%;
+		}
+		.sidebyside-perms {
+			.side-perms { 
+				display:inline-block;				
+				width:540px;
+				&:first-child { border-right: 1px solid #eee; }
+			}
 		}
 	}
 }
