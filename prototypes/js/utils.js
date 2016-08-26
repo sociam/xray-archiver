@@ -155,6 +155,15 @@ angular.module('dci').factory('utils', () => {
 			'payments': "Functionality related to payments",
 			'security': "Functionality related to ensuring data remains secure",				
 		},
+		cat_desc_short: { 
+			'app-publisher': "Functionality",
+			'app-functionality': "Functionality",
+			'marketing': "Marketing",
+			'usage tracking': "Usage Tracking",
+			'payments': "Payments",
+			'security': "Security",
+			'other':'Other'
+		},
 		range: function (l,h) {
 			var a = [];
 			if (_.isUndefined(h)) { h = l; l = 0; }

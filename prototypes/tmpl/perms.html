@@ -6,7 +6,10 @@
 		</div>
 		<div class="permblock" ng-if="pi2cat['USER_LOCATION'] || pi2cat['USER_LOCATION_COARSE']">
 			<img class="icon" src="img/location.png">
-			<div class="title">Location</div>
+			<div ng-if="showpurpose" class="purpose">
+				{{ pi2cat_render('USER_LOCATION', 'USER_LOCATION_COARSE') }}
+			</div>
+			<div class="title">Location</div>			
 			<ul>
 				<li ng-if="pi2cat['USER_LOCATION_COARSE']">Access your approximate location (City/Town)</li>
 				<li ng-if="pi2cat['USER_LOCATION']">Access your precise location via GPS and WiFi.</li>
@@ -14,14 +17,20 @@
 		</div>
 		<div class="permblock" ng-if="pi2cat['USER_PERSONAL_DETAILS']">
 			<img class="icon" src="img/user-personal.png">
+			<div ng-if="showpurpose" class="purpose">
+				{{ pi2cat_render('USER_PERSONAL_DETAILS') }}
+			</div>
 			<div class="title">Personal Details</div>
 			<ul>
-				<li>Your personal details that you provide it, such as: age, sex, weight, height, date of birth.</li>
+				<li>Personal details about you, such as: age, sex, weight, height, or date of birth.</li>
 			</ul>
 		</div>
 		<div class="permblock" ng-if="pi2cat['DEVICE_ID'] || pi2cat['DEVICE_SOFT']">
 			<img class="icon" src="img/user-device.png">
-			<div class="title">About Your Phone</div>
+			<div ng-if="showpurpose" class="purpose">
+				{{ pi2cat_render('DEVICE_ID', 'DEVICE_SOFT') }}
+			</div>
+			<div class="title">About Your Phone</div>			
 			<ul>
 				<li ng-if="pi2cat['DEVICE_ID']">Your phone's unique identifier</li>
 				<li ng-if="pi2cat['DEVICE_SOFT']">About your phone, including its model number, screen size, operating system.</li>

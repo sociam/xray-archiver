@@ -50,6 +50,21 @@
 			</div>
 		</div>
 	</div>
+	<div class="cond" ng-if="t.cond === 'permpurpose'">
+		<div class="sidebyside-perms">
+			<div class="side-perms">
+				<div class="appname">{{ t.a }} <span class="appcompany">{{companies.a}}</span></div>
+				<permissions app="t.a" appcompany='companies.a' purpose='true'></permissions>
+				<button ng-click="choiceMade(t.a)">Choose {{t.a}}</button>				
+			</div>
+			<div class="side-perms">
+				<div class="appname">{{ t.b }} <span class="appcompany">{{companies.b}}</span></div>
+				<permissions app="t.b" appcompany='companies.b' purpose='true'></permissions>
+				<button ng-click="choiceMade(t.b)">Choose {{t.b}}</button>
+			</div>
+		</div>
+	</div>
+
 
 	<div>
 		<button ng-click="next()" ng-disabled="!(t.result && t.result.chosen)">Next Round</button>
