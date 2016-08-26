@@ -64,10 +64,15 @@
 			</div>
 		</div>
 	</div>
+	<div class="chosenPane" ng-if="t.result.chosen">
+		Great! Please answer the following questions:
+		<ol>
+			<li class="question">Why did you choose {{ t.result.chosen }} ? (spoken response) </li>
 
-
-	<div>
-		<button ng-click="next()" ng-disabled="!(t.result && t.result.chosen)">Next Round</button>
-		<button ng-click="back()">Exit</button>
+			<li class="question likert">
+				<likert-question response="t.result.confidence">I am confident in my choice of app.</likert-question>
+			</li>
+		</ol>
+		<button ng-if="t.result.confidence !== undefined" ng-click="next()">Next step &gt; </button>
 	</div>
 </div>

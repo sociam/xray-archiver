@@ -42,14 +42,17 @@ angular.module('dci')
 					window.exp = $scope.experiment;
 					var id = $scope.experiment._id;
 					return storage.db.get(id).then((doc) => {
-						doc = _.extend({}, doc, utils.deAngular($scope.experiment));
-						console.info("Document found, updating ", doc);
+						doc = _.extend({}, doc, utils.deAngular($scope.experiment), {_rev:doc._rev});
+						console.info("Document found, updating ", doc, doc._rev);
+						window._db = storage.db;
 						return storage.db.put(doc).then(() => doc);
 					}).catch((e) => {
 						// document not found
 						console.error('error ', e);
 						var doc = utils.deAngular($scope.experiment);
-						console.info("Document not found ", doc);
+						if (doc.status === 404) { 
+							console.info("Document not found ", doc);
+						}
 						return storage.db.put(doc);
 					}).finally((x) => {
 						console.info('finally done experiment ', id);
@@ -71,6 +74,22 @@ angular.module('dci')
 					}
 					dciidx = $scope.experiment.rounds.pdci.indexOf(task);
 					return ['pdci',''+dciidx].join('::');
+				};
+				$scope.findNextState = (cur_tid) => {
+					var tasksplit = cur_tid.split('::'),
+						pdciopt = tasksplit[0],
+						round = parseInt(tasksplit[1]),
+						nextRound = round+1;
+
+					if ($scope.experiment.rounds[pdciopt][nextRound]) { 
+						return { tid: $scope.makeTaskId($scope.experiment.rounds[pdciopt][nextRound]), pdci:pdciopt==='pdci' };
+					}
+					//	we have run out of dci
+					if (pdciopt === 'dci' && $scope.experiment.rounds.pdci[0]) { 
+						return { tid: $scope.makeTaskId($scope.experiment.rounds.pdci[0]), pdci:true };
+					}
+
+					// fall through
 				};
 
 				// delegate to a substate ::
@@ -280,14 +299,27 @@ angular.module('dci')
 							end_time: end_time,
 						};
 						$scope.save().then(() => { 
-							console.info('save done ', task);
-							$scope.chosen = choice; 
+							console.info('save done ', task);							
 						});
 					};
+					
 					// todo
-					$scope.next = () => { $state.go('experiment.manage'); };
+					$scope.next = () => { 
+						var nextState = $scope.findNextState($stateParams.tid,$stateParams.pdci);
+						if (nextState !== undefined) { 
+							console.info('GOING nextState ', nextState);
+							$state.go('experiment.runtask', nextState);
+						} else {
+							$state.go('experiment.manage'); 
+						}
+					};
 					$scope.back = () => { $state.go('experiment.run', {id:$scope.experiment._id}); };
-
+					$scope.$watch('t.result.confidence', () => {
+						console.log('confidence changed ', $scope.t && $scope.t.result && $scope.t.result.confidence);
+						$scope.save().then(() => {
+							console.log('saved experiment with task ', $scope.t);
+						});
+					});
 					$scope.$on('$destroy', () => $interval.cancel(timer_int));
 				});
 				window._rs = $scope;

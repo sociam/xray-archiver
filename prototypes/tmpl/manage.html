@@ -1,6 +1,9 @@
 <div class="experiment manage">
 	<h2>Manage Experiments</h2>
-	<table>
+	<div ng-if="!(experiments && experiments.length)">
+		No experiments found.
+	</div>
+	<table ng-if="experiments && experiments.length">
 		<thead>
 			<th>experiment</th><th>participant</th><th>created</th>
 		</thead>

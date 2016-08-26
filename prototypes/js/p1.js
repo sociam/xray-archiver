@@ -149,4 +149,14 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize', 'pouch
 	  }
    }).factory('storage', function(pouchDB) { 
    		return { db : new pouchDB('experiment') };
+   }).component('likertQuestion', {
+	  templateUrl: 'tmpl/likert.html',
+	  bindings: { response:'=' },	  	  
+	  transclude:true,
+	  controller: function($scope, utils) { 
+	  	$scope.values = utils.range(5).map((x) => 'likert-'+(x+1));
+		$scope.$watch('response', () => { console.info('response changed ', this.response); });
+		$scope.change = (x) => { console.log('selected ', x); this.response = x; };
+		window._slike = $scope;
+	  }   	
    });
