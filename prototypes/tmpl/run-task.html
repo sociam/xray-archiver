@@ -3,50 +3,50 @@
 	<div class="cond" ng-if="t.cond === 'sankey'">
 		<div class="appname">{{ t.a }} <span class="appcompany">{{companies.a}}</span></div>	
 		<dci-sankey app="t.a" appcompany='companies.a'></dci-sankey>
-		<button ng-click="choiceMade(t.a)">Choose {{t.a}}</button>				
+		<div class="app-choose-btn"><button ng-click="choiceMade(t.a)">Choose {{t.a}}</button></div>				
 		<hr>
 		<div class="appname">{{ t.b }} <span class="appcompany">{{companies.b}}</span></div>		
 		<dci-sankey app="t.b" appcompany='companies.b'></dci-sankey>
-		<button ng-click="choiceMade(t.b)">Choose {{t.b}}</button>
+		<div class="app-choose-btn"><button ng-click="choiceMade(t.b)">Choose {{t.b}}</button></div>
 	</div>
 	<div class="cond" ng-if="t.cond === 'table'">
 		<div class="appname">{{ t.a }} <span class="appcompany">{{companies.a}}</span></div>
 		<dci-table app="t.a" appcompany='companies.a'></dci-table>
-		<button ng-click="choiceMade(t.a)">Choose {{t.a}}</button>		
+		<div class="app-choose-btn"><button ng-click="choiceMade(t.a)">Choose {{t.a}}</button></div>		
 		<hr>
 		<div class="appname">{{ t.b }} <span class="appcompany">{{companies.b}}</span></div>		
 		<dci-table app="t.b" appcompany='companies.b'></dci-table>
-		<button ng-click="choiceMade(t.b)">Choose {{t.b}}</button>
+		<div class="app-choose-btn"><button ng-click="choiceMade(t.b)">Choose {{t.b}}</button></div>
 	</div>
 	<div class="cond" ng-if="t.cond === 'box'">
 		<div class="appname">{{ t.a }} <span class="appcompany">{{companies.a}}</span></div>
 		<dci-sankey app="t.a" appcompany='companies.a'></dci-sankey>
-		<button ng-click="choiceMade(t.a)">Choose {{t.a}}</button>				
+		<div class="app-choose-btn"><button ng-click="choiceMade(t.a)">Choose {{t.a}}</button></div>				
 		<hr>
 		<div class="appname">{{ t.b }} <span class="appcompany">{{companies.b}}</span></div>				
 		<dci-sankey app="t.b" appcompany='companies.b'></dci-sankey>
-		<button ng-click="choiceMade(t.b)">Choose {{t.b}}</button>
+		<div class="app-choose-btn"><button ng-click="choiceMade(t.b)">Choose {{t.b}}</button></div>
 	</div>
 	<div class="cond" ng-if="t.cond === 'tablepl'">
 		<div class="appname">{{ t.a }} <span class="appcompany">{{companies.a}}</span></div>
 		<dci-table-privacy-leaks app="t.a" appcompany='companies.a'></dci-table-privacy-leaks>
-		<button ng-click="choiceMade(t.a)">Choose {{t.a}}</button>				
+		<div class="app-choose-btn"><button ng-click="choiceMade(t.a)">Choose {{t.a}}</button></div>				
 		<hr>
 		<div class="appname">{{ t.b }} <span class="appcompany">{{companies.b}}</span></div>				
 		<dci-table-privacy-leaks app="t.b" appcompany='companies.b'></dci-table-privacy-leaks>
-		<button ng-click="choiceMade(t.b)">Choose {{t.b}}</button>
+		<div class="app-choose-btn"><button ng-click="choiceMade(t.b)">Choose {{t.b}}</button></div>
 	</div>
 	<div class="cond" ng-if="t.cond === 'permission'">
 		<div class="sidebyside-perms">
 			<div class="side-perms">
 				<div class="appname">{{ t.a }} <span class="appcompany">{{companies.a}}</span></div>
 				<permissions app="t.a" appcompany='companies.a'></permissions>
-				<button ng-click="choiceMade(t.a)">Choose {{t.a}}</button>				
+				<div class="app-choose-btn"><button ng-click="choiceMade(t.a)">Choose {{t.a}}</button></div>				
 			</div>
 			<div class="side-perms">
 				<div class="appname">{{ t.b }} <span class="appcompany">{{companies.b}}</span></div>
 				<permissions app="t.b" appcompany='companies.b'></permissions>
-				<button ng-click="choiceMade(t.b)">Choose {{t.b}}</button>
+				<div class="app-choose-btn"><button ng-click="choiceMade(t.b)">Choose {{t.b}}</button></div>
 			</div>
 		</div>
 	</div>
@@ -55,12 +55,12 @@
 			<div class="side-perms">
 				<div class="appname">{{ t.a }} <span class="appcompany">{{companies.a}}</span></div>
 				<permissions app="t.a" appcompany='companies.a' purpose='true'></permissions>
-				<button ng-click="choiceMade(t.a)">Choose {{t.a}}</button>				
+				<div class="app-choose-btn"><button ng-click="choiceMade(t.a)">Choose {{t.a}}</button></div>				
 			</div>
 			<div class="side-perms">
 				<div class="appname">{{ t.b }} <span class="appcompany">{{companies.b}}</span></div>
 				<permissions app="t.b" appcompany='companies.b' purpose='true'></permissions>
-				<button ng-click="choiceMade(t.b)">Choose {{t.b}}</button>
+				<div class="app-choose-btn"><button ng-click="choiceMade(t.b)">Choose {{t.b}}</button></div>
 			</div>
 		</div>
 	</div>
