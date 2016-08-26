@@ -143,7 +143,7 @@ angular.module('dci')
 				console.log('config');
 				var apps = $scope.apps,
 					range = $scope.range,
-					ifaces = $scope.ifaces = ['table','sankey','box', 'privleaks', 'permission', 'permpurpose'];
+					ifaces = $scope.ifaces = ['table','sankey','box', 'tablepl', 'permission', 'permpurpose'];
 				$scope.genID = utils.guid;
 				$scope.participantid = 'part-'+utils.guid(4);
 				$scope.runid = 'run-'+utils.guid(4);
@@ -304,7 +304,7 @@ angular.module('dci')
 						});
 					};
 					$scope.nextQ = () => $scope.stage++;
-										
+
 					// todo
 					$scope.next = () => { 
 						var nextState = $scope.findNextState($stateParams.tid,$stateParams.pdci);
