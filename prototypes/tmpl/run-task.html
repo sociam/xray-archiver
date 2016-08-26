@@ -65,14 +65,18 @@
 		</div>
 	</div>
 	<div class="chosenPane" ng-if="t.result.chosen">
-		Great! Please answer the following questions:
-		<ol>
-			<li class="question">Why did you choose {{ t.result.chosen }} ? (spoken response) </li>
-
-			<li class="question likert">
-				<likert-question response="t.result.confidence">I am confident in my choice of app.</likert-question>
-			</li>
-		</ol>
-		<button ng-if="t.result.confidence !== undefined" ng-click="next()">Next step &gt; </button>
+		<h2> Post-task questions (2) : </h2> 
+		<div ng-if='stage===1'>
+			<div class="question">1. Why did you choose {{ t.result.chosen }} ? </div>
+			<div> (<i>Please briefly explain your choice verbally</i>)</div>
+			<div class="buttons"><button ng-click="nextQ()">Next question &gt;</button></div>
+		</div>
+		<div class="likert" ng-if='stage===2'>
+			<div>2. How much do you agree with the following statement? </div>
+			<likert-question response="t.result.confidence">I am confident in my choice of app.</likert-question>
+			<div class="buttons">
+				<button ng-disabled="t.result.confidence===undefined" ng-click="next()">Done! Go to next task &gt; </button>
+			</div>
+		</div>
 	</div>
 </div>

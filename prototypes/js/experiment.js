@@ -298,11 +298,13 @@ angular.module('dci')
 							elapsed: end_time-start_time,
 							end_time: end_time,
 						};
+						$scope.stage = 1;
 						$scope.save().then(() => { 
 							console.info('save done ', task);							
 						});
 					};
-					
+					$scope.nextQ = () => $scope.stage++;
+										
 					// todo
 					$scope.next = () => { 
 						var nextState = $scope.findNextState($stateParams.tid,$stateParams.pdci);
