@@ -1,11 +1,15 @@
 <div class="experiment run-phase1 run-task">
+		<div class="title">
+			<span ng-if="!pdciApps">Information flows for <span class="appname">{{ app }}</span> <span ng-if="appcompany" class='appcompany'>(by {{ appcompany }})</span></span>
+			<span ng-if="pdciApps">Personalised information flows for <span class="appname">{{ app }}</span> <span ng-if="appcompany" class="appcompany">(by {{ appcompany }})</span> <span class="context">contextualised against {{ pdciApps.length }} other apps</span>. </span>
+			<div class="donebutton btn" ui-sref="experiment.run">Done</div>
+		</div>
 		<div class="selector">
 			<input type='radio' name='interface' value='table' ng-model='dci.iface' id="sel-table"><label for="sel-table"><img src="img/table-icon.png"> - Table</label>
 			<input type='radio' name='interface' value='sankey' ng-model='dci.iface' id="sel-sankey"><label for="sel-sankey"><img src="img/sankey-icon.png"> - Flow</label>
-			<div class="donebutton btn" ui-sref="experiment.run">Done</div>
 		</div>
-		<div class="appname">{{ app }}</div>
-		<div ng-if='appcompany' class='appcompany'>(by {{ appcompany }})</div>
+		<!-- <div class="appname">{{ app }}</div> -->
+		<!-- <div ng-if='appcompany' class='appcompany'>(by {{ appcompany }})</div> -->
 		<dci-sankey ng-if="dci.iface==='sankey'" app="app" appcompany='appcompany'></dci-sankey>
 		<dci-table ng-if="dci.iface==='table'" app="app" appcompany='appcompany'></dci-table>
 </div>

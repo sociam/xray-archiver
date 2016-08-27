@@ -1,9 +1,12 @@
 <div class="experiment run-task">
+	<h2>If you had to install and use one of these two apps, which would you choose?</h2>
 	<!--<div ng-show='false' class="time" ng-bind="elapsed/1000"></div>-->
+	<div class="donebutton btn" ui-sref="experiment.run">Done</div>			
 	<div class="cond" ng-if="t.cond === 'dci' || t.cond === 'pdci'">
 		<div class="selector">
 			<input type='radio' name='interface' value='table' ng-model='dci.iface' id="sel-table"><label for="sel-table"><img src="img/table-icon.png"> - Table</label>
 			<input type='radio' name='interface' value='sankey' ng-model='dci.iface' id="sel-sankey"><label for="sel-sankey"><img src="img/sankey-icon.png"> - Flow</label>
+			<span ng-if="pdciApps" class='context'>Contextualised against {{pdciApps.length}} other apps.</span>
 		</div>
 		<div class="appname">{{ t.a }} <span class="appcompany">{{companies.a}}</span>
 			<button class="app-choose-btn" ng-click="choiceMade(t.a)">Choose {{t.a}}</button>		
