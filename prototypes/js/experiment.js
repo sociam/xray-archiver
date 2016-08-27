@@ -76,12 +76,16 @@ angular.module('dci')
 					throw new Error("Error making taskID");
 				};
 				$scope.findNextState = (cur_tid) => {
-					if (taskid.indexOf('task-') === 0) {
-						var idx = parseInt(taskid.slice('task-'.length)),
-							nxt = idx++;
-						return $scope.experiment.rounds[nxt];
+					if (cur_tid.indexOf('task-') === 0) {
+						var idx = parseInt(cur_tid.slice('task-'.length)),
+							nxt = idx+1;
+						console.info('cur_tid is ', cur_tid, 'idx', idx, ' nxt', nxt);
+						if ($scope.experiment.rounds[nxt]) {
+							return {tid:$scope.makeTaskId($scope.experiment.rounds[nxt])};
+						} 
+						return; // fall through
 					}	
-					throw new Error("Malformed taskID " + taskid);						
+					throw new Error("Malformed taskID " + cur_tid);						
 					/*
 					var tasksplit = cur_tid.split('::'),
 						pdciopt = tasksplit[0],
@@ -211,7 +215,7 @@ angular.module('dci')
 				$scope.run = (task) => {
 					var tid = $scope.makeTaskId(task);
 					console.info('got task id ', tid);
-					$state.go('experiment.runtask', {tid:tid, pdci:$scope.experiment.rounds.pdci.indexOf(task)>=0});
+					$state.go('experiment.runtask', {tid:tid});
 				};
 				window._r = $scope;
 			}
@@ -232,7 +236,6 @@ angular.module('dci')
 					$scope.selected = ($scope.experiment.pdciApps || []).reduce((obj,k) => { obj[k] = true; return obj; }, {});
 					$scope.doSave = () => {
 						var selected = _($scope.selected).pickBy((v,k) => v).keys().value();
-						console.info('setting selected apps to be ', selected);
 						$scope.experiment.pdciApps = selected;
 						$scope.save().then(() => {
 							console.info('<< experiment saved', $scope.experiment);
@@ -258,6 +261,11 @@ angular.module('dci')
 						task = $scope.t = $scope.getTask($stateParams.tid),
 						timer_int = $interval(() => { $scope.elapsed = (new Date()).valueOf() - start_time; });
 
+					if (['dci','pdci'].indexOf(task.cond) >= 0) {
+						console.info('setting iface ');
+						$scope.dci = {iface:'table'};
+					}
+
 					console.info("GOT task ", task);
 					$scope.companies = {
 						a:data.filter((x) => x.app === task.a)[0].appcompany,
@@ -280,6 +288,7 @@ angular.module('dci')
 						$interval.cancel(timer_int);
 						task.result = { 
 							chosen:choice,
+							dci_lastused: ['dci','pdci'].indexOf(task.cond) >= 0 ? $scope.dci.iface : undefined,
 							start_time: start_time,
 							elapsed: end_time-start_time,
 							end_time: end_time,
@@ -293,7 +302,7 @@ angular.module('dci')
 
 					// todo
 					$scope.next = () => { 
-						var nextState = $scope.findNextState($stateParams.tid,$stateParams.pdci);
+						var nextState = $scope.findNextState($stateParams.tid);
 						if (nextState !== undefined) { 
 							console.info('GOING nextState ', nextState);
 							$state.go('experiment.runtask', nextState);

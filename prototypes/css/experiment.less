@@ -50,7 +50,9 @@
 		}
 	}
 	&.run {
-		.done { background-color:#10FF10; }
+		.done { 
+			background-color:rgb(200,255,255,0.2);
+		}
 	}
 	&.run-select  {
 		.scrollable { 
@@ -74,6 +76,26 @@
 	}
 	&.run-task {
 		width:100%; height:100% !important;
+		.selector {
+			  // use an image instead of the native radio widget
+			  font-size:18pt;
+			  width:100%;
+			  margin:0px 0px 20px 0px;
+			  input[type=radio] {  display: none;   }
+			  input[type=radio] + label {
+   			    border:1px solid #efefef;
+   			    padding:15px 20px;   			    
+   			    margin:0px 20px 0px 0px;
+			  }
+			  input[type=radio]:checked + label {
+   			    font-weight:bold;
+   			    border:1px solid #ee01aa;
+				border-radius:5px;	   			    
+			  }
+  			    img { width:30px; height:24px; }
+
+
+		}
 		.appname { 
 			position:relative;
 			width:100%;

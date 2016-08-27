@@ -2,20 +2,20 @@
 	<!--<div ng-show='false' class="time" ng-bind="elapsed/1000"></div>-->
 	<div class="cond" ng-if="t.cond === 'dci' || t.cond === 'pdci'">
 		<div class="selector">
-			<input type='radio' name='interface' ng-value='table' ng-model='iface'>Table</div>
-			<input type='radio' name='interface' ng-value='sankey' ng-model='iface'>Flow</div>
+			<input type='radio' name='interface' value='table' ng-model='dci.iface' id="sel-table"><label for="sel-table"><img src="img/table-icon.png"> - Table</label>
+			<input type='radio' name='interface' value='sankey' ng-model='dci.iface' id="sel-sankey"><label for="sel-sankey"><img src="img/sankey-icon.png"> - Flow</label>
 		</div>
 		<div class="appname">{{ t.a }} <span class="appcompany">{{companies.a}}</span>
 			<button class="app-choose-btn" ng-click="choiceMade(t.a)">Choose {{t.a}}</button>		
 		</div>	
-		<dci-sankey ng-if="iface==='sankey'" app="t.a" appcompany='companies.a'></dci-sankey>
-		<dci-table ng-if="iface==='table'" app="t.a" appcompany='companies.a'></dci-table>
+		<dci-sankey ng-if="dci.iface==='sankey'" app="t.a" appcompany='companies.a'></dci-sankey>
+		<dci-table ng-if="dci.iface==='table'" app="t.a" appcompany='companies.a'></dci-table>
 		<hr>
 		<div class="appname">{{ t.b }} <span class="appcompany">{{companies.b}}</span> 		
 			<button class="app-choose-btn" ng-click="choiceMade(t.b)">Choose {{t.b}}</button>
 		</div>		
-		<dci-sankey ng-if="iface==='sankey'"  app="t.b" appcompany='companies.b'></dci-sankey>
-		<dci-table ng-if="iface==='table'"  app="t.b" appcompany='companies.b'></dci-table>
+		<dci-sankey ng-if="dci.iface==='sankey'"  app="t.b" appcompany='companies.b'></dci-sankey>
+		<dci-table ng-if="dci.iface==='table'"  app="t.b" appcompany='companies.b'></dci-table>
 	</div>
 	<div class="cond" ng-if="t.cond === 'box'">
 		<div class="appname">{{ t.a }} <span class="appcompany">{{companies.a}}</span>

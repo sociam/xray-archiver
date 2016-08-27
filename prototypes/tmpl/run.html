@@ -1,4 +1,4 @@
-<div class="experiment run-task">
+<div class="experiment run">
 
 	<h4><a ui-sref="experiment.manage">Manage</a></h4>
 
@@ -12,14 +12,14 @@
 	<h4>phase 1 : reflection</h4>
 	<ul>
 		<li ng-repeat="n in experiment.pdciApps" target="_blank"> {{ n }} <button>DCI</button> <button> PDCI</button> </li>
-	</li>
-	
+	</ul>
+
 	<h4>phase 2 : choose the app you like better </h4>
 	<table>
 		<thead>
 			<th>round</th><th>condition</th><th>a</th><th>b</th><th>run?</th>
 		</thead>
-		<tr ng-repeat="x in experiment.rounds.dci" ng-class="{done:x.result.chosen}">
+		<tr ng-repeat="x in experiment.rounds" ng-class="{done:x.result.chosen}">
 			<td>{{ experiment.rounds.indexOf(x) }}</td>
 			<td>{{ x.cond }}</td>
 			<td>{{ x.a }}</td>
