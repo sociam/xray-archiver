@@ -1,5 +1,5 @@
 <div class="experiment run-task">
-	<div class="time" ng-bind="elapsed/1000"></div>
+	<div ng-show='false' class="time" ng-bind="elapsed/1000"></div>
 	<div class="cond" ng-if="t.cond === 'sankey'">
 		<div class="appname">{{ t.a }} <span class="appcompany">{{companies.a}}</span>
 			<button class="app-choose-btn" ng-click="choiceMade(t.a)">Choose {{t.a}}</button>		
@@ -76,8 +76,9 @@
 			</div>
 		</div>
 	</div>
-	<div class="chosenPane" ng-if="t.result.chosen">
-		<h2> Post-task questions (2) : </h2> 
+	<div class="bgfade" ng-show="t.result.chosen"></div>
+	<div class="chosenPane" ng-show="t.result.chosen">
+		<h2> About your choice : </h2> 
 		<div ng-if='stage===1'>
 			<div class="question">1. Why did you choose {{ t.result.chosen }} ? </div>
 			<div> (<i>Please briefly explain your choice verbally</i>)</div>

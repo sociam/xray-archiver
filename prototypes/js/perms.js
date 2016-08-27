@@ -22,12 +22,13 @@ angular.module('dci')
 							});
 							red[pit] = cats;
 							return red;
-						}, {});
-
+						}, {}),
+						r_cache = {};
 						$scope.pi2cat_render = function() {
 							var pits = _.toArray(arguments);
+							if (r_cache[pits.join(',')]) { return  r_cache[pits.join(',')]; }
 							console.info(' pitypes ', pits, ' - pi2cat ', pits.map((x) => pi2cat[x]));
-							return _(pits.map((x) => pi2cat[x])).filter((x) => x).flatten().map((x) => utils.cat_desc_short[x]).uniq().value().join(', ');
+							return r_cache[pits.join(',')] = _(pits.map((x) => pi2cat[x])).filter((x) => x).flatten().map((x) => utils.cat_desc_short[x]).uniq().value().join(', ');
 						};
 					};
 

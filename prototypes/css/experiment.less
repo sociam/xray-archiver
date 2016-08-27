@@ -109,14 +109,23 @@
 			margin-left:80px;
 			// text-align:center;
 		}
+		.bgfade {
+			position:absolute;
+			top:0px; right:0px; left:0px; bottom:0px;
+			background-color:rgba(0,0,0,0.4);
+			z-index:10000;
+			transition: all 1s;			
+		}
 		.chosenPane {
+			h2 { margin:0px 0px 0em 0px; padding:0px 0px 0em 0px;  }
+			transition: all 1s;
 			color:black;
 			position:fixed;
 			z-index:100000;
 			background-color:white;
-			padding:80px 50px;
+			padding:50px 50px;
 			font-size:14pt;
-			top:100px; left:10%; right:10%; bottom:100px;
+			top:250px; left:10%; right:10%; bottom:250px;
 			border:1px solid #eee;
 			box-shadow:3px 3px #eee;
 			.question { 
@@ -128,15 +137,18 @@
 			}
 
 			.likert { 
+				padding:0px; margin:0px;
 				.question { 
 					color:#ee01aa;
-					text-align:center;
+					// text-align:center;
 					font-style:italic;
+					padding:0px 0px 0px 20px;
 				}
 				th, td { text-align:center; }
 				td {
 					min-width:auto !important; 
 					width: 100px; 
+					font-size:24pt;
 				}
 			}			
 		}
