@@ -60,22 +60,29 @@ angular.module('dci')
 					});
 				};
 				$scope.getTask = (taskid) => {
-					var tasksplit = taskid.split('::'),
-						pdciopt = tasksplit[0],
-						round = parseInt(tasksplit[1]);
-
-					console.info('getTask choosing ', pdciopt, ' - round#', round);
-					return $scope.experiment.rounds[pdciopt][round];
+					if (taskid.indexOf('task-') === 0) {
+						var idx = parseInt(taskid.slice('task-'.length));
+						if ($scope.experiment.rounds[idx] !== undefined) {
+							return $scope.experiment.rounds[idx];
+						}
+						throw new Error("Could not get task " + taskid);
+					}
 				};
 				$scope.makeTaskId = (task) => {
-					var dciidx = $scope.experiment.rounds.dci.indexOf(task);
-					if (dciidx >= 0) { 
-						return ['dci',''+dciidx].join('::');
+					var idx = $scope.experiment.rounds.indexOf(task);
+					if (idx >= 0) { 
+						return ['task',''+idx].join('-');
 					}
-					dciidx = $scope.experiment.rounds.pdci.indexOf(task);
-					return ['pdci',''+dciidx].join('::');
+					throw new Error("Error making taskID");
 				};
 				$scope.findNextState = (cur_tid) => {
+					if (taskid.indexOf('task-') === 0) {
+						var idx = parseInt(taskid.slice('task-'.length)),
+							nxt = idx++;
+						return $scope.experiment.rounds[nxt];
+					}	
+					throw new Error("Malformed taskID " + taskid);						
+					/*
 					var tasksplit = cur_tid.split('::'),
 						pdciopt = tasksplit[0],
 						round = parseInt(tasksplit[1]),
@@ -88,6 +95,7 @@ angular.module('dci')
 					if (pdciopt === 'dci' && $scope.experiment.rounds.pdci[0]) { 
 						return { tid: $scope.makeTaskId($scope.experiment.rounds.pdci[0]), pdci:true };
 					}
+					*/
 
 					// fall through
 				};
@@ -143,58 +151,35 @@ angular.module('dci')
 				console.log('config');
 				var apps = $scope.apps,
 					range = $scope.range,
-					ifaces = $scope.ifaces = ['table','sankey','box', 'tablepl', 'permission', 'permpurpose'];
+					ifaces = $scope.ifaces = ['permission', 'permpurpose', 'dci', 'pdci', 'tablepl'];
 				$scope.genID = utils.guid;
 				$scope.participantid = 'part-'+utils.guid(4);
 				$scope.runid = 'run-'+utils.guid(4);
-				$scope.rounds = { dci: [], pdci: [] };
-				$scope.$watch('nDciRounds', () => {
-					if (!$scope.nDciRounds || $scope.nDciRounds.length === 0) { return; }
-
-					var pN = parseInt($scope.nDciRounds);
-					if (_.isNaN(pN)) { $scope.error('not a valid number ', $scope.nDciRounds); return; }
-
-					if ($scope.rounds.dci.length > pN) { 
-						$scope.rounds.dci = $scope.rounds.dci.slice(0,pN);
-					} else if ($scope.rounds.dci.length < pN) { 
-						console.info(' lengthening ', $scope.rounds.dci.length, ' pN ', pN);
-						range(pN - $scope.rounds.dci.length).map(() => {
-							$scope.rounds.dci.push({a:apps[0],b:apps[0],cond:ifaces[0]});
+				$scope.rounds = [];
+				$scope.$watch('nRounds', () => {
+					var pN = parseInt($scope.nRounds);
+					if ($scope.rounds.length > pN) { 
+						$scope.rounds = $scope.rounds.slice(0,pN);
+					} else if ($scope.rounds.length < pN) { 
+						range(pN - $scope.rounds.length).map(() => {
+							$scope.rounds.push({a:apps[0],b:apps[0],cond:ifaces[0]});
 						});
-						console.info(' >> new DCI rounds length ', $scope.rounds.dci.length);
 					}
 				});
-				$scope.$watch('nPDciRounds', () => {
-					if (!$scope.nPDciRounds) { return; }
-					var pN = parseInt($scope.nPDciRounds);
-					if (_.isNaN(pN)) { $scope.error('not a valid number ', $scope.nPDciRounds); return; }
-					if ($scope.rounds.pdci.length > pN) { 
-						$scope.rounds.pdci = $scope.rounds.pdci.slice(0,pN);
-					} else if ($scope.rounds.pdci.length < pN) { 
-						console.info(' lengthening ', $scope.rounds.pdci.length, ' pN ', pN);
-						range(pN - $scope.rounds.pdci.length).map(() => {
-							$scope.rounds.pdci.push({a:apps[0],b:apps[0],cond:ifaces[0]});
-						});
-						console.info(' >> new PDCI rounds length ', $scope.rounds.pdci.length);
-					}
-				});				
 				// 
-				if (!$scope.nDciRounds) { $scope.nDciRounds = 3; }
-				if (!$scope.nPDciRounds) { $scope.nPDciRounds = 3; }
-
+				if (!$scope.nRounds) { $scope.nRounds = 3; }
 				$scope.doSave = () => {
 					try {
 						console.info('setting parent -> ', $scope.experiment);
 						_.extend($scope.experiment, { 
 							_id: $scope.runid,
+							cond:$scope.cond,
 							participant:$scope.participantid,
 							rounds: $scope.rounds,
 							created: new Date().valueOf(),
 							configured:true
 						});
-
 						console.info('done setting parent -> ', $scope.experiment);
-
 						$scope.save().then(() => {
 							console.info('save() :: success saving, now state go');
 							$state.go('experiment.manage');
@@ -259,7 +244,7 @@ angular.module('dci')
 		});
 
 		$stateProvider.state('experiment.runtask', {
-		  	url: '/runtask?tid&pdci',
+		  	url: '/runtask?tid',
 		  	templateUrl:'tmpl/run-task.html',
 			controller:function($scope, $state, $stateParams, $interval, utils) {
 				if (!$stateParams.id) { $state.go('experiment.manage'); return;	}
@@ -279,13 +264,14 @@ angular.module('dci')
 						b:data.filter((x) => x.app === task.b)[0].appcompany,
 					};
 
-					if ($stateParams.pdci) {
+					if (task.cond === 'pdci') {
 						// console.info("TASK PDCI setting ", $scope.experiment.pdciApps);
 						$scope.pdciApps = $scope.experiment.pdciApps;
 					} else {
 						delete $scope.pdciApps;
 					}
 
+					// clear task result before continuing!
 					delete task.result;
 
 					$scope.choiceMade = (choice) => {

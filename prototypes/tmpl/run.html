@@ -2,41 +2,30 @@
 
 	<h4><a ui-sref="experiment.manage">Manage</a></h4>
 
-	<h2>Loaded Experiment</h2>
-	<h5>id: <span ng-bind="experiment._id"></span></h4>
-	<h5>participant: <span ng-bind="experiment.participant"></span>
+	<h2>Experiment <span ng-bind="experiment._id"></span></h2>
+	<h5>participant: <span ng-bind="experiment.participant"></span></h5>
 
-	<h3>apps <span ng-if="experiment.pdciApps">({{ experiment.pdciApps.length }} selected)</span></h3>
-	<button ng-click="selectApps()">Select PDCI Apps</button>
 
-	<h4>dci rounds:</h4>
+	<button ng-click="selectApps()">Please select the apps you use.</button>
+	<h3 ng-if="experiment.pdciApps">({{ experiment.pdciApps.length }} selected)</h3>
+
+	<h4>phase 1 : reflection</h4>
+	<ul>
+		<li ng-repeat="n in experiment.pdciApps" target="_blank"> {{ n }} <button>DCI</button> <button> PDCI</button> </li>
+	</li>
+	
+	<h4>phase 2 : choose the app you like better </h4>
 	<table>
 		<thead>
 			<th>round</th><th>condition</th><th>a</th><th>b</th><th>run?</th>
 		</thead>
-		<tr ng-repeat="x in experiment.rounds.dci" ng-class="{done:x.chosen}">
-			<td>{{ experiment.rounds.dci.indexOf(x) }}</td>
+		<tr ng-repeat="x in experiment.rounds.dci" ng-class="{done:x.result.chosen}">
+			<td>{{ experiment.rounds.indexOf(x) }}</td>
 			<td>{{ x.cond }}</td>
 			<td>{{ x.a }}</td>
 			<td>{{ x.b }}</td>
-			<td>{{ x.chosen || 'no' }}</td>
+			<td>{{ x.result.chosen || 'no' }}</td>
 			<td><button ng-click="run(x)">Run/Replace</button></td>
 		</tr>
 	</table>
-
-	<h4>pdci rounds:</h4>
-	<table>
-		<thead>
-			<th>round</th><th>condition</th><th>a</th><th>b</th><th>run?</th>
-		</thead>
-		<tr ng-repeat="x in experiment.rounds.dci" ng-class="{done:x.chosen}">
-			<td>{{ experiment.rounds.dci.indexOf(x) }}</td>
-			<td>{{ x.cond }}</td>
-			<td>{{ x.a }}</td>
-			<td>{{ x.b }}</td>
-			<td>{{ x.chosen || 'no' }}</td>
-			<td><button ng-click="run(x)">Run/Replace</button></td>
-		</tr>
-	</table>
-
 </div>
