@@ -150,15 +150,24 @@ angular.module('dci')
 		$stateProvider.state('experiment.config', {
 		  	url: '/config',
 		  	templateUrl:'tmpl/config.html',
-			controller:function($scope, $state, utils) {
+		  	resolve: {
+				words:($http) => $http.get('misc/nouns.json').then((x) => x.data)
+			},
+			controller:function($scope, $state, words, utils) {
 				var hosts = $scope.hosts, data = $scope.data, pitypes = $scope.pitypes;
-				console.log('config');
+				words = words.nouns;
+				console.log('config nouns', words.nouns);
 				var apps = $scope.apps,
 					range = $scope.range,
-					ifaces = $scope.ifaces = ['permission', 'permpurpose', 'dci', 'pdci', 'tablepl'];
-				$scope.genID = utils.guid;
-				$scope.participantid = 'part-'+utils.guid(4);
-				$scope.runid = 'run-'+utils.guid(4);
+					ifaces = $scope.ifaces = ['permission', 'permpurpose', 'dci', 'pdci', 'tablepl'],
+					genPID = $scope.genPID = () => {
+						return utils.wordguid(2,words);
+					},
+					makeRID = () => {
+						return ['run', $scope.participantid, (new Date()).toLocaleDateString(), (new Date()).toTimeString() ].join(':');
+					};
+				$scope.participantid = genPID();
+				$scope.runid = makeRID();
 				$scope.rounds = [];
 				$scope.$watch('nRounds', () => {
 					var pN = parseInt($scope.nRounds);
@@ -170,8 +179,9 @@ angular.module('dci')
 						});
 					}
 				});
+				$scope.$watch('participantid', () => { $scope.runid = makeRID(); });
 				// 
-				if (!$scope.nRounds) { $scope.nRounds = 3; }
+				if (!$scope.nRounds) { $scope.nRounds = 20; }
 				$scope.doSave = () => {
 					try {
 						console.info('setting parent -> ', $scope.experiment);

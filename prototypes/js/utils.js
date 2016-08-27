@@ -98,6 +98,10 @@ angular.module('dci').factory('utils', () => {
 				return result;
 			}, {});
 		},
+		wordguid:function(n,words){
+			console.log('choosing ', words[Math.floor(Math.random()*words.length)]);
+			return this.range(n).map(() => words[Math.floor(Math.random()*words.length)]).join('-');
+		},
 		makeCategories:(appCompany, details, c2pi) => { 
 			return {
 				'app-publisher': _.pickBy(c2pi, (pis, company) => 
