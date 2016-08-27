@@ -74,38 +74,52 @@
 			}		
 		}
 	}
+	&.run-phase1 { 
+		position:relative;
+		.donebutton {
+			position:absolute;
+			right:20px;
+			top:20px;
+			border:1px solid #efefef;
+			padding:15px 20px;   			    
+			margin:0px 20px 0px 0px;
+			border-radius:5px;
+		}
+	}
 	&.run-task {
 		width:100%; height:100% !important;
 		.selector {
-			  // use an image instead of the native radio widget
-			  font-size:18pt;
-			  width:100%;
-			  margin:0px 0px 20px 0px;
-			  input[type=radio] {  display: none;   }
-			  input[type=radio] + label {
-   			    border:1px solid #efefef;
-   			    padding:15px 20px;   			    
-   			    margin:0px 20px 0px 0px;
-			  }
-			  input[type=radio]:checked + label {
-   			    font-weight:bold;
-   			    border:1px solid #ee01aa;
+			// use an image instead of the native radio widget
+			font-size:18pt;
+			width:100%;
+			margin:0px 0px 20px 0px;
+			input[type=radio] {  display: none;   }
+			input[type=radio] + label {
+	   			border:1px solid #efefef;
+	   			padding:15px 20px;   			    
+	   			margin:0px 20px 0px 0px;
+			}
+			input[type=radio]:checked + label {
+	   			font-weight:bold;
+	   			border:1px solid #ee01aa;
 				border-radius:5px;	   			    
-			  }
-  			    img { width:30px; height:24px; }
-
-
+			}
+  			img { width:30px; height:24px; }
 		}
-		.appname { 
+		.appname, .appcompany { 
 			position:relative;
 			width:100%;
-			padding:10px;
+			padding:10px 10px 0px 10px;
 			color:#ee01aa;
 			font-size:28pt;
 			font-weight:200;
 			// text-align:center;
-			margin:5px 0px;
+			margin:0px 0px;
 			.app-choose-btn { position:absolute; right: 10px; }
+		}
+		.appcompany {
+			font-size:20pt;
+			padding:0px 10px 20px 10px;
 		}
 		.cond { width:100%; height:100%; }
 		.time {

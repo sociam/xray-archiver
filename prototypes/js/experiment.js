@@ -231,6 +231,34 @@ angular.module('dci')
 			}
 		});
 
+		$stateProvider.state('experiment.runphase1', {
+		  	url: '/runphase1?app&pdci',
+		  	templateUrl:'tmpl/run-phase1.html',
+			controller:function($scope, $state, $stateParams, utils) {
+				if (!$stateParams.id) { 
+					$state.go('experiment.manage');
+					return;
+				}
+
+				if (!$stateParams.app) { throw new Error('app must be specified'); }
+
+				//
+				if ($stateParams.pdci === 'true') { 
+					$scope.pdciApps = $scope.experiment.pdciApps;
+				} else {
+					$scope.pdciApps = undefined;
+				}
+
+				$scope.dci = { iface : 'table' };
+
+				$scope.app = $stateParams.app;
+				$scope.appcompany = $scope.data.filter((x) => x.app === $scope.app)[0].company;
+
+				window._r = $scope;
+			}
+		});
+
+
 		$stateProvider.state('experiment.runselect', {
 		  	url: '/runselect',
 		  	templateUrl:'tmpl/run-select.html',

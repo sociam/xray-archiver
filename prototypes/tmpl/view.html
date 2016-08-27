@@ -3,7 +3,7 @@
 	<pdci-app-selector apps="apps" selected="pdciAppsObj" showing="showPDCI.showing"></pdci-app-selector>
 	<div class="about">
 		<h1 ng-bind="app"></h1>
-		<h2 ng-if='appcompany'>by <a>{{ appcompany }}</a></h2>
+		<h2 ng-if='appcompany'>(by {{ appcompany }})</h2>
 		<div class="papp" ng-if="pdciApps.length">
 			Personalised to a person who uses <div ng-repeat="a in pdciApps" class="pappfeedback">{{a}}</div>
 		</div>

@@ -10,9 +10,16 @@
 	<h3 ng-if="experiment.pdciApps">({{ experiment.pdciApps.length }} selected)</h3>
 
 	<h4>phase 1 : reflection</h4>
-	<ul>
-		<li ng-repeat="n in experiment.pdciApps" target="_blank"> {{ n }} <button>DCI</button> <button> PDCI</button> </li>
-	</ul>
+	<table ng-if="experiment.pdciApps">
+		<thead>
+			<th>app name</th><th>see dci</th><td>see pdci</td>
+		</thead>
+		<tr ng-repeat="n in experiment.pdciApps">
+			<td>{{ n }}</td>
+			<td><a ui-sref="experiment.runphase1({app:n,pdci:false})">DCI</a> 
+			<td><a ui-sref="experiment.runphase1({app:n,pdci:true})"> PDCI</a>
+		</td>			
+	</table>
 
 	<h4>phase 2 : choose the app you like better </h4>
 	<table>
