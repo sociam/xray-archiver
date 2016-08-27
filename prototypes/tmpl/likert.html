@@ -1,0 +1,17 @@
+<div class="likert">
+	<h4 class="question" ng-transclude></h4>
+	<table>
+		<thead>
+			<th>1 - Strongly disagree</th>
+			<th>2 - Disagree</th>
+			<th>3 - Neither Agree nor Disagree</th>
+			<th>4 - Agree</th>
+			<th>5 - Strongly agree</th>
+		</thead>
+		<tr>
+			<td ng-repeat="x in values">
+				<input type="radio" name="response" ng-value="x" ng-model="resp" ng-change="change(x)"></input>
+			</td>
+		</tr>
+	</table>
+</div>
