@@ -131,17 +131,21 @@ angular.module('dci')
 				};
 				$scope.toDateStr = (ds) => new Date(parseInt(ds)).toDateString() + ' ' + new Date(parseInt(ds)).toLocaleTimeString();
 				$scope.load = (e) => { 	$state.go('experiment.run', { id: e._id }); };
-				$scope.delete = (e) => { 
+				$scope.delete = (e, $evt) => { 
 					console.info('delete ', e);
+					$evt.stopPropagation();
 					storage.db.get(e._id).then((doc) => storage.db.remove(doc)).then(refresh_docs);
 				};
-				$scope.export = (e) => { 
+				$scope.export = (e, $evt) => { 
+					$evt.stopPropagation();
 					$scope.exportData = JSON.stringify(e, null, 2);	
 				};
 				$scope.new = () => {
 					$scope.setExperiment({});
 					$state.go('experiment.config');
 				};
+				$scope.filterComplete = (rs) => rs.filter((r) => r.result && r.result.chosen);
+
 				refresh_docs();
 			}
 		});
@@ -226,6 +230,11 @@ angular.module('dci')
 					var tid = $scope.makeTaskId(task);
 					console.info('got task id ', tid);
 					$state.go('experiment.runtask', {tid:tid});
+				};
+				$scope.clear = (task, $evt) => {
+					$evt.stopPropagation();
+					delete task.result;
+					$scope.save();
 				};
 				window._r = $scope;
 			}

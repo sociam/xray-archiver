@@ -5,16 +5,17 @@
 	</div>
 	<table ng-if="experiments && experiments.length">
 		<thead>
-			<th>experiment</th><th>created</th><th>participant</th>
+			<th>part id</th><th>created</th><th># Rounds</th><th># Completed</th>
 		</thead>
-		<tr ng-repeat="e in experiments | orderBy:'created'" ng-class="{selected:selected == e._id}">
+		<tr ng-click="load(e)" ng-repeat="e in experiments | orderBy:'created'" ng-class="{selected:selected == e._id}">
 			<td ng-bind="e.participant"></td>		
 			<td ng-bind="toDateStr(e.created)"></td>			
-			<td ng-bind="e._id"></td>
+			<!-- <td ng-bind="e._id"></td> -->
+			<td ng-bind="e.rounds.length"></td>
+			<td ng-bind="filterComplete(e.rounds).length"></td>			
 			<td>
-				<button ng-click="load(e)">Load</button>
-				<button ng-click="delete(e)">Delete</button>
-				<button ng-click="export(e)">Export</button>
+				<button ng-click="delete(e, $event)">Delete</button>
+				<button ng-click="export(e, $event)">Export</button>
 			</td>
 		</tr>
 	</table>
