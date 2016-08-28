@@ -84,10 +84,10 @@ angular.module('dci')
 						nodemap = {},
 						nodes = [], 
 						links = [],
-						pushNode = (id, label, isapp, type) => {
+						pushNode = (id, label, isapp, type, supplemental) => {
 							console.log('pushing node ', id);
 							var l = nodes.length;
-							nodes.push({name:id, label:label, isapp:isapp, type:type});
+							nodes.push({name:id, label:label, isapp:isapp, type:type, supp:supplemental});
 							nodemap[id] = l;
 							return l;
 						},
@@ -106,7 +106,10 @@ angular.module('dci')
 					// pitypes 
 					pitypes_set.map((pitype) => pushNode(pitype, pilabels[pitype], a2pi(app_id).indexOf(pitype) >= 0, 'pitype'));
 					// 2. companies
-					_.keys(c2pi).map((c) => pushNode(c, c, aTc[app_id].indexOf(c) >= 0, 'company'));
+					_.keys(c2pi).map((c) => pushNode(c, c, aTc[app_id].indexOf(c) >= 0, 'company', 
+						details[c] && details[c].parent ? 
+							details[c].parent : 
+							details[c] && c !== details[c].company ? details[c].company : undefined));
 					// 3. categories
 					_.keys(cat2c2pi).map((cname) => pushNode(cname, cname, a2cat(app_id).indexOf(cname) >= 0, 'category'));
 
@@ -252,7 +255,7 @@ angular.module('dci')
 					    .attr("dy", ".35em")
 					    .attr("text-anchor", "end")
 					    .attr("transform", null)
-					    .text(function(d) { return d.label || d.name; })
+					    .text(function(d) { return (d.label || d.name) + (d.supp ? " (" + d.supp + ')': ''); })
 					    .filter(function(d) { return d.x < width / 2; })
 					    .attr("x", 6 + sankey.nodeWidth())
 					    .attr("text-anchor", "start");							
