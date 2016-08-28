@@ -25,8 +25,10 @@ angular.module('dci')
 						// make nested structure for ng-repeat
 						$scope.companies = _(cat2c2pi).keys().map((catname) => {
 							return _(cat2c2pi[catname]).keys().filter((cn) => !isPDCI || !pdcic2pi[cn] || !pdcic2pi[cn].length).map((cn) => {
+								if (!details[cn]) { console.error('no info for ', cn); }
 								return { 
-									id: cn,
+									id: cn.trim(),
+									name: details[cn] && details[cn].company && details[cn].company.trim() || cn.trim(),
 									details: details[cn],
 									category:catname,
 									pitypes: c2pi[cn]
@@ -36,8 +38,10 @@ angular.module('dci')
 
 						$scope.pdci_companies = isPDCI && _(pdcicat2c2pi).keys().map((catname) => {
 							return _(pdcicat2c2pi[catname]).keys().map((cn) => { // .filter((cn) => pdcic2pi[cn] && pdcic2pi[cn].length).
+								if (!details[cn]) { console.error('no info for ', cn); }								
 								return { 
 									id: cn,
+									name: details[cn] && details[cn].company || cn,									
 									details: details[cn],									
 									relevant_to_app:c2pi[cn] !== undefined,
 									category:catname,
