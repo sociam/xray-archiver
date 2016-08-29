@@ -5,6 +5,7 @@
 	</div>
 	<div class="props">
 		<ul>
+			<li class="property description" ng-if="$ctrl.selected.description" ng-bind="$ctrl.selected.description"></li>		
 			<li class="property equity textonly" ng-if="$ctrl.selected.equity">equity: ${{ $ctrl.selected.equity }}</li>
 			<li class="property jurisdiction" ng-if="$ctrl.selected.jurisdiction">country: {{ $ctrl.selected.jurisdiction.toUpperCase() }} <span ng-bind-html='$ctrl.selected.jurisdiction_flag'></span> </li>
 			<li class="property size" ng-if="$ctrl.selected.size"> employees: {{ $ctrl.selected.size }} &#x1f466;</li>
