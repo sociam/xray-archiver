@@ -3,14 +3,31 @@
 	z-index:1000;
 	transition-property:all; // top, left, opacity, bottom, right;
 	&.hiding { opacity:0; }
+	&.double { height:300px; }
+	// &.triple { height:570px; }
 	transition-duration:0.3s;
 	position:absolute;
 	width:320px;
+	
 	height:190px; // update sankey.js / table.js when you change this and box height below
 	color:black;
 	box-shadow:3px 3px #efefef;
 	background-color:white;
 	border:1px solid #efefef;
+
+	.company-lens {
+		padding:0px 0px 10px 0px;
+	}
+	.issubsidiary{
+		font-size:8pt;
+		font-style:italic;
+		border-top:1px solid #efefef;
+		border-bottom:1px solid #efefef;
+		text-align:center;
+		padding:5px 0px 5px 0px;
+		margin:5px 0px 10px 0px;
+	}
+
 	.titlebar { 
 		position:absolute;
 		padding:5px 15px;
@@ -25,14 +42,14 @@
 	.company.title { 
 		font-weight:100;
 		font-size:21pt;
-		padding:0px 5px 5px 5px;
+		padding:0px 5px 5px 10px;
 		margin:0px 0px;
-		border-bottom:1px solid #eee;
+		// border-bottom:1px solid #eee;
 		width:100%;
 	}
 	.props {
-		font-size:13pt;
-		padding:5px 5px 0px 5px;
+		font-size:11pt;
+		padding:0px 5px 0px 5px;
 		ul { 
 			margin:0px;
 			list-style-type:none; 
@@ -57,5 +74,11 @@
 		position:absolute;
 		left:8px; top: 8px;
 		width:20px; height:170px;
+	}
+}
+
+.sankey .double {
+	.company.title .box {
+		height:280px;
 	}
 }

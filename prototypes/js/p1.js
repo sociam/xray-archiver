@@ -110,7 +110,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize', 'pouch
 	  controller: function($scope) { console.log('company id:', this.company, 'name: ', this.companyName, this.details); }
    }).component('companyInfoBox', { // used by sankey and table
 	  templateUrl: 'tmpl/company-info-box.html',
-	  bindings: { selected: '=', x:'=', y:'=' },	  	  
+	  bindings: { selected: '=', x:'=', y:'=', details:'=' },	  	  
 	  controller: function($scope, utils) { 
 		 $scope.close = () => { delete $scope.selected; };
 		 var emoji_table = { 
@@ -147,7 +147,14 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize', 'pouch
 			}
 		 });
 	  }
-   }).factory('storage', function(pouchDB) { 
+   }).component('companyLens', { // used by sankey and table
+		templateUrl: 'tmpl/company-lens.html',
+		bindings: { selected: '=company' },	  	  
+		controller: function($scope, utils) { 
+			console.log('company lens! ', this.selected);
+			// not much here	
+    	}
+    }).factory('storage', function(pouchDB) { 
    		return { db : new pouchDB('experiment') };
    }).component('likertQuestion', {
 	  templateUrl: 'tmpl/likert.html',

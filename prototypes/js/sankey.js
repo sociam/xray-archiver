@@ -3,7 +3,7 @@
 angular.module('dci')
 	.directive('dciSankey', function() {
 		return {
-			template:'<div class="sankey"><company-info-box selected="selected" x="infoboxx" y="infoboxy"></company-info-box></div>',
+			template:'<div class="sankey"><company-info-box selected="selected" x="infoboxx" y="infoboxy" details="details"></company-info-box></div>',
 			restrict:'E',
 			scope:{app:'=', appcompany:'=', heightpct:'@'},
 			link:function($scope, element) {
@@ -16,7 +16,7 @@ angular.module('dci')
 					heightPCT = $scope.heightpct && parseFloat($scope.heightpct) / 100.0 || 1.0,
 					allData = $scope.$parent.allData,
 					hosts = $scope.$parent.hosts,
-					details = $scope.$parent.details,
+					details = $scope.details = $scope.$parent.details,
 					pitypes = $scope.$parent.pitypes,
 					app_id = utils.toAppId($scope.app),
 					margin = {top: 1, right: 30, bottom: 6, left: 30},
@@ -230,7 +230,7 @@ angular.module('dci')
 							    	}
 							    }); 
 						    }).on('mouseleave', function() { 
-						    	$scope.$apply(() => { delete $scope.selected; });
+						    	// $scope.$apply(() => { delete $scope.selected; });
 						    })
 						.call(d3.behavior.drag()
 					  		.origin(function(d) { return d; })

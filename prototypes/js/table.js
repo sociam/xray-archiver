@@ -7,7 +7,7 @@ angular.module('dci')
 			scope:{app:'=', appcompany:'='},
 			controller:function($scope, $timeout, utils) {
 				var hosts = $scope.$parent.hosts,
-					details = $scope.$parent.details,
+					details = $scope.details = $scope.$parent.details,
 					pitypes = $scope.pitypes = $scope.$parent.pitypes,
 					allData = $scope.$parent.allData,
 					recompute = () => {					
