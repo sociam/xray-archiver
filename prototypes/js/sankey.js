@@ -230,7 +230,7 @@ angular.module('dci')
 							    	}
 							    }); 
 						    }).on('mouseleave', function() { 
-						    	// $scope.$apply(() => { delete $scope.selected; });
+						    	$scope.$apply(() => { delete $scope.selected; });
 						    })
 						.call(d3.behavior.drag()
 					  		.origin(function(d) { return d; })
