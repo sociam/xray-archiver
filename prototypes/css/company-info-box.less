@@ -18,7 +18,8 @@
 	border:1px solid #efefef;
 
 	.company-lens {
-		padding:0px 0px 10px 0px;
+		position:relative;
+		// padding:0px 0px 10px 0px;
 	}
 	.issubsidiary{
 		font-size:8pt;
@@ -42,23 +43,33 @@
 		border:none;
 	}	
 	.company.title { 
+		// position:relative;
 		font-weight:100;
 		font-size:21pt;
 		padding:0px 5px 5px 10px;
 		margin:0px 0px;
 		// border-bottom:1px solid #eee;
 		width:100%;
+		.jurisdiction { 
+			font-size:14pt;
+			position:absolute;
+			right:0px;
+			top:0px;
+		}
 	}
 	.props {
-		font-size:11pt;
 		padding:0px 5px 0px 5px;
 		ul { 
-			margin:0px;
+			margin:10px 0px 0px 0px;
 			list-style-type:none; 
 			padding-left:5px;
 			li {
-				font-size:12pt;
+				font-size:11pt;
 				line-height:22px;
+				.lbl {
+					font-weight:bold;
+					font-variant:small-caps;
+				}
 			}
 			.description {
 				line-height:1.1em;
@@ -70,22 +81,22 @@
 }
 
 .table .company-info-box { 
-	padding:12px 15px;
-	.company.title .box { 
+	padding:12px 15px; // no box
+	.box { 
 		display:none;
 	}
 }
 .sankey .company-info-box {
-	padding:12px 15px 15px 32px;
-	.company.title .box { 
+	padding:12px 15px 15px 32px; // leave space for box
+	.box { 
 		position:absolute;
-		left:8px; top: 8px;
-		width:20px; height:170px;
+		left:8px; top: 8px; bottom:8px; 
+		width:20px; 
 	}
 }
 
 .sankey .double {
-	.company.title .box {
-		height:280px;
+	.box {
+		// height:280px;
 	}
 }

@@ -1,6 +1,7 @@
 <div class='company-info-box' ng-style="{top:$ctrl.y, left:$ctrl.x}" ng-class="{hiding:!selected, double:selected.company && selected.parent && $ctrl.details[selected.parent]}">
+	<div class="box" style="background-color:{{$ctrl.selected.color}}"></div>	
 	<!-- company --> 
-	<company-lens company="selected" ng-if="selected.company"></company-lens>
+	<company-lens company="selected" parent="selected.company && selected.parent && $ctrl.details[selected.parent]" ng-if="selected.company"></company-lens>
 	<div class='issubsidiary' ng-if="selected.company && selected.parent && $ctrl.details[selected.parent]">is a subsidiary of</div>
 	<company-lens ng-if="selected.company && selected.parent && $ctrl.details[selected.parent]" company="$ctrl.details[selected.parent]"></company-lens>
 	<!-- apps -->

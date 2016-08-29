@@ -149,7 +149,7 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize', 'pouch
 	  }
    }).component('companyLens', { // used by sankey and table
 		templateUrl: 'tmpl/company-lens.html',
-		bindings: { selected: '=company' },	  	  
+		bindings: { selected: '=company', parent:'=' },	  	  
 		controller: function($scope, utils) { 
 			console.log('company lens! ', this.selected);
 			// not much here	
