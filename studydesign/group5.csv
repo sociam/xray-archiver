@@ -1,26 +1,26 @@
 appair,category,interface,position,group
-L1M1,Travel,PDCI,1,e
-L1M1,QR Code,Control,2,e
-L1M1,Finance,Purpose,3,e
-L1M1,PIM,Leak,4,e
-L1M1,Calculator,DCI,5,e
-L2M2,QR Code,PDCI,6,e
-L2M2,Finance,Control,7,e
-L2M2,PIM,Purpose,8,e
-L2M2,Calculator,Leak,9,e
-L2M2,Travel,DCI,10,e
-L3M3,Finance,PDCI,11,e
-L3M3,PIM,Control,12,e
-L3M3,Calculator,Purpose,13,e
-L3M3,Travel,Leak,14,e
-L3M3,QR Code,DCI,15,e
-L1M1,PIM,PDCI,16,e
-L4M4,Calculator,Control,17,e
-L4M4,Travel,Purpose,18,e
-L4M4,QR Code,Leak,19,e
-L4M4,Finance,DCI,20,e
-L5M5,Calculator,PDCI,21,e
-L5M5,Travel,Control,22,e
-L5M5,QR Code,Purpose,23,e
-L5M5,Finance,Leak,24,e
-L5M5,PIM,DCI,25,e
+hotellio::holidaybooking,Travel,PDCI,1,e
+scanit::barcoda,QR Code,Control,2,e
+financia::moneycloud,Finance,Purpose,3,e
+notely::notepadder,PIM,Leak,4,e
+sumz::calcul8,Calculator,DCI,5,e
+qrchecker::barcodeqr,QR Code,PDCI,6,e
+moneywise::walletwach,Finance,Control,7,e
+listmaker::todolist,PIM,Purpose,8,e
+mathbot::calky,Calculator,Leak,9,e
+trippy::travelco,Travel,DCI,10,e
+budgetpal::spendtracker,Finance,PDCI,11,e
+scriber::minit,PIM,Control,12,e
+bestcalculator::calctime,Calculator,Purpose,13,e
+travelsave::suntime,Travel,Leak,14,e
+scanline::codescan,QR Code,DCI,15,e
+listy::scribbler,PIM,PDCI,16,e
+calculatorplus::sciencecalc,Calculator,Control,17,e
+travellio::voyagee,Travel,Purpose,18,e
+qright::detectcode,QR Code,Leak,19,e
+spendwise::prudenz,Finance,DCI,20,e
+mobilecalculator::smartsum,Calculator,PDCI,21,e
+tourhelp::holidayfinder,Travel,Control,22,e
+QRfinder::QRpal,QR Code,Purpose,23,e
+myfinances::moneymanager,Finance,Leak,24,e
+postit::yonote,PIM,DCI,25,e
