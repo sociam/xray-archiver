@@ -1,26 +1,26 @@
 appair,category,interface,position
-L1M1,Travel,Control,1
-L1M1,QR Code,Purpose,2
-L1M1,Finance,Leak,3
-L1M1,PIM,DCI,4
-L1M1,Calculator,PDCI,5
-L2M2,QR Code,Control,6
-L2M2,Finance,Purpose,7
-L2M2,PIM,Leak,8
-L2M2,Calculator,DCI,9
-L2M2,Travel,PDCI,10
-L3M3,Finance,Control,11
-L3M3,PIM,Purpose,12
-L3M3,Calculator,Leak,13
-L3M3,Travel,DCI,14
-L3M3,QR Code,PDCI,15
-L1M1,PIM,Control,16
-L4M4,Calculator,Purpose,17
-L4M4,Travel,Leak,18
-L4M4,QR Code,DCI,19
-L4M4,Finance,PDCI,20
-L5M5,Calculator,Control,21
-L5M5,Travel,Purpose,22
-L5M5,QR Code,Leak,23
-L5M5,Finance,DCI,24
-L5M5,PIM,PDCI,25
+hotellio::holidaybooking,Travel,Control,1
+scanit::barcoda,QR Code,Purpose,2
+financia::moneycloud,Finance,Leak,3
+notely::notepadder,PIM,DCI,4
+sumz::calcul8,Calculator,PDCI,5
+qrchecker::barcodeqr,QR Code,Control,6
+moneywise::walletwach,Finance,Purpose,7
+notely::notepadder,PIM,Leak,8
+mathbot::calky,Calculator,DCI,9
+trippy::travelco,Travel,PDCI,10
+budgetpal::spendtracker,Finance,Control,11
+scriber::minit,PIM,Purpose,12
+bestcalculator::calctime,Calculator,Leak,13
+travelsave::suntime,Travel,DCI,14
+scanline::codescan,QR Code,PDCI,15
+listy::scribbler,PIM,Control,16
+calculatorplus::sciencecalc,Calculator,Purpose,17
+travellio::voyagee,Travel,Leak,18
+qright::detectcode,QR Code,DCI,19
+spendwise::prudenz,Finance,PDCI,20
+mobilecalculator::smartsum,Calculator,Control,21
+tourhelp::holidayfinder,Travel,Purpose,22
+QRfinder::QRpal,QR Code,Leak,23
+myfinances::moneymanager,Finance,DCI,24
+postit::yonote,PIM,PDCI,25
