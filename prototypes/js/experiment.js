@@ -12,6 +12,7 @@ angular.module('dci')
 				hosts: ($http) => $http.get('../mitm_out/host_by_app.json').then((x) => x.data),
 				details: ($http) => $http.get('../mitm_out/company_details.json').then((x) => x.data),
 				data: ($http) => $http.get('../mitm_out/data_all.json').then((x) => x.data)
+				// fakeapps:($http) => $http.get('../mitm_out/fakeapps.json').then((x) => x.data)
 			},
 			controller:function($scope, $stateParams, $state, pitypes, hosts, data, details, storage, utils) {
 
@@ -184,6 +185,54 @@ angular.module('dci')
 					}
 				});
 				$scope.$watch('participantid', () => { $scope.runid = makeRID(); });
+				$scope.parseCode = (code) => {
+					// parse code
+					// example code a.Hotellio::Booking::travel::control, Hotellio::Booking::travel::control,Hotellio::Booking::travel::control
+					var conditions = {
+						'control': 'permission', // control: android permissiosn
+						'purpose': 'permpurpose', // permissions + purpose
+						'leaks': 'tablepl', // 
+						'dci':'dci', // 
+						'pdci':'pdci', 
+					};
+
+					$scope.codeError = '';					
+
+					if (code.length === 0) { $scope.codeError = 'Code is empty'; return; }
+					if (!/^[a-e]\./.test(code)) { $scope.codeError = 'Cannot parse code'; return; }
+
+					var group = code[0], rcodes = code.slice(2);
+
+					console.log('group ', group, ' :: round codes', rcodes);
+
+					var pushError = (r) => { 
+							$scope.codeError += r + "<br>"; 
+							console.error(r);
+						}, 	
+						rounds = rcodes.trim().split(',').map((rcode) => {
+							var parsed = rcode.split('::');
+
+							if (parsed.length !== 4) { 
+								console.error('Error on code ', rcode);
+								return;
+							}
+
+							var appA = parsed[0], appB = parsed[1],
+								domain = parsed[2],
+								condition = conditions[parsed[3]];
+
+							if (!appA || $scope.apps.indexOf(appA) < 0) { pushError('No appA called ' + appA); }
+							if (!appB || $scope.apps.indexOf(appB) < 0) { pushError('No appB called ' + appB); }
+							if (!condition) { pushError('No condition called ' + parsed[3]); }
+							return {a:appA, b:appB, cond:condition, domain:domain};
+						}).filter((x) => x);
+
+					// 
+					console.info("successfully configured ", rounds.length, ' rounds ');
+
+					$scope.rounds = rounds;
+					$scope.nRounds = rounds.length;
+				};
 				// 
 				if (!$scope.nRounds) { $scope.nRounds = 20; }
 				$scope.doSave = () => {
