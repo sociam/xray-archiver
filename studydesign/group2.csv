@@ -1,0 +1,26 @@
+appair,category,interface,position,group
+L1M1,Travel,Purpose,1,b
+L1M1,QR Code,Leak,2,b
+L1M1,Finance,DCI,3,b
+L1M1,PIM,PDCI,4,b
+L1M1,Calculator,Control,5,b
+L2M2,QR Code,Purpose,6,b
+L2M2,Finance,Leak,7,b
+L2M2,PIM,DCI,8,b
+L2M2,Calculator,PDCI,9,b
+L2M2,Travel,Control,10,b
+L3M3,Finance,Purpose,11,b
+L3M3,PIM,Leak,12,b
+L3M3,Calculator,DCI,13,b
+L3M3,Travel,PDCI,14,b
+L3M3,QR Code,Control,15,b
+L1M1,PIM,Purpose,16,b
+L4M4,Calculator,Leak,17,b
+L4M4,Travel,DCI,18,b
+L4M4,QR Code,PDCI,19,b
+L4M4,Finance,Control,20,b
+L5M5,Calculator,Purpose,21,b
+L5M5,Travel,Leak,22,b
+L5M5,QR Code,DCI,23,b
+L5M5,Finance,PDCI,24,b
+L5M5,PIM,Control,25,b
