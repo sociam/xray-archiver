@@ -8,10 +8,15 @@
 		<dt>number of rounds:<dt>
 		<dd><input type="number" ng-model="nRounds"></dd>
 	</dl>
+	<h2>Fast Configuration code</h2>
+	<div>
+		<input type="text" ng-model="configCode"></input>
+		<button class="btn" ng-click="parseCode(configCode)">Configure</button>
+	</div>	
 	<h2>Rounds:</h2>
 	<table>
 		<thead>
-			<th>round</th><th>condition</th><th>app A</th><th>app B</th>
+			<th>round</th><th>condition</th><th>app A</th><th>app B</th><th>domain</th>
 		</thead>
 		<tr ng-repeat="round in rounds">
 			<td>
@@ -28,6 +33,9 @@
 				<select id="soflow" ng-model="round[side]">
 					<option ng-repeat="a in apps">{{a}}</option>		
 				</select>
+			</td>
+			<td>
+				<input type="text" ng-model="round.domain">
 			</td>
 		</tr>
 	</table>

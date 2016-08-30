@@ -3,7 +3,7 @@
 angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize', 'pouchdb'])
 	.controller('p1', function () {})
 	.config(function ($stateProvider, $urlRouterProvider) {
-	    $urlRouterProvider.otherwise('/experiment');
+	    $urlRouterProvider.otherwise('/index');
 		$stateProvider.state('chooseApp', {
 			url: '/chooseapp',
 			templateUrl: 'tmpl/choose-app.html',
@@ -25,6 +25,12 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize', 'pouch
 				// $scope.size = (obj) => _.toPairs(obj).length;
 			}
 		});
+
+		// base dci state
+		$stateProvider.state('index', {
+		  	url: '/index',
+		  	templateUrl:'tmpl/index.html'
+		});		
 		// base dci state
 		$stateProvider.state('dci', {
 		  	url: '/dci?app&pdciapps&mode',
