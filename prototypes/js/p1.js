@@ -29,7 +29,13 @@ angular.module('dci', ['ui.router', 'ngAnimate', 'ngTouch', 'ngSanitize', 'pouch
 		// base dci state
 		$stateProvider.state('index', {
 		  	url: '/index',
-		  	templateUrl:'tmpl/index.html'
+			resolve: {
+				data: ($http) => $http.get('../mitm_out/data_all.json').then((x) => x.data)
+			},		  	
+		  	templateUrl:'tmpl/index.html',
+			controller:function($scope, data) {
+				$scope.apps = _.uniq(data.map((x) => x.app));
+			}
 		});		
 		// base dci state
 		$stateProvider.state('dci', {

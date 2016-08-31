@@ -11,16 +11,18 @@ angular.module('dci')
 				pitypes:($http) => $http.get('../mitm_out/pi_by_host.json').then((x) => x.data),
 				hosts: ($http) => $http.get('../mitm_out/host_by_app.json').then((x) => x.data),
 				details: ($http) => $http.get('../mitm_out/company_details.json').then((x) => x.data),
-				data: ($http) => $http.get('../mitm_out/data_all.json').then((x) => x.data)
-				// fakeapps:($http) => $http.get('../mitm_out/fakeapps.json').then((x) => x.data)
+				data: ($http) => $http.get('../mitm_out/data_all.json').then((x) => x.data),
+				fakeapps:($http) => $http.get('../mitm_out/fakeapps.txt').then((x) => x.data.split('\n').filter((x) => x))
 			},
-			controller:function($scope, $stateParams, $state, pitypes, hosts, data, details, storage, utils) {
+			controller:function($scope, $stateParams, $state, pitypes, hosts, data, details, storage, fakeapps, utils) {
 
 				var apps = $scope.apps = _.uniq(data.map((x) => x.app)),
 					range = $scope.range = utils.range;				
 
 				console.log('experiment framework > ', apps.length, 'apps');				
+				console.log('fakeapps', fakeapps);
 				$scope.data = $scope.allData = data;
+				$scope.fakeapps = fakeapps;
 				$scope.pitypes = pitypes;
 				$scope.hosts = hosts;
 				$scope.details = details;
@@ -327,6 +329,7 @@ angular.module('dci')
 				if (!$scope.experiment || $scope.experiment._id !== $stateParams.id) { 
 					init = $scope.load($stateParams.id).then(() => console.log('loaded'));
 				}
+				$scope.realapps = $scope.apps.filter((x) => $scope.fakeapps.indexOf(x) < 0);
 				init.then(() => {
 					// now we've loaded
 					$scope.selected = ($scope.experiment.pdciApps || []).reduce((obj,k) => { obj[k] = true; return obj; }, {});
