@@ -193,7 +193,7 @@ angular.module('dci')
 					var conditions = {
 						'control': 'permission', // control: android permissiosn
 						'purpose': 'permpurpose', // permissions + purpose
-						'leaks': 'tablepl', // 
+						'leak': 'tablepl', // 
 						'dci':'dci', // 
 						'pdci':'pdci', 
 					};
@@ -221,7 +221,7 @@ angular.module('dci')
 
 							var appA = parsed[0], appB = parsed[1],
 								domain = parsed[2],
-								condition = conditions[parsed[3]];
+								condition = conditions[parsed[3].toLowerCase()];
 
 							if (!appA || $scope.apps.indexOf(appA) < 0) { pushError('No appA called ' + appA); }
 							if (!appB || $scope.apps.indexOf(appB) < 0) { pushError('No appB called ' + appB); }
