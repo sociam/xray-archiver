@@ -225,10 +225,12 @@ var main = () => {
 		console.info("writing missing hosts (to txt):", config.out_missing, exports.missing.length);
 		fs.writeFileSync(config.out_missing, exports.missing.join('\n'));
 	}
-	if (config.in_fakeapps && config.out_fakeapps) {
-		console.info('writing fake apps >> ', config.in_fakeapps, '->', config.out_fakeapps);
-		fs.writeFileSync(config.out_fakeapps, JSON.stringify(loadFile(config.in_fakeapps)));
-	}
+
+	// no longer used.	
+	// if (config.in_fakeapps && config.out_fakeapps) {
+	// 	console.info('writing fake apps >> ', config.in_fakeapps, '->', config.out_fakeapps);
+	// 	fs.writeFileSync(config.out_fakeapps, JSON.stringify(loadFile(config.in_fakeapps)));
+	// }
 };
 
 if (require.main === module) { 
