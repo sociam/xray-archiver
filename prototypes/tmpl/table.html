@@ -6,7 +6,7 @@
 			<th>company type</th>
 			<th ng-repeat="pit in pitypes | orderBy" ng-bind="pilabels[pit]" ng-mouseenter="showInfoBox(pit, 'pitype', $event)" ng-mouseleave='hideInfoBox()'></th>
 		</tr>
-		<tr ng-repeat="company in companies | orderBy:category" ng-class="{app:company.category==='app-publisher' || company.category ==='app-functionality', marketing:company.category==='marketing', security:company.category==='security', payments:company.category==='payments', usage:company.category==='usage tracking', other:company.category==='other'}">
+		<tr ng-repeat="company in companies | orderBy:category" ng-class="{unique:true, app:company.category==='app-publisher' || company.category ==='app-functionality', marketing:company.category==='marketing', security:company.category==='security', payments:company.category==='payments', usage:company.category==='usage tracking', other:company.category==='other'}">
 			<td class="companyname" ng-mouseenter="showInfoBox(company, 'company', $event)" ng-mouseleave='hideInfoBox()'>{{ company.id }}
 				<div class="child" ng-if="company.name !== company.id && !company.details.parent.length">{{company.name}}</div>
 				<div class="child"  ng-if="company.details.parent && company.details.parent !== company.name".>({{company.details.parent}})</div>				
@@ -17,7 +17,7 @@
 			</td>
 		</tr>
 		<tr ng-if="pdci_companies" class="pdciboundary"><td colspan="{{pitypes.length+2}}"></td></tr>
-		<tr ng-if="pdci_companies" ng-repeat="company in pdci_companies" ng-class="{pdciapp:!company.relevant_to_app, app:company.category==='app-publisher' || company.category ==='app-functionality', marketing:company.category==='marketing', security:company.category==='security', payments:company.category==='payments', usage:company.category==='usage tracking', other:company.category==='other'}">
+		<tr ng-if="pdci_companies" ng-repeat="company in pdci_companies | orderBy:'relevant_to_app':true" ng-class="{pdciapp:!company.relevant_to_app, app:company.category==='app-publisher' || company.category ==='app-functionality', marketing:company.category==='marketing', security:company.category==='security', payments:company.category==='payments', usage:company.category==='usage tracking', other:company.category==='other'}">
 			<td class="companyname" ng-mouseenter="showInfoBox(company, 'company', $event)" ng-mouseleave='hideInfoBox()'>{{company.id}} 
 				<div class="child" ng-if="company.name !== company.id && !company.details.parent.length">{{company.name}}</div>
 				<div class="child"  ng-if="company.details.parent && company.details.parent !== company.name".>({{company.details.parent}})</div>				
