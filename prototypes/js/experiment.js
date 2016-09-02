@@ -303,11 +303,14 @@ angular.module('dci')
 				if (!$stateParams.app) { throw new Error('app must be specified'); }
 
 				//
-				if ($stateParams.pdci === 'true') { 
-					$scope.pdciApps = $scope.experiment.pdciApps;
-				} else {
-					$scope.pdciApps = undefined;
-				}
+				$scope.$watch('experiment', () => {
+					console.info('experiment ', $scope.experiment);
+					if ($scope.experiment && $stateParams.pdci === 'true') { 
+						$scope.pdciApps = $scope.experiment.pdciApps.filter((x) => x !== $stateParams.app);
+					} else {
+						$scope.pdciApps = undefined;
+					}
+				});
 
 				$scope.dci = { iface : 'table' };
 
