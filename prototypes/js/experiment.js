@@ -306,7 +306,7 @@ angular.module('dci')
 				$scope.$watch('experiment', () => {
 					console.info('experiment ', $scope.experiment);
 					if ($scope.experiment && $stateParams.pdci === 'true') { 
-						$scope.pdciApps = $scope.experiment.pdciApps.filter((x) => x !== $stateParams.app);
+						$scope.pdciApps = ($scope.experiment.pdciApps || []).filter((x) => x !== $stateParams.app);
 					} else {
 						$scope.pdciApps = undefined;
 					}
@@ -374,12 +374,15 @@ angular.module('dci')
 						b:data.filter((x) => x.app === task.b)[0].appcompany,
 					};
 
-					if (task.cond === 'pdci') {
-						// console.info("TASK PDCI setting ", $scope.experiment.pdciApps);
-						$scope.pdciApps = $scope.experiment.pdciApps;
-					} else {
-						delete $scope.pdciApps;
-					}
+					$scope.$watch('experiment', () => {
+						if ($scope.experiment && task) { 
+							if (task.cond === 'pdci') {
+								$scope.pdciApps = ($scope.experiment.pdciApps || []).filter((x) => x !== task.a & x !== task.b);
+							} else {
+								delete $scope.pdciApps;
+							}
+						}
+					});
 
 					// clear task result before continuing!
 					delete task.result;
@@ -396,9 +399,7 @@ angular.module('dci')
 							end_time: end_time,
 						};
 						$scope.stage = 1;
-						$scope.save().then(() => { 
-							console.info('save done ', task);							
-						});
+						$scope.save().then(() => { console.info('save done ', task);	});
 					};
 					$scope.nextQ = () => $scope.stage++;
 
