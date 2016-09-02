@@ -24,11 +24,12 @@
 	<h4>phase 2 : choose the app you like better </h4>
 	<table>
 		<thead>
-			<th>round</th><th>condition</th><th>a</th><th>b</th><th>run?</th>
+			<th>round</th><th>condition</th><th>domain</th><th>a</th><th>b</th><th>run?</th>
 		</thead>
 		<tr ng-repeat="x in experiment.rounds" ng-class="{done:x.result.chosen}" ng-click="run(x)">
 			<td>{{ experiment.rounds.indexOf(x) }}</td>
 			<td>{{ x.cond }}</td>
+			<td>{{ x.domain }}</td>
 			<td>{{ x.a }}</td>
 			<td>{{ x.b }}</td>
 			<td>{{ x.result.chosen || 'no' }}</td>
