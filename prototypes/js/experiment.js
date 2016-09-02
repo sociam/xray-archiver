@@ -411,10 +411,13 @@ angular.module('dci')
 					};
 					$scope.back = () => { $state.go('experiment.run', {id:$scope.experiment._id}); };
 					$scope.$watch('t.result.confidence', () => {
-						console.log('confidence changed ', $scope.t && $scope.t.result && $scope.t.result.confidence);
-						$scope.save().then(() => {
-							console.log('saved experiment with task ', $scope.t);
-						});
+						if ($scope.t.result.confidence) { 
+							console.log('confidence changed ', $scope.t && $scope.t.result && $scope.t.result.confidence);
+							$scope.save().then(() => {
+								console.log('saved experiment with task ', $scope.t);
+								$scope.next();
+							});
+						}
 					});
 					$scope.$on('$destroy', () => $interval.cancel(timer_int));
 				});

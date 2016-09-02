@@ -3,6 +3,8 @@
 		<span class='name'>{{ t.domain }}</span> apps
 	</div>
 	<h2>If you had to install and use one of these two apps, which would you choose?</h2>
+	<h4 class="explain" ng-show="t.result.chosen" ng-click="nextQ()">Please explain why you chose {{ t.result.chosen }}. <button> OK! </button></h4>
+
 	<!--<div ng-show='false' class="time" ng-bind="elapsed/1000"></div>-->
 	<div class="donebutton btn" ui-sref="experiment.run">Done</div>			
 	<div class="cond" ng-if="t.cond === 'dci' || t.cond === 'pdci'">
@@ -77,15 +79,9 @@
 			</div>
 		</div>
 	</div>
-	<div class="bgfade" ng-show="t.result.chosen"></div>
-	<div class="chosenPane" ng-show="t.result.chosen">
-		<h2> About your choice : </h2> 
-		<div ng-if='stage===1'>
-			<div class="question">1. Why did you choose {{ t.result.chosen }} ? </div>
-			<div> (<i>Please briefly explain your choice verbally</i>)</div>
-			<div class="buttons"><button ng-click="nextQ()">Next question &gt;</button></div>
-		</div>
-		<div class="likert" ng-if='stage===2'>
+	<!-- <div class="bgfade" ng-show="t.result.chosen"></div> -->
+	<div class="chosenPane" ng-if='t.result.chosen && stage===2'>
+		<div class="likert">
 			<div>2. How much do you agree with the following statement? </div>
 			<likert-question response="t.result.confidence">I am confident in my choice of app.</likert-question>
 			<div class="buttons"><button ng-disabled="t.result.confidence===undefined" ng-click="next()">Done! Go to next task &gt; </button></div>
