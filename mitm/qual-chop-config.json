@@ -1,0 +1,6 @@
+{ 
+	"transcripts":"../../private-data-repo/transcripts",
+	"rounds":"../../private-data-repo/participant-data",
+	"out_dir":"../qual_out"
+}
+

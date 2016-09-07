@@ -48,7 +48,7 @@ angular.module('dci')
 									pitypes:pdcic2pi[cn]
 								};
 							}).value();
-						}).flatten().value();
+						}).flatten().value() || [];
 					};
 
 					var hide_Timer;
