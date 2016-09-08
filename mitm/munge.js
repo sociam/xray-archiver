@@ -41,7 +41,7 @@ load_transcripts = () => {
 		.filter((fname) => fname.indexOf('.txt') >= 0)
 		.reduce((d,fname) => 
 			{ 
-				d[fname] = load_transcript([srcdir,fname].join('/'));
+				d[fname.slice(0,-'.txt'.length)] = load_transcript([srcdir,fname].join('/'));
 				return d;
 			}, {});
 },
@@ -67,37 +67,38 @@ load_rounds = () => {
 }, gen_out = (transcripts, rounds) => {
 	// get fields x
 	var field_names = [
-			'id',
-			'participant',
-			'condition',
-			'domain',
-			'app-a',
-			'app-b',			
-			'chosen',
-			'elapsed_secs',			
-			'confidence',
-			'thinkaloud'
-		],
-		field_values = [
-			(rounds, r, ri) => [rounds.participant,''+ri].join('-'), // unique id
-			(rounds, r, ri) => rounds.participant,
-			(rounds, r, ri) => r.cond,
-			(rounds, r, ri) => r.domain,
-			(rounds, r, ri) => r.a,
-			(rounds, r, ri) => r.b,
-			(rounds, r, ri) => r.result.chosen,
-			(rounds, r, ri) => Math.round(r.result.elapsed/1000.0),
-			(rounds, r, ri) => parseInt(r.result.confidence.slice('likert-'.length+1)),
-			(rounds, r, ri) => transcripts[rounds.participant] && transcripts[rounds.participant][ri] || '~'
-		];
+		'id',
+		'round',
+		'participant',
+		'condition',
+		'domain',
+		'app-a',
+		'app-b',			
+		'chosen',
+		'elapsed_secs',			
+		'confidence',
+		'thinkaloud'
+	],
+	field_values = [
+		(rounds, r, ri) => [rounds.participant,''+ri].join('-'), // unique id
+		(rounds, r, ri) => ri+1,
+		(rounds, r, ri) => rounds.participant,
+		(rounds, r, ri) => r.cond,
+		(rounds, r, ri) => r.domain,
+		(rounds, r, ri) => r.a,
+		(rounds, r, ri) => r.b,
+		(rounds, r, ri) => r.result.chosen,
+		(rounds, r, ri) => Math.round(r.result.elapsed/1000.0),
+		(rounds, r, ri) => parseInt(r.result.confidence.slice('likert'.length+1)),
+		(rounds, r, ri) => transcripts[rounds.participant] && transcripts[rounds.participant][ri] || '~'
+	];
 
-
-	var rows = field_names.concat(_.flatten(_.keys(rounds).map((participant) => {
+	var rows = [field_names].concat(_.flatten(_.keys(rounds).map((participant) => {
 		var rdata = rounds[participant];
 		return _(rdata.rounds).map((r,i) => field_values.map((f) => {
-			console.info(rdata.participant, i);
+			console.info(rdata.participant, i, field_names[field_values.indexOf(f)], f(rdata,r,i));
 			return f(rdata,r,i);
-		})).flatten().value();
+		})).value();
 	})));
 
 	return new Promise((acc, rej) => {
@@ -129,7 +130,4 @@ load_rounds = () => {
 	});
 };
 
-
-if (require.main === module) { 
-	main(); 
-}
+if (require.main === module) { main(); }
