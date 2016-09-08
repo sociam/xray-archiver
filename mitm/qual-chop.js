@@ -1,3 +1,5 @@
+
+// textutil -convert txt -encoding mac *.doc
 var parse = require('csv-parse/lib/sync'),
 	fs = require('fs'),
 	_ = require('lodash'),
