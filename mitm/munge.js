@@ -1,3 +1,7 @@
+
+
+// textutil -convert txt *
+
 var parse = require('csv-parse/lib/sync'),
 	csvstr = require('csv-stringify'),
 	fs = require('fs'),
