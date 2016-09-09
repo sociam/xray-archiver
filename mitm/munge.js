@@ -1,3 +1,7 @@
+
+
+// textutil -convert txt *
+
 var parse = require('csv-parse/lib/sync'),
 	csvstr = require('csv-stringify'),
 	fs = require('fs'),
@@ -138,20 +142,20 @@ load_rounds = () => {
 		],
 		field_values = [
 			(rounds, r, ri) => [rounds.participant,''+ri].join('-'), // unique id
-			(rounds, r, ri) => ri+1,
-			(rounds, r, ri) => rounds.participant,
-			(rounds, r, ri) => rounds.pdciApps.join(';'),
-			(rounds, r, ri) => rounds.pdciApps.length,
-			(rounds, r, ri) => r.cond,
-			(rounds, r, ri) => r.domain,
-			(rounds, r, ri) => r.a,
-			(rounds, r, ri) => fakeapps[r.a],
-			(rounds, r, ri) => r.b,
-			(rounds, r, ri) => fakeapps[r.b],
-			(rounds, r, ri) => r.result.chosen,
-			(rounds, r, ri) => fakeapps[r.result.chosen],
-			(rounds, r, ri) => Math.round(r.result.elapsed/1000.0),
-			(rounds, r, ri) => parseInt(r.result.confidence.slice('likert'.length+1)),
+			(rounds, r, ri) => ri+1, // round
+			(rounds, r, ri) => rounds.participant, // participant
+			(rounds, r, ri) => rounds.pdciApps.join(';'), // pdci apps
+			(rounds, r, ri) => rounds.pdciApps.length, // npdci
+			(rounds, r, ri) => r.cond, // condition
+			(rounds, r, ri) => r.domain, // domain
+			(rounds, r, ri) => r.a, // appa
+			(rounds, r, ri) => fakeapps[r.a], // typea
+			(rounds, r, ri) => r.b, // appb
+			(rounds, r, ri) => fakeapps[r.b], //typeb
+			(rounds, r, ri) => r.result && r.result.chosen || '~', // resultchosen
+			(rounds, r, ri) => r.result && fakeapps[r.result.chosen] || '~', // typechosen
+			(rounds, r, ri) => r.result && Math.round(r.result.elapsed/1000.0) || '~', // elapsed
+			(rounds, r, ri) => r.result && parseInt(r.result.confidence.slice('likert'.length+1)) || '~', // elapsed
 			// now features
 			(rounds, r, ri) => client.getHosts(r.a).join(';'),
 			(rounds, r, ri) => client.getHosts(r.b).join(';'),
@@ -163,6 +167,7 @@ load_rounds = () => {
 			(rounds, r, ri) => client.getPermissions(r.b).join(';'),
 			(rounds, r, ri) => transcripts[rounds.participant] && transcripts[rounds.participant][ri] || '~'
 		];
+
 
 	var rows = [field_names].concat(_.flatten(_.keys(rounds).map((participant) => {
 		var rdata = rounds[participant];
