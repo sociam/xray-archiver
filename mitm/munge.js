@@ -91,15 +91,15 @@ load_rounds = () => {
 		(rounds, r, ri) => ri+1,
 		(rounds, r, ri) => rounds.participant,
 		(rounds, r, ri) => r.cond,
-		(rounds, r, ri) => r.domain,
+		(rounds, r, ri) => r.domain.toLowerCase(),
 		(rounds, r, ri) => r.a,
 		(rounds, r, ri) => fakeapps[r.a],
 		(rounds, r, ri) => r.b,
 		(rounds, r, ri) => fakeapps[r.b],
-		(rounds, r, ri) => r.result.chosen,
-		(rounds, r, ri) => fakeapps[r.result.chosen],
-		(rounds, r, ri) => Math.round(r.result.elapsed/1000.0),
-		(rounds, r, ri) => parseInt(r.result.confidence.slice('likert'.length+1)),
+		(rounds, r, ri) => r.result && r.result.chosen || '~',
+		(rounds, r, ri) => r.result && fakeapps[r.result.chosen] || '~',
+		(rounds, r, ri) => r.result && Math.round(r.result.elapsed/1000.0) || '~',
+		(rounds, r, ri) => r.result && parseInt(r.result.confidence.slice('likert'.length+1)) || '~',
 		(rounds, r, ri) => transcripts[rounds.participant] && transcripts[rounds.participant][ri] || '~'
 	];
 
