@@ -64,7 +64,7 @@ load_rounds = () => {
 				return d;
 			}, 
 			{});
-}, gen_out = (transcripts, rounds) => {
+}, gen_out = (transcripts, rounds, fakeapps) => {
 	// get fields x
 	var field_names = [
 		'id',
@@ -72,9 +72,12 @@ load_rounds = () => {
 		'participant',
 		'condition',
 		'domain',
-		'app-a',
-		'app-b',			
+		'app_a',
+		'type_a',
+		'app_b',			
+		'type_b',
 		'chosen',
+		'type_chosen',
 		'elapsed_secs',			
 		'confidence',
 		'thinkaloud'
@@ -86,8 +89,11 @@ load_rounds = () => {
 		(rounds, r, ri) => r.cond,
 		(rounds, r, ri) => r.domain,
 		(rounds, r, ri) => r.a,
+		(rounds, r, ri) => fakeapps[r.a],
 		(rounds, r, ri) => r.b,
+		(rounds, r, ri) => fakeapps[r.b],
 		(rounds, r, ri) => r.result.chosen,
+		(rounds, r, ri) => fakeapps[r.result.chosen],
 		(rounds, r, ri) => Math.round(r.result.elapsed/1000.0),
 		(rounds, r, ri) => parseInt(r.result.confidence.slice('likert'.length+1)),
 		(rounds, r, ri) => transcripts[rounds.participant] && transcripts[rounds.participant][ri] || '~'
@@ -108,9 +114,27 @@ load_rounds = () => {
 			rej(err);
 		});
 	});
-}, main = (mode) => {
+}, loadCSV = (fname) => {
+	var text = 	fs.readFileSync(fname).toString();
+	console.log("Parsing file ", fname, "(", text.length, ")");
+	var data = parse(text, {max_limit_on_data_read:9999999999});
+	headers = data[0];
+	data = data.slice(1);
+	data = data.map((x) => _.zipObject(headers,x));
+	return data;
+}, app2type = (apparr) => {
+	// simply takes array [ { "App type code":'', "fake name": .. } ]
+	// -> { fake name : app type code }
+
+	return apparr.reduce((d, app) => {
+		d[app['fake name']] = app['App type code'];
+		return d;
+	}, {});
+},
+main = (mode) => {
 	var ts = load_transcripts(), 
 		rs = load_rounds(),
+		fakeapps = app2type(loadCSV(config.fakeapps)),
 		fout = config.out;
 
 	if (!fout) { 
@@ -121,7 +145,10 @@ load_rounds = () => {
 	console.info('loaded ', _.keys(ts).length, ' transcripts', _.keys(ts));
 	console.info('loaded ', _.keys(rs).length, ' rounds ', _.keys(rs));
 
-	gen_out(ts, rs).then((output) => {
+	console.info('fake apps ', fakeapps);
+
+
+	gen_out(ts, rs, fakeapps).then((output) => {
 		console.info("Writing output ", fout, fout.length);
 		fs.writeFileSync(fout, output);
 		console.log('done.');
