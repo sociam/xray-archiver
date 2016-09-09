@@ -72,7 +72,13 @@ load_client = () => {
 			var c2pi = cutils.makeCompany2pi(app, allData.filter((x) => x.app === app), hosts, pitypes, 0),
 				appcompany = getAppCompany(app),
 				cat2c2pi = cutils.makeCategories(appcompany, details, c2pi);
-			return _.keys(cat2c2pi);
+			return _.keys(cat2c2pi).sort().map((cat) => [cat,_.keys(cat2c2pi[cat]).length].join(':'));
+		},
+		getMarketing:(app) => { 
+			var c2pi = cutils.makeCompany2pi(app, allData.filter((x) => x.app === app), hosts, pitypes, 0),
+				appcompany = getAppCompany(app),
+				cat2c2pi = cutils.makeCategories(appcompany, details, c2pi);
+			return _.keys(cat2c2pi.marketing);
 		},
 		getPermissions:(app) => { 
 			var c2pi = cutils.makeCompany2pi(app, allData.filter((x) => x.app === app), hosts, pitypes, 0),
@@ -131,13 +137,19 @@ load_rounds = () => {
 			'elapsed_secs',			
 			'confidence',
 			'hosts_a',
+			'n_hosts_a',
 			'hosts_b',
+			'n_hosts_b',			
 			'companies_a',
+			'n_companies_a',			
 			'companies_b',
-			'categories_a',
-			'categories_b',
-			'perms_a',
-			'perms_b',
+			'n_companies_b',
+			'n_marketing_a',
+			'n_marketing_b',
+			// 'categories_a',
+			// 'categories_b',
+			// 'perms_a',
+			// 'perms_b',
 			'thinkaloud'
 		],
 		field_values = [
@@ -156,15 +168,26 @@ load_rounds = () => {
 			(rounds, r, ri) => r.result && fakeapps[r.result.chosen] || '~', // typechosen
 			(rounds, r, ri) => r.result && Math.round(r.result.elapsed/1000.0) || '~', // elapsed
 			(rounds, r, ri) => r.result && parseInt(r.result.confidence.slice('likert'.length+1)) || '~', // elapsed
-			// now features
+
+			// CLIENT features
 			(rounds, r, ri) => client.getHosts(r.a).join(';'),
+			(rounds, r, ri) => client.getHosts(r.a).length,
 			(rounds, r, ri) => client.getHosts(r.b).join(';'),
+			(rounds, r, ri) => client.getHosts(r.b).length,
+
 			(rounds, r, ri) => client.getCompanies(r.a).join(';'),
+			(rounds, r, ri) => client.getCompanies(r.a).length,
 			(rounds, r, ri) => client.getCompanies(r.b).join(';'),
-			(rounds, r, ri) => client.getCategories(r.a).join(';'),
-			(rounds, r, ri) => client.getCategories(r.b).join(';'),
-			(rounds, r, ri) => client.getPermissions(r.a).join(';'),
-			(rounds, r, ri) => client.getPermissions(r.b).join(';'),
+			(rounds, r, ri) => client.getCompanies(r.b).length,
+
+			(rounds, r, ri) => client.getMarketing(r.a).length,
+			(rounds, r, ri) => client.getMarketing(r.b).length,
+
+			// (rounds, r, ri) => client.getCategories(r.a).join(';'),
+			// (rounds, r, ri) => client.getCategories(r.b).join(';'),
+			// (rounds, r, ri) => client.getPermissions(r.a).join(';'),
+			// (rounds, r, ri) => client.getPermissions(r.b).join(';'),
+			
 			(rounds, r, ri) => transcripts[rounds.participant] && transcripts[rounds.participant][ri] || '~'
 		];
 
