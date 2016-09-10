@@ -85,14 +85,11 @@ load_client = () => {
 				appcompany = getAppCompany(app),
 				cat2c2pi = cutils.makeCategories(appcompany, details, c2pi),
 				pits =  _(c2pi).values().flatten().uniq().value(),
-				pi2cat = pits.reduce((red, pit) => {
-					var cats = _.keys(cat2c2pi).filter((cat) => {
-						return _(cat2c2pi[cat]).values().flatten().value().indexOf(pit) >= 0;
-					});
-					red[pit] = cats;
+				pi2c = pits.reduce((red, pit) => {
+					red[pit] = _.keys(c2pi).filter((c) => c2pi[c].indexOf(pit) >= 0).length;
 					return red;
 				}, {});
-			return _.keys(pi2cat).filter((k) => pi2cat[k].length);
+			return pi2c;
 		},
 		getUnique:(app) => {
 		}
@@ -148,8 +145,14 @@ load_rounds = () => {
 			'n_marketing_b',
 			// 'categories_a',
 			// 'categories_b',
-			// 'perms_a',
-			// 'perms_b',
+			'perms_a',
+			'perms_b',
+			'perms_location_a',
+			'perms_location_b',
+			'perms_device_id_a',
+			'perms_device_id_b',
+			'perms_user_details_a',
+			'perms_user_details_b',
 			'thinkaloud'
 		],
 		field_values = [
@@ -185,9 +188,15 @@ load_rounds = () => {
 
 			// (rounds, r, ri) => client.getCategories(r.a).join(';'),
 			// (rounds, r, ri) => client.getCategories(r.b).join(';'),
-			// (rounds, r, ri) => client.getPermissions(r.a).join(';'),
-			// (rounds, r, ri) => client.getPermissions(r.b).join(';'),
-			
+			(rounds, r, ri) => _.keys(client.getPermissions(r.a)).length, // join(';'),
+			(rounds, r, ri) => _.keys(client.getPermissions(r.b)).length, // join(';'),
+			(rounds, r, ri) => client.getPermissions(r.a)['USER_LOCATION'] || 0, // join(';'),
+			(rounds, r, ri) => client.getPermissions(r.b)['USER_LOCATION'] || 0, // join(';'),
+			(rounds, r, ri) => client.getPermissions(r.a)['DEVICE_ID'] || 0, // join(';'),
+			(rounds, r, ri) => client.getPermissions(r.b)['DEVICE_ID'] || 0, // join(';'),
+			(rounds, r, ri) => client.getPermissions(r.a)['USER_PERSONAL_DETAILS'] || 0, // join(';'),
+			(rounds, r, ri) => client.getPermissions(r.b)['USER_PERSONAL_DETAILS'] || 0, // join(';'),
+
 			(rounds, r, ri) => transcripts[rounds.participant] && transcripts[rounds.participant][ri] || '~'
 		];
 
