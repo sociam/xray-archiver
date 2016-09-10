@@ -56,7 +56,10 @@ load_client = () => {
 		hosts = JSON.parse(fs.readFileSync('../mitm_out/host_by_app.json')),
 		details =  JSON.parse(fs.readFileSync('../mitm_out/company_details.json')),
 		allData = JSON.parse(fs.readFileSync('../mitm_out/data_all.json')),
-		getAppCompany = (app) => allData.filter((x) => x.app === app)[0].company;
+		getAppCompany = (app) => { 
+			console.log('app ', app); //debug
+			return allData.filter((x) => x.app === app)[0].company;
+		};
 		
 	return { 
 		getHosts:(app) => { 
@@ -205,8 +208,8 @@ load_rounds = () => {
 
 	if (qualmode) { 
 		// subset for qual
-		var fn = [field_names[0],field_names[field_names.indexOf('condition')],field_names[field_names.indexOf('thinkaloud')]],	
-			fv = [field_values[0], field_values[field_names.indexOf('condition')], field_values[field_names.indexOf('thinkaloud')]];
+		var fn = [field_names[0],field_names[field_names.indexOf('participant')],field_names[field_names.indexOf('round')],field_names[field_names.indexOf('condition')],field_names[field_names.indexOf('thinkaloud')]],	
+			fv = [field_values[0],field_values[field_names.indexOf('participant')],field_values[field_names.indexOf('round')],field_values[field_names.indexOf('condition')], field_values[field_names.indexOf('thinkaloud')]];
 		field_names = fn;
 		field_values = fv;
 		console.info('field names ', field_names);		
