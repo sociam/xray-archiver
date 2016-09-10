@@ -11,6 +11,7 @@ var parse = require('csv-parse/lib/sync'),
 	qualmode,
 	qs = require('querystring'),
 	config = JSON.parse(fs.readFileSync('./munge-config.json')),
+	cutils = require('./client-utils'),
 	round_re = /ROUND\W+(\d+)/;
 
 var load_transcript = (fname) => {
@@ -50,6 +51,51 @@ load_transcripts = () => {
 				return d;
 			}, {});
 },
+load_client = () => {
+	var pitypes = JSON.parse(fs.readFileSync('../mitm_out/pi_by_host.json')),
+		hosts = JSON.parse(fs.readFileSync('../mitm_out/host_by_app.json')),
+		details =  JSON.parse(fs.readFileSync('../mitm_out/company_details.json')),
+		allData = JSON.parse(fs.readFileSync('../mitm_out/data_all.json')),
+		getAppCompany = (app) => allData.filter((x) => x.app === app)[0].company;
+		
+	return { 
+		getHosts:(app) => { 
+			var data = allData.filter((x) => x.app === app),
+				hTh = cutils.makeHTH(data),
+				hu = _.uniq(_.keys(hosts[app]).map((h) => hTh[h]));
+			return hu;
+		},
+		getCompanies:(app) => { 
+			var c2pi = cutils.makeCompany2pi(app, allData.filter((x) => x.app === app), hosts, pitypes, 0);
+			return _.keys(c2pi);
+		},
+		getCategories:(app) => { 
+			var c2pi = cutils.makeCompany2pi(app, allData.filter((x) => x.app === app), hosts, pitypes, 0),
+				appcompany = getAppCompany(app),
+				cat2c2pi = cutils.makeCategories(appcompany, details, c2pi);
+			return _.keys(cat2c2pi).sort().map((cat) => [cat,_.keys(cat2c2pi[cat]).length].join(':'));
+		},
+		getMarketing:(app) => { 
+			var c2pi = cutils.makeCompany2pi(app, allData.filter((x) => x.app === app), hosts, pitypes, 0),
+				appcompany = getAppCompany(app),
+				cat2c2pi = cutils.makeCategories(appcompany, details, c2pi);
+			return _.keys(cat2c2pi.marketing);
+		},
+		getPermissions:(app) => { 
+			var c2pi = cutils.makeCompany2pi(app, allData.filter((x) => x.app === app), hosts, pitypes, 0),
+				appcompany = getAppCompany(app),
+				cat2c2pi = cutils.makeCategories(appcompany, details, c2pi),
+				pits =  _(c2pi).values().flatten().uniq().value(),
+				pi2c = pits.reduce((red, pit) => {
+					red[pit] = _.keys(c2pi).filter((c) => c2pi[c].indexOf(pit) >= 0).length;
+					return red;
+				}, {});
+			return pi2c;
+		},
+		getUnique:(app) => {
+		}
+	};
+},
 load_rounds = () => {
 	// loads data files in batch
 	var srcdir = config.rounds;
@@ -71,38 +117,90 @@ load_rounds = () => {
 			{});
 }, gen_out = (transcripts, rounds, fakeapps) => {
 	// get fields x
-	var field_names = [
-		'id',
-		'round',
-		'participant',
-		'condition',
-		'domain',
-		'app_a',
-		'type_a',
-		'app_b',			
-		'type_b',
-		'chosen',
-		'type_chosen',
-		'elapsed_secs',			
-		'confidence',
-		'thinkaloud'
-	],
-	field_values = [
-		(rounds, r, ri) => [rounds.participant,''+ri].join('-'), // unique id
-		(rounds, r, ri) => ri+1,
-		(rounds, r, ri) => rounds.participant,
-		(rounds, r, ri) => r.cond,
-		(rounds, r, ri) => r.domain.toLowerCase(),
-		(rounds, r, ri) => r.a,
-		(rounds, r, ri) => fakeapps[r.a],
-		(rounds, r, ri) => r.b,
-		(rounds, r, ri) => fakeapps[r.b],
-		(rounds, r, ri) => r.result && r.result.chosen || '~',
-		(rounds, r, ri) => r.result && fakeapps[r.result.chosen] || '~',
-		(rounds, r, ri) => r.result && Math.round(r.result.elapsed/1000.0) || '~',
-		(rounds, r, ri) => r.result && parseInt(r.result.confidence.slice('likert'.length+1)) || '~',
-		(rounds, r, ri) => transcripts[rounds.participant] && transcripts[rounds.participant][ri] || '~'
-	];
+	var client = load_client(),
+		field_names = [
+			'id',
+			'round',
+			'participant',
+			'pdciApps',			
+			'npdci',	
+			'condition',
+			'domain',
+			'app_a',
+			'type_a',
+			'app_b',			
+			'type_b',
+			'chosen',
+			'type_chosen',
+			'elapsed_secs',			
+			'confidence',
+			'hosts_a',
+			'n_hosts_a',
+			'hosts_b',
+			'n_hosts_b',			
+			'companies_a',
+			'n_companies_a',			
+			'companies_b',
+			'n_companies_b',
+			'n_marketing_a',
+			'n_marketing_b',
+			// 'categories_a',
+			// 'categories_b',
+			'perms_a',
+			'perms_b',
+			'perms_location_a',
+			'perms_location_b',
+			'perms_device_id_a',
+			'perms_device_id_b',
+			'perms_user_details_a',
+			'perms_user_details_b',
+			'thinkaloud'
+		],
+		field_values = [
+			(rounds, r, ri) => [rounds.participant,''+ri].join('-'), // unique id
+			(rounds, r, ri) => ri+1, // round
+			(rounds, r, ri) => rounds.participant, // participant
+			(rounds, r, ri) => rounds.pdciApps.join(';'), // pdci apps
+			(rounds, r, ri) => rounds.pdciApps.length, // npdci
+			(rounds, r, ri) => r.cond, // condition
+			(rounds, r, ri) => r.domain, // domain
+			(rounds, r, ri) => r.a, // appa
+			(rounds, r, ri) => fakeapps[r.a], // typea
+			(rounds, r, ri) => r.b, // appb
+			(rounds, r, ri) => fakeapps[r.b], //typeb
+			(rounds, r, ri) => r.result && r.result.chosen || '~', // resultchosen
+			(rounds, r, ri) => r.result && fakeapps[r.result.chosen] || '~', // typechosen
+			(rounds, r, ri) => r.result && Math.round(r.result.elapsed/1000.0) || '~', // elapsed
+			(rounds, r, ri) => r.result && parseInt(r.result.confidence.slice('likert'.length+1)) || '~', // elapsed
+
+			// CLIENT features
+			(rounds, r, ri) => client.getHosts(r.a).join(';'),
+			(rounds, r, ri) => client.getHosts(r.a).length,
+			(rounds, r, ri) => client.getHosts(r.b).join(';'),
+			(rounds, r, ri) => client.getHosts(r.b).length,
+
+			(rounds, r, ri) => client.getCompanies(r.a).join(';'),
+			(rounds, r, ri) => client.getCompanies(r.a).length,
+			(rounds, r, ri) => client.getCompanies(r.b).join(';'),
+			(rounds, r, ri) => client.getCompanies(r.b).length,
+
+			(rounds, r, ri) => client.getMarketing(r.a).length,
+			(rounds, r, ri) => client.getMarketing(r.b).length,
+
+			// (rounds, r, ri) => client.getCategories(r.a).join(';'),
+			// (rounds, r, ri) => client.getCategories(r.b).join(';'),
+			(rounds, r, ri) => _.keys(client.getPermissions(r.a)).length, // join(';'),
+			(rounds, r, ri) => _.keys(client.getPermissions(r.b)).length, // join(';'),
+			(rounds, r, ri) => client.getPermissions(r.a)['USER_LOCATION'] || 0, // join(';'),
+			(rounds, r, ri) => client.getPermissions(r.b)['USER_LOCATION'] || 0, // join(';'),
+			(rounds, r, ri) => client.getPermissions(r.a)['DEVICE_ID'] || 0, // join(';'),
+			(rounds, r, ri) => client.getPermissions(r.b)['DEVICE_ID'] || 0, // join(';'),
+			(rounds, r, ri) => client.getPermissions(r.a)['USER_PERSONAL_DETAILS'] || 0, // join(';'),
+			(rounds, r, ri) => client.getPermissions(r.b)['USER_PERSONAL_DETAILS'] || 0, // join(';'),
+
+			(rounds, r, ri) => transcripts[rounds.participant] && transcripts[rounds.participant][ri] || '~'
+		];
+
 
 	if (qualmode) { 
 		// subset for qual
