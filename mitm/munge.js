@@ -8,6 +8,7 @@ var parse = require('csv-parse/lib/sync'),
 	promise = require('bluebird'),
 	_ = require('lodash'),
 	headers,
+	qualmode,
 	qs = require('querystring'),
 	config = JSON.parse(fs.readFileSync('./munge-config.json')),
 	round_re = /ROUND\W+(\d+)/;
@@ -103,6 +104,16 @@ load_rounds = () => {
 		(rounds, r, ri) => transcripts[rounds.participant] && transcripts[rounds.participant][ri] || '~'
 	];
 
+	if (qualmode) { 
+		// subset for qual
+		var fn = [field_names[0],field_names[field_names.indexOf('condition')],field_names[field_names.indexOf('thinkaloud')]],	
+			fv = [field_values[0], field_values[field_names.indexOf('condition')], field_values[field_names.indexOf('thinkaloud')]];
+		field_names = fn;
+		field_values = fv;
+		console.info('field names ', field_names);		
+		console.info('field values ', field_values);		
+	}
+
 	var rows = [field_names].concat(_.flatten(_.keys(rounds).map((participant) => {
 		var rdata = rounds[participant];
 		return _(rdata.rounds).map((r,i) => field_values.map((f) => {
@@ -139,7 +150,7 @@ main = (mode) => {
 	var ts = load_transcripts(), 
 		rs = load_rounds(),
 		fakeapps = app2type(loadCSV(config.fakeapps)),
-		fout = config.out;
+		fout = config.out + (qualmode ? '-qual.csv' : '');
 
 	if (!fout) { 
 		console.error("No output directory specified, please set out_dir in qual-chop-config");
@@ -161,4 +172,10 @@ main = (mode) => {
 	});
 };
 
-if (require.main === module) { main(); }
+if (require.main === module) { 
+	if (process.argv[2] === 'qual') { 
+		console.info('qualmode on');
+		qualmode=true;
+	}
+	main(); 
+}
