@@ -12,7 +12,8 @@ var parse = require('csv-parse/lib/sync'),
 	qs = require('querystring'),
 	config = JSON.parse(fs.readFileSync('./munge-config.json')),
 	cutils = require('./client-utils'),
-	round_re = /ROUND\W+(\d+)/;
+	round_re = /ROUND\W*(\d+)/,
+	exit_re = /exit\W*\>|exit interview|exit questions|exit survey/i;
 
 var load_transcript = (fname) => {
 	var text = fs.readFileSync(fname).toString(),
@@ -20,7 +21,8 @@ var load_transcript = (fname) => {
 		fidx = first_sep_match && text.indexOf(first_sep_match[0]),
 		rtext = fidx && text.slice(fidx).split('\n').filter((x) => x.length > 0),
 		rounds = [],
-		cur_r = first_sep_match && parseInt(first_sep_match[1]);
+		cur_r = first_sep_match && parseInt(first_sep_match[1])-1,
+		done;
 
 	if (!first_sep_match) { 
 		console.error("No separator found in ", fname, " skipping");
@@ -28,11 +30,16 @@ var load_transcript = (fname) => {
 	}
 
 	rtext.map((line) => {
+		if (done) { return; }
+
 		var rT = rounds[cur_r] || '',
-			m = line.match(round_re);
+			m = line.match(round_re),
+			e = line.match(exit_re);
+
+		if (e) { done = true; return; }
 		if (m) {
 			// incr and skip
-			cur_r = parseInt(m[1]);
+			cur_r = parseInt(m[1])-1;
 			console.info('next round ', fname, ' r ', cur_r);			
 			return;
 		}
@@ -81,6 +88,13 @@ load_client = () => {
 				cat2c2pi = cutils.makeCategories(appcompany, details, c2pi);
 			return _.keys(cat2c2pi.marketing);
 		},
+		getCatCompanies:(app, cat) => { 
+			var c2pi = cutils.makeCompany2pi(app, allData.filter((x) => x.app === app), hosts, pitypes, 0),
+				appcompany = getAppCompany(app),
+				cat2c2pi = cutils.makeCategories(appcompany, details, c2pi);
+			return _.keys(cat2c2pi[cat]);
+		},
+
 		getPermissions:(app) => { 
 			var c2pi = cutils.makeCompany2pi(app, allData.filter((x) => x.app === app), hosts, pitypes, 0),
 				appcompany = getAppCompany(app),
@@ -143,16 +157,32 @@ load_rounds = () => {
 			'n_companies_a',			
 			'companies_b',
 			'n_companies_b',
+			'n_apppub_a',
+			'n_apppub_b',
+			'n_appfn_a',
+			'n_appfn_b',
 			'n_marketing_a',
 			'n_marketing_b',
+			'n_usagetr_a',
+			'n_usagetr_b',
+			'n_payments_a',
+			'n_payments_b',
+			'n_security_a',
+			'n_security_b',
+			'n_other_a',
+			'n_other_b',
 			// 'categories_a',
 			// 'categories_b',
 			'perms_a',
 			'perms_b',
 			'perms_location_a',
 			'perms_location_b',
+			'perms_coarseloc_a',
+			'perms_coarseloc_b',
 			'perms_device_id_a',
 			'perms_device_id_b',
+			'perms_device_chr_a',
+			'perms_device_chr_b',
 			'perms_user_details_a',
 			'perms_user_details_b',
 			'thinkaloud'
@@ -185,8 +215,21 @@ load_rounds = () => {
 			(rounds, r, ri) => client.getCompanies(r.b).join(';'),
 			(rounds, r, ri) => client.getCompanies(r.b).length,
 
-			(rounds, r, ri) => client.getMarketing(r.a).length,
-			(rounds, r, ri) => client.getMarketing(r.b).length,
+			(rounds, r, ri) => client.getCatCompanies(r.a,'app-publisher').length,
+			(rounds, r, ri) => client.getCatCompanies(r.b,'app-publisher').length,
+			(rounds, r, ri) => client.getCatCompanies(r.a,'app-functionality').length,
+			(rounds, r, ri) => client.getCatCompanies(r.b,'app-functionality').length,
+			(rounds, r, ri) => client.getCatCompanies(r.a,'marketing').length,
+			(rounds, r, ri) => client.getCatCompanies(r.b,'marketing').length,
+			(rounds, r, ri) => client.getCatCompanies(r.a,'usage tracking').length,
+			(rounds, r, ri) => client.getCatCompanies(r.b,'usage tracking').length,
+			(rounds, r, ri) => client.getCatCompanies(r.a,'payments').length,
+			(rounds, r, ri) => client.getCatCompanies(r.b,'payments').length,			
+			(rounds, r, ri) => client.getCatCompanies(r.a,'security').length,
+			(rounds, r, ri) => client.getCatCompanies(r.b,'security').length,
+			(rounds, r, ri) => client.getCatCompanies(r.a,'other').length,
+			(rounds, r, ri) => client.getCatCompanies(r.b,'other').length,
+
 
 			// (rounds, r, ri) => client.getCategories(r.a).join(';'),
 			// (rounds, r, ri) => client.getCategories(r.b).join(';'),
@@ -194,8 +237,12 @@ load_rounds = () => {
 			(rounds, r, ri) => _.keys(client.getPermissions(r.b)).length, // join(';'),
 			(rounds, r, ri) => client.getPermissions(r.a)['USER_LOCATION'] || 0, // join(';'),
 			(rounds, r, ri) => client.getPermissions(r.b)['USER_LOCATION'] || 0, // join(';'),
+			(rounds, r, ri) => client.getPermissions(r.a)['USER_LOCATION_COARSE'] || 0, // join(';'),
+			(rounds, r, ri) => client.getPermissions(r.b)['USER_LOCATION_COARSE'] || 0, // join(';'),
 			(rounds, r, ri) => client.getPermissions(r.a)['DEVICE_ID'] || 0, // join(';'),
 			(rounds, r, ri) => client.getPermissions(r.b)['DEVICE_ID'] || 0, // join(';'),
+			(rounds, r, ri) => client.getPermissions(r.a)['DEVICE_SOFT'] || 0, // join(';'),
+			(rounds, r, ri) => client.getPermissions(r.b)['DEVICE_SOFT'] || 0, // join(';'),
 			(rounds, r, ri) => client.getPermissions(r.a)['USER_PERSONAL_DETAILS'] || 0, // join(';'),
 			(rounds, r, ri) => client.getPermissions(r.b)['USER_PERSONAL_DETAILS'] || 0, // join(';'),
 
