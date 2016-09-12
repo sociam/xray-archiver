@@ -23,12 +23,17 @@ var loadCSV = (fname) => {
 	data = data.map((x) => _.zipObject(headers,x));
 	return data;
 }, s = (str) => (str||'').split(' ').map((x) => x.trim().toUpperCase().trim(',')).filter((x) => x.length),
-  main = (fname, cols) => {
+	uniquetags = (fname, rater_a, rater_b) => {
+		var rows = loadCSV(fname),
+			cols = [rater_a, rater_b];
+		return _.uniq(_.flatten(rows.map((r) => _.flatten(cols.map((c) => s(r[c]))))));
+	},
+  main = (fname, cols, choose_tags) => {
 	console.info('got cols');
 	var rows = loadCSV(fname),
 		people = cols,
 		rater_a = cols[0], rater_b = cols[1],
-		tags = _.uniq(_.flatten(rows.map((r) => _.flatten(cols.map((c) => s(r[c])))))),
+		tags = choose_tags || _.uniq(_.flatten(rows.map((r) => _.flatten(cols.map((c) => s(r[c])))))),
 		header = ['id', rater_a, rater_b ],
 		rowos = [header].concat(
 			rows.filter((r) => {
@@ -52,10 +57,26 @@ var loadCSV = (fname) => {
 };
 
 if (require.main === module) { 
-	main(process.argv[2], process.argv.slice(3)).then((data) => {
-		// write it !
-		console.info("Writing output ", 'tag-kappa.csv', data.length);
-		fs.writeFileSync('./tag-kappa.csv', data);
-		console.log('done');
-	}); 
+	// node command fileout pers1 pers2 
+	if (process.argv[5] !== 'separate') { 
+		main(process.argv[2], process.argv.slice(3)).then((data) => {
+			// write it !
+			console.info("Writing output ", '../mitm_out/tag-kappa.csv', data.length);
+			fs.writeFileSync('../mitm_out/tag-kappa.csv', data);
+			console.log('done');
+		});
+	} else {
+		console.info('separate ');
+		var tags = uniquetags(process.argv[2], process.argv[3], process.argv[4]);
+		console.info('unique tags ', tags);		
+		tags.map((t) => {
+			main(process.argv[2], process.argv.slice(3,5), [t]).then((data) => {
+				// write it !
+				var fname = '../mitm_out/qual-'+t+'.csv';
+				console.info("Writing output ", t, ' ---> ', fname, data.length);
+				fs.writeFileSync(fname, data);
+				console.log('done');
+			});			
+		});
+	}
 }
