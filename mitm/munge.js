@@ -13,13 +13,18 @@ var parse = require('csv-parse/lib/sync'),
 	config = JSON.parse(fs.readFileSync('./munge-config.json')),
 	cutils = require('./client-utils'),
 	round_re = /ROUND\W*(\d+)/,
-	exit_re = /exit\W*\>|exit interview|exit questions|exit survey/i;
+	exit_re = /exit\W*\>|exit interview|exit questions|exit survey/i,
+	enters = {},
+	exits = {};
 
 var load_transcript = (fname) => {
 	var text = fs.readFileSync(fname).toString(),
 		first_sep_match = text.match(round_re),
 		fidx = first_sep_match && text.indexOf(first_sep_match[0]),
+		introtext = fidx && text.slice(0,fidx).split('\n').filter((x) => x.length > 0),
 		rtext = fidx && text.slice(fidx).split('\n').filter((x) => x.length > 0),
+		exitmatch = text.slice(fidx).match(exit_re),
+		exittext = exitmatch && text.slice(fidx).slice(text.slice(fidx).indexOf(exitmatch[0])),
 		rounds = [],
 		cur_r = first_sep_match && parseInt(first_sep_match[1])-1,
 		done;
@@ -46,6 +51,14 @@ var load_transcript = (fname) => {
 		rounds[cur_r] = rT + line;
 	});
 
+	if (introtext) { 
+		console.info("INTRO :: :: :: :: ", fname, introtext);
+	 	rounds.enter = introtext;  
+	}
+	if (exittext) { 
+		console.info("EXIT :: :: :: :: ", fname, exittext);		
+		rounds.exit = exittext;  
+	}
 	return rounds;
 }, 	
 load_transcripts = () => {
@@ -54,7 +67,18 @@ load_transcripts = () => {
 		.filter((fname) => fname.indexOf('.txt') >= 0)
 		.reduce((d,fname) => 
 			{ 
-				d[fname.slice(0,-'.txt'.length)] = load_transcript([srcdir,fname].join('/'));
+				var ltr = load_transcript([srcdir,fname].join('/')),
+					p = fname.slice(0,-'.txt'.length);
+				d[p] = ltr;
+
+				if (ltr && ltr.enter) { 
+					// console.log('????????????????? enter ', p); 
+					enters[p] = ltr.enter;	
+				}
+				if (ltr && ltr.exit) { 
+					// console.log('????????????????? exit ', p); 
+					exits[p] = ltr.exit;	
+				}
 				return d;
 			}, {});
 },
@@ -270,6 +294,20 @@ load_rounds = () => {
 			return f(rdata,r,i);
 		})).value();
 	})));
+
+	// add intro and exit
+	if (qualmode) { 
+		_.keys(rounds).map((participant) => {
+			if (enters[participant]) { 
+				console.info(":: CONCATENATING !!!!!!!!!!!! ENTER :: ", participant);
+				rows = rows.concat([[participant+"-enter", participant,'enter','',enters[participant]]]);
+			}
+			if (exits[participant]) { 
+				console.info(":: CONCATENATING !!!!!!!!!!!!!!! EXIT :: ", participant);
+				rows = rows.concat([[participant+"-exit", participant,'exit','',exits[participant]]]);
+			}
+		});
+	}
 
 	return new Promise((acc, rej) => {
 		csvstr(rows, (err, output) => {
