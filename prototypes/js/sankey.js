@@ -218,8 +218,8 @@ angular.module('dci')
 						    	$scope.$apply(() => { 
 						    		// console.info('got a click, trying to selected', d);
 						    		var newX = d.x + lOff() + 52;
-						    		if (newX + 320 > parentWidth()) { 
-						    			newX = d.x + lOff() - 320 + 22;
+						    		if (newX + 360 > parentWidth()) { 
+						    			newX = d.x + lOff() - 360 + 22;
 						    		}
 						    		$scope.infoboxx = newX;
 						    		$scope.infoboxy = d.y + tOff() + d.dy/2 - 190/2; //  + d.dy/2 - 190/2; // 22;							    		
