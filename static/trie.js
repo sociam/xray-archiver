@@ -7,6 +7,7 @@ var fs = require('fs'),
 
 var trie_mkchild = (name, fullname) => ({ name:name, fullname: fullname, children:{}, subtree:[] }),
 	trie_root = trie_mkchild('', ''),
+	reset_root = () => { trie_root = trie_mkchild('',''); },
 	trie_add = (path) => {
 		// path is an array
 		var cur = trie_root;
@@ -77,28 +78,33 @@ var walkDir = (dirname, appname, basedir) => {
 
 var apktoolpath = config.apktoolpath,
 	tmpdir = config.tmpdir,
+	by_app = {},
 	toplevel = () => {
-	fs.readdirSync(config.appsdir).map((appname) => {
-		var apk = appname.indexOf('.apk') >= 0,
-			apppath = [config.appsdir,appname].join('/'),
-			cmd = `java -jar ${apktoolpath} d ${apppath} -f`,
-			unpackdirname = [config.tmpdir, appname.slice(0,-4), 'smali'].join('/');
-
-		console.log('appname ', appname, ' apk ', apk);
-		if (!apk) { console.log('skipping ', appname); return; }
+	fs.readdirSync(config.appsdir).map((apkname) => {
+		var apk = apkname.indexOf('.apk') >= 0,
+			appname = apkname.slice(0,-4),
+			apkpath = [config.appsdir,apkname].join('/'),
+			cmd = `java -jar ${apktoolpath} d ${apkpath} -f`,
+			unpackdirname = [config.tmpdir, name, 'smali'].join('/');
+		if (!apk) { console.log('skipping ', apkname); return; }
 		console.log('executing ', cmd);
 		spawn.execSync(cmd, { cwd:tmpdir });
 		console.log('walking ', unpackdirname);
-		walkDir(unpackdirname, appname.slice(0,-4), tmpdir);
+		walkDir(unpackdirname, name, tmpdir);
+		by_app[appname] = find_packages(flattened_trie(trie_root)).map((p) => p.name);
+		reset_root();
 	});
-	console.log(' ----------------------> full trie -------> ');
-	console.log(JSON.stringify(trie_root, null, 4));
+	// console.log(' ----------------------> full trie -------> ');
+	// console.log(JSON.stringify(trie_root, null, 4));
 
-	console.log(' ----------------------> flat trie -------> ');
-	console.log(flattened_trie(trie_root));
+	// console.log(' ----------------------> flat trie -------> ');
+	// console.log(flattened_trie(trie_root));
 
-	console.log(' ----------------------> find packages -------> ');
-	console.log(find_packages(flattened_trie(trie_root)));
+	// console.log(' ----------------------> find packages -------> ');
+	// console.log(find_packages(flattened_trie(trie_root)));
+
+	console.log(JSON.stringify(by_app, null, 4));
+
 };
 
 toplevel();
