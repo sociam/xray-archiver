@@ -3,7 +3,20 @@ var fs = require('fs'),
 	promise = require('bluebird'),
 	_ = require('lodash'),
 	config = JSON.parse(fs.readFileSync('./config.json')),
-	spawn = require('child_process');
+	spawn = require('child_process'),
+	deleteFolderRecursive = function(path) {
+	  if( fs.existsSync(path) ) {
+	      fs.readdirSync(path).forEach(function(file) {
+	        var curPath = path + "/" + file;
+	          if(fs.statSync(curPath).isDirectory()) { // recurse
+	              deleteFolderRecursive(curPath);
+	          } else { // delete file
+	              fs.unlinkSync(curPath);
+	          }
+	      });
+	      fs.rmdirSync(path);
+	    }
+	};
 
 var trie_mkchild = (name, fullname) => ({ name:name, fullname: fullname, children:{}, subtree:[] }),
 	trie_root = trie_mkchild('', ''),
@@ -85,7 +98,9 @@ var apktoolpath = config.apktoolpath,
 			appname = apkname.slice(0,-4),
 			apkpath = [config.appsdir,apkname].join('/'),
 			cmd = `java -jar ${apktoolpath} d ${apkpath} -f`,
+			unpackroot = [config.tmpdir, appname].join('/'),
 			unpackdirname = [config.tmpdir, appname, 'smali'].join('/');
+
 		if (!apk) { console.error('skipping ', apkname); return; }
 		console.error('executing ', cmd);
 		spawn.execSync(cmd, { cwd:tmpdir });
@@ -93,6 +108,9 @@ var apktoolpath = config.apktoolpath,
 		walkDir(unpackdirname, appname, tmpdir);
 		by_app[appname] = find_packages(flattened_trie(trie_root)).map((p) => p.name);
 		reset_root();
+
+		// delete the app 
+		deleteFolderRecursive(unpackroot);
 	});
 	// console.log(' ----------------------> full trie -------> ');
 	// console.log(JSON.stringify(trie_root, null, 4));
