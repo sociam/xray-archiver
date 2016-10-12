@@ -37,11 +37,11 @@ var trie_mkchild = (name, fullname) => ({ name:name, fullname: fullname, childre
 				// get rid of all that are longer
 				so_far = so_far.filter((sfm) => sfm.indexOf(x.name) < 0);
 
-				console.log('checking dupe ', so_far, x.name, 
-					'unique ? ', 
-					so_far.filter((sf) => x.name.indexOf(sf) >= 0),
-					so_far.filter((sf) => x.name.indexOf(sf) >= 0).length === 0
-				);
+				// console.log('checking dupe ', so_far, x.name, 
+				// 	'unique ? ', 
+				// 	so_far.filter((sf) => x.name.indexOf(sf) >= 0),
+				// 	so_far.filter((sf) => x.name.indexOf(sf) >= 0).length === 0
+				// );
 
 				// only add us if we are the shortest
 				if (so_far.filter((sf) => x.name.indexOf(sf) >= 0).length === 0) { 
@@ -50,7 +50,7 @@ var trie_mkchild = (name, fullname) => ({ name:name, fullname: fullname, childre
 			}
 		});
 		var trees = so_far.map((n) => ft.filter((x) => x.name === n)[0]);
-		console.log('!~ names ', so_far, ' trees ', trees);
+		// console.log('!~ names ', so_far, ' trees ', trees);
 		return trees;
 	};
 
@@ -65,7 +65,7 @@ var walkDir = (dirname, appname, basedir) => {
 		var fullpath = [dirname,filename].join('/'),
 			stat = fs.statSync(fullpath),
 			pathsplits = fullpath.slice(basedir.length+appname.length+'smali'.length+3).split('/');
-		console.log('fullpath > ', fullpath, pathsplits);
+		// console.log('fullpath > ', fullpath, pathsplits);
 		if (stat && stat.isDirectory()) { 
 			trie_add(pathsplits); 
 			walkDir(fullpath, appname, basedir);
@@ -85,12 +85,12 @@ var apktoolpath = config.apktoolpath,
 			appname = apkname.slice(0,-4),
 			apkpath = [config.appsdir,apkname].join('/'),
 			cmd = `java -jar ${apktoolpath} d ${apkpath} -f`,
-			unpackdirname = [config.tmpdir, name, 'smali'].join('/');
-		if (!apk) { console.log('skipping ', apkname); return; }
-		console.log('executing ', cmd);
+			unpackdirname = [config.tmpdir, appname, 'smali'].join('/');
+		if (!apk) { console.error('skipping ', apkname); return; }
+		console.error('executing ', cmd);
 		spawn.execSync(cmd, { cwd:tmpdir });
-		console.log('walking ', unpackdirname);
-		walkDir(unpackdirname, name, tmpdir);
+		// console.log('walking ', unpackdirname);
+		walkDir(unpackdirname, appname, tmpdir);
 		by_app[appname] = find_packages(flattened_trie(trie_root)).map((p) => p.name);
 		reset_root();
 	});
