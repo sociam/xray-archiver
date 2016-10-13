@@ -102,15 +102,19 @@ var apktoolpath = config.apktoolpath,
 			unpackdirname = [config.tmpdir, appname, 'smali'].join('/');
 
 		if (!apk) { console.error('skipping ', apkname); return; }
-		console.error('executing ', cmd);
-		spawn.execSync(cmd, { cwd:tmpdir });
-		// console.log('walking ', unpackdirname);
-		walkDir(unpackdirname, appname, tmpdir);
-		by_app[appname] = find_packages(flattened_trie(trie_root)).map((p) => p.name);
-		reset_root();
+		// console.error('executing ', cmd);
+		try {
+			spawn.execSync(cmd, { cwd:tmpdir });
+			// console.log('walking ', unpackdirname);
+			walkDir(unpackdirname, appname, tmpdir);
+			by_app[appname] = find_packages(flattened_trie(trie_root)).map((p) => p.name);
+			reset_root();
 
-		// delete the app 
-		deleteFolderRecursive(unpackroot);
+			// delete the app 
+			deleteFolderRecursive(unpackroot);
+		} catch(e) {
+			console.error('skipping ', appname);
+		}
 	});
 	// console.log(' ----------------------> full trie -------> ');
 	// console.log(JSON.stringify(trie_root, null, 4));
