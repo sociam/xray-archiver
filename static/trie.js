@@ -109,11 +109,15 @@ var apktoolpath = config.apktoolpath,
 			walkDir(unpackdirname, appname, tmpdir);
 			by_app[appname] = find_packages(flattened_trie(trie_root)).map((p) => p.name);
 			reset_root();
-
-			// delete the app 
-			deleteFolderRecursive(unpackroot);
 		} catch(e) {
 			console.error('skipping ', appname);
+		}
+		try {
+			// delete the app 
+			console.error('cleaning up ', unpackroot);			
+			deleteFolderRecursive(unpackroot);
+		} catch(e) { 
+			console.error("error cleaning up ", e);
 		}
 	});
 	// console.log(' ----------------------> full trie -------> ');
