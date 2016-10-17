@@ -73,15 +73,18 @@ var trie_mkchild = (name, fullname) => ({ name:name, fullname: fullname, childre
 // trie_add(['a','b','c','f']);
 // console.log(JSON.stringify(flattened_trie(trie_root), null, 4));
 
-var walkDir = (dirname, appname, basedir) => {
+var walkDir = (dirname, appname, subdirname, basedir) => {
 	fs.readdirSync(dirname).map((filename) => {
 		var fullpath = [dirname,filename].join('/'),
 			stat = fs.statSync(fullpath),
-			pathsplits = fullpath.slice(basedir.length+appname.length+'smali'.length+3).split('/');
-		// console.log('fullpath > ', fullpath, pathsplits);
+			relevant_part = fullpath.slice(basedir.length+appname.length+subdirname.length+3),
+			pathsplits = relevant_part.split('/');
+
+		console.log('fullpath > ', relevant_part);
+
 		if (stat && stat.isDirectory()) { 
 			trie_add(pathsplits); 
-			walkDir(fullpath, appname, basedir);
+			walkDir(fullpath, appname, subdirname, basedir);
 		}
 	});
 };
@@ -106,7 +109,13 @@ var apktoolpath = config.apktoolpath,
 		try {
 			spawn.execSync(cmd, { cwd:tmpdir });
 			// console.log('walking ', unpackdirname);
-			walkDir(unpackdirname, appname, tmpdir);
+			fs.readdirSync(unpackroot).map((sdname) => {
+				var fullpath = [unpackroot,sdname].join('/');
+				if (sdname.indexOf('smali') >= 0 && fs.statSync(fullpath).isDirectory()) {
+					console.error('walking ', fullpath);
+					walkDir(fullpath, appname, sdname, tmpdir);
+				}
+			});
 			by_app[appname] = find_packages(flattened_trie(trie_root)).map((p) => p.name);
 			reset_root();
 		} catch(e) {
