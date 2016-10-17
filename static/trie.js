@@ -101,8 +101,7 @@ var apktoolpath = config.apktoolpath,
 			appname = apkname.slice(0,-4),
 			apkpath = [config.appsdir,apkname].join('/'),
 			cmd = `java -jar ${apktoolpath} d ${apkpath} -f`,
-			unpackroot = [config.tmpdir, appname].join('/'),
-			unpackdirname = [config.tmpdir, appname, 'smali'].join('/');
+			unpackroot = [config.tmpdir, appname].join('/');
 
 		if (!apk) { console.error('skipping ', apkname); return; }
 		// console.error('executing ', cmd);
@@ -111,7 +110,7 @@ var apktoolpath = config.apktoolpath,
 			// console.log('walking ', unpackdirname);
 			fs.readdirSync(unpackroot).map((sdname) => {
 				var fullpath = [unpackroot,sdname].join('/');
-				if (sdname.indexOf('smali') >= 0 && fs.statSync(fullpath).isDirectory()) {
+				if (sdname.indexOf('smali') >= 0 || sdname.indexOf('unknown') >= 0 && fs.statSync(fullpath).isDirectory()) {
 					console.error('walking ', fullpath);
 					walkDir(fullpath, appname, sdname, tmpdir);
 				}
