@@ -19,6 +19,13 @@ if (require.main === module) {
 			d[lib.package] = lib;
 			return d;
 		}, {}),
+		isAd = _.reduce(libtotype, ((d, lib, libname) => {
+			var short = chop_2ld(libname);
+			if (lib.type.indexOf('ads') >= 0) { 
+				d[short] = true;
+			}
+			return d;
+		}), {}),
 		outputfname = process.argv[4];
 
 	console.log('libtotype ', JSON.stringify(libtotype, 0, 4));
@@ -30,7 +37,8 @@ if (require.main === module) {
 					return;
 				}
 				console.info('got! type ', libname, libtotype[libname].type, app_pkg, short);
-				if (libtotype[libname].type.indexOf('ads') >= 0) {
+				// if (libtotype[libname].type.indexOf('ads') >= 0) {
+				if (isAd[short]) { 
 					byapp[app_pkg] = _.union(byapp[app_pkg] || {}, [short]);
 				}
 			});
