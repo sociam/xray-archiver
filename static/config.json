@@ -1,5 +1,7 @@
 {
-	"apktoolpath":"/Users/electronic/Desktop/dci/dci/static/apktool.jar",
-	"appsdir":"/Users/electronic/Desktop/dci/dci/static/apps",
-	"tmpdir":"/tmp/apps"
+	"apktoolpath":"/home/reunns/SOCIAM-XRay/automapp/LibRadar/tool/apktool.jar",
+        "appsdir-test":"/home/emax/xray/static/apps",
+        "appsdir-main":"/home/reunns/www2017-apps",
+        "appsdir-missing":"/tmp/missing-apps",
+	"tmpdir":"/mnt/ramdisk/apps"
 }

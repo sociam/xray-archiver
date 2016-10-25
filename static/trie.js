@@ -80,7 +80,7 @@ var walkDir = (dirname, appname, subdirname, basedir) => {
 			relevant_part = fullpath.slice(basedir.length+appname.length+subdirname.length+3),
 			pathsplits = relevant_part.split('/');
 
-		console.log('fullpath > ', relevant_part);
+//		console.log('fullpath > ', relevant_part);
 
 		if (stat && stat.isDirectory()) { 
 			trie_add(pathsplits); 
