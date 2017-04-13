@@ -1,0 +1,1021 @@
+{
+  "cc.dict.dictcc": [
+    "Admob",
+    "Google",
+    "Doubleclick"
+  ],
+  "com.dictionary": [
+    "Amazon",
+    "Google",
+    "Nexage",
+    "Twitter"
+  ],
+  "com.dictionary.bn": [
+    "Twitter",
+    "Google",
+    "Facebook"
+  ],
+  "com.duckduckgo.mobile.android": [],
+  "com.ebooks.ebookreader": [
+    "Google",
+    "Twitter",
+    "Yahoo",
+    "Flurry",
+    "Foursquare",
+    "Facebook"
+  ],
+  "com.goodreads": [
+    "Amazon",
+    "Google",
+    "Facebook",
+    "Twitter"
+  ],
+  "com.merriamwebster": [
+    "Flurry",
+    "Google"
+  ],
+  "com.microsoft.bing": [
+    "Flurry",
+    "Google",
+    "Microsoft"
+  ],
+  "com.oup.gab.odquicksearch": [
+    "Admob",
+    "Google",
+    "Doubleclick"
+  ],
+  "com.scribd.app.reader0": [
+    "Flurry",
+    "Google",
+    "Adobe",
+    "Facebook"
+  ],
+  "com.tfd.mobile.TfdSearch": [
+    "Flurry",
+    "Google"
+  ],
+  "com.urbandictionary.android": [
+    "Google"
+  ],
+  "org.freedictionary": [
+    "Admob",
+    "Google"
+  ],
+  "org.leo.android.dict": [],
+  "org.wikipedia": [
+    "Bitstadium",
+    "Twitter",
+    "Google"
+  ],
+  "com.cisco.webex.meetings": [
+    "Google"
+  ],
+  "com.citrix.saas.gotowebinar": [
+    "Google",
+    "Mixpanel"
+  ],
+  "com.citrixonline.android.gotomeeting": [
+    "Google"
+  ],
+  "com.fiverr.fiverr": [
+    "Appboy",
+    "Google",
+    "Appsflyer"
+  ],
+  "com.indeed.android.jobsearch": [
+    "Google"
+  ],
+  "com.jobkorea.app": [
+    "Igaworks",
+    "Criteo",
+    "Google"
+  ],
+  "com.timesgroup.timesjobs": [
+    "Flurry",
+    "Google",
+    "Scorecardresearch"
+  ],
+  "com.monster.android.Views": [
+    "Google",
+    "Facebook",
+    "Scorecardresearch"
+  ],
+  "naukriApp.appModules.login": [
+    "Google",
+    "Facebook",
+    "Scorecardresearch"
+  ],
+  "net.infojobs.mobile.android": [
+    "Swrve",
+    "Google",
+    "Scorecardresearch"
+  ],
+  "net.slideshare.mobile": [
+    "Google"
+  ],
+  "com.crunchyroll.crmanga": [
+    "Google"
+  ],
+  "com.dccomics.comics": [
+    "Twitter",
+    "Google",
+    "Facebook"
+  ],
+  "com.marvel.comics": [
+    "Twitter",
+    "Google",
+    "Facebook"
+  ],
+  "jp.comico": [
+    "Facebook",
+    "Twitter",
+    "Google",
+    "Zedo"
+  ],
+  "com.cinemex": [
+    "Facebook",
+    "Google"
+  ],
+  "com.eventbrite.attendee": [
+    "Google"
+  ],
+  "com.imbc.mini": [
+    "Flurry",
+    "Tnkfactory",
+    "Twitter",
+    "Google"
+  ],
+  "com.imdb.mobile": [
+    "Amazon",
+    "Myspace",
+    "Scorecardresearch",
+    "Google"
+  ],
+  "com.mobile.ign": [
+    "Google",
+    "Twitter",
+    "Doubleclick",
+    "Chartbeat",
+    "Scorecardresearch"
+  ],
+  "com.netflix.mediaclient": [
+    "Google"
+  ],
+  "com.ninegag.android.app": [
+    "Google",
+    "Twitter",
+    "Flurry",
+    "Millennialmedia",
+    "Inmobi",
+    "Applovin",
+    "Facebook"
+  ],
+  "com.sonyliv": [
+    "Flurry",
+    "Google",
+    "Twitter"
+  ],
+  "com.tudou.xoom.android": [
+    "Google"
+  ],
+  "com.vimeo.android.videoapp": [
+    "Google"
+  ],
+  "com.wikia.singlewikia.gta": [
+    "Twitter",
+    "Google",
+    "Scorecardresearch"
+  ],
+  "com.wwe.universe": [
+    "Google",
+    "Twitter",
+    "Facebook",
+    "Doubleclick",
+    "Scorecardresearch"
+  ],
+  "de.tvspielfilm": [
+    "Google",
+    "Mixpanel",
+    "Twitter",
+    "Adjust",
+    "Facebook",
+    "Doubleclick"
+  ],
+  "fr.m6.m6replay": [
+    "Google",
+    "Smart Adserver",
+    "Smartadserver",
+    "Twitter",
+    "Mediametrie"
+  ],
+  "tv.pps.mobile": [
+    "Tencent",
+    "Google",
+    "Taobao"
+  ],
+  "au.com.nab.mobile": [
+    "Twitter",
+    "Google",
+    "Facebook"
+  ],
+  "br.com.bb.android": [],
+  "br.com.gabba.Caixa": [
+    "Twitter",
+    "Google"
+  ],
+  "com.aastocks.dzh": [
+    "Rubicon",
+    "Twitter",
+    "Google",
+    "Facebook"
+  ],
+  "com.akbank.android.apps.akbank_direkt": [
+    "Twitter",
+    "Google"
+  ],
+  "com.bca": [],
+  "com.bccard.mobilecard": [
+    "Google"
+  ],
+  "com.bradesco": [
+    "Mopub",
+    "Twitter",
+    "Google"
+  ],
+  "com.garanti.cepsubesi": [
+    "Twitter",
+    "Foursquare",
+    "Google"
+  ],
+  "com.hanaskcard.app.touchstamp": [
+    "Twitter"
+  ],
+  "com.htsu.hsbcpersonalbanking": [
+    "Twitter",
+    "Webtrends",
+    "Google"
+  ],
+  "com.kbcard.cxh.appcard": [
+    "Google"
+  ],
+  "com.kbstar.kbbank": [],
+  "com.paypal.android.p2pmobile": [
+    "Google",
+    "Paypal",
+    "Twitter",
+    "Ebay"
+  ],
+  "com.santander.app": [
+    "Google",
+    "Adobe"
+  ],
+  "com.sbi.SBIFreedomPlus": [
+    "Twitter",
+    "Google"
+  ],
+  "com.snapwork.hdfc": [
+    "Google",
+    "Twitter",
+    "Facebook"
+  ],
+  "com.vakifbank.mobile": [
+    "Google"
+  ],
+  "com.wf.wellsfargomobile": [
+    "Google"
+  ],
+  "com.wooribank.pib.smart": [
+    "Google",
+    "Facebook"
+  ],
+  "com.wooricard.smartapp": [
+    "Twitter",
+    "Google"
+  ],
+  "com.yahoo.mobile.client.android.finance": [
+    "Flurry",
+    "Google",
+    "Yahoo"
+  ],
+  "fr.creditagricole.androidapp": [
+    "Twitter",
+    "Bootstrap",
+    "Google"
+  ],
+  "gov.irs": [
+    "Twitter",
+    "Google"
+  ],
+  "info.percentagecalculator": [
+    "Flurry",
+    "Google",
+    "Admob",
+    "Doubleclick",
+    "Twitter"
+  ],
+  "pl.mbank": [
+    "Google"
+  ],
+  "ru.tcsbank.mcp": [
+    "Flurry",
+    "Google",
+    "Facebook"
+  ],
+  "se.bankgirot.swish": [],
+  "ua.privatbank.ap24": [
+    "Twitter",
+    "Google",
+    "Yahoo"
+  ],
+  "au.com.realestate.app": [
+    "Facebook",
+    "Twitter",
+    "Google",
+    "The Nielsen Company"
+  ],
+  "com.application.zomato": [
+    "Google",
+    "Facebook"
+  ],
+  "com.appsphere.innisfreeapp": [
+    "Twitter",
+    "Google",
+    "Facebook"
+  ],
+  "com.aufeminin.marmiton.activities": [
+    "Google",
+    "Smart Adserver",
+    "Smartadserver",
+    "Twitter",
+    "Facebook",
+    "Scorecardresearch"
+  ],
+  "com.cookpad.android.activities": [
+    "Google",
+    "I-Mobile",
+    "Adstir",
+    "Twitter",
+    "Yahoo",
+    "Amazon",
+    "Mixpanel"
+  ],
+  "com.done.faasos": [
+    "Twitter",
+    "Google"
+  ],
+  "com.dubizzle.horizontal": [
+    "Twitter",
+    "Google",
+    "Newrelic"
+  ],
+  "com.frenys.verdadoreto": [
+    "Facebook",
+    "Twitter",
+    "Google",
+    "Bug"
+  ],
+  "com.global.foodpanda.android": [
+    "Google"
+  ],
+  "com.gumtree.android": [
+    "Google",
+    "Facebook",
+    "Yahoo",
+    "Scorecardresearch",
+    "Ebay"
+  ],
+  "com.hotornot.app": [
+    "Twitter",
+    "Google",
+    "Bug",
+    "Ironsource"
+  ],
+  "com.houzz.app": [
+    "Brightcove",
+    "Flurry",
+    "Paypal",
+    "Scorecardresearch",
+    "Google"
+  ],
+  "com.ikea.catalogue.android": [
+    "Google"
+  ],
+  "com.inditex.pullandbear": [
+    "Twitter",
+    "Google"
+  ],
+  "com.inditex.zara": [
+    "Google"
+  ],
+  "com.kt.ollehfamilybox": [
+    "Twitter",
+    "Google"
+  ],
+  "com.move.realtor": [
+    "Appboy",
+    "Google",
+    "Facebook",
+    "Twitter",
+    "Scorecardresearch"
+  ],
+  "com.openrice.snap": [
+    "Google",
+    "Facebook"
+  ],
+  "com.redfin.android": [
+    "Twitter"
+  ],
+  "com.restaurant.mobile": [
+    "Twitter",
+    "Google"
+  ],
+  "com.rightmove.android": [
+    "Facebook",
+    "Twitter",
+    "Google",
+    "Scorecardresearch"
+  ],
+  "com.scripps.android.foodnetwork": [
+    "Google",
+    "Twitter",
+    "Admob",
+    "Facebook",
+    "Doubleclick",
+    "Scorecardresearch"
+  ],
+  "com.trulia.android": [
+    "Google",
+    "Doubleclick",
+    "Scorecardresearch"
+  ],
+  "com.trulia.android.rentals": [
+    "Google",
+    "Doubleclick",
+    "Scorecardresearch"
+  ],
+  "com.zoopla.activity": [
+    "Admob",
+    "Google",
+    "Doubleclick",
+    "Zoopla"
+  ],
+  "de.mcdonalds.mcdonaldsinfoapp": [
+    "Twitter",
+    "Google",
+    "Adobe",
+    "Adjust"
+  ],
+  "de.pixelhouse": [
+    "Bitstadium",
+    "Twitter",
+    "Google",
+    "Doubleclick"
+  ],
+  "ecowork.seven": [
+    "Twitter",
+    "Google"
+  ],
+  "fr.disneylandparis.android": [
+    "Google"
+  ],
+  "jp.co.recruit.mtl.android.hotpepper": [
+    "Twitter",
+    "Google",
+    "Adobe",
+    "Doubleclick"
+  ],
+  "kr.co.station3.dabang": [
+    "Google"
+  ],
+  "com.AnatomyLearning.Anatomy3DViewer3": [],
+  "com.anghami": [
+    "Google",
+    "Polar Mobile Group",
+    "Flurry",
+    "Facebook",
+    "Doubleclick"
+  ],
+  "com.bandsintown": [
+    "Google",
+    "Twitter",
+    "Foursquare",
+    "Adobe",
+    "Sina"
+  ],
+  "com.gaana": [
+    "Twitter",
+    "Google",
+    "Facebook",
+    "Scorecardresearch",
+    "Apsalar"
+  ],
+  "com.gaana.oldhindisongs": [
+    "Admob",
+    "Google",
+    "Doubleclick"
+  ],
+  "com.jangomobile.android": [
+    "Google",
+    "Twitter",
+    "Millennialmedia",
+    "Amazon",
+    "Facebook",
+    "Newrelic",
+    "Inmobi"
+  ],
+  "com.kugou.android": [
+    "Weibo",
+    "Adobe",
+    "Twitter",
+    "Tencent",
+    "Sina"
+  ],
+  "com.mixcloud.player": [
+    "Millennialmedia",
+    "Google",
+    "Scorecardresearch"
+  ],
+  "com.musixmatch.android.lyrify": [
+    "Twitter",
+    "Google"
+  ],
+  "com.spotify.music": [
+    "Google",
+    "Mixpanel",
+    "Twitter",
+    "Cloudfront",
+    "Adjust",
+    "Facebook",
+    "Scorecardresearch"
+  ],
+  "com.vevo": [
+    "Google",
+    "Pinterest",
+    "Twitter",
+    "Flurry",
+    "Appboy",
+    "Facebook",
+    "Bug"
+  ],
+  "de.radio.android": [],
+  "uk.co.sevendigital.android": [
+    "Twitter",
+    "Google"
+  ],
+  "com.abc.abcnews": [
+    "Google",
+    "Twitter",
+    "Appboy",
+    "Sharethrough",
+    "Facebook",
+    "Scorecardresearch"
+  ],
+  "com.andrewshu.android.reddit": [
+    "Amazon",
+    "Google",
+    "Flurry",
+    "Twitter"
+  ],
+  "com.backelite.vingtminutes": [
+    "Google",
+    "Smart Adserver",
+    "Smartadserver",
+    "Twitter",
+    "Taboola",
+    "Presage"
+  ],
+  "com.cnn.mobile.android.phone": [
+    "Google",
+    "Twitter",
+    "Adobe",
+    "Gigya",
+    "Scorecardresearch"
+  ],
+  "com.dailymail.online": [
+    "Google",
+    "Lotame",
+    "Twitter",
+    "Millennialmedia",
+    "Inmobi",
+    "Taboola",
+    "Doubleclick",
+    "Presage",
+    "Scorecardresearch"
+  ],
+  "com.elpais.elpais": [
+    "Google",
+    "Doubleclick",
+    "Scorecardresearch"
+  ],
+  "com.et.reader.activities": [
+    "Facebook",
+    "Google",
+    "Scorecardresearch",
+    "Apsalar"
+  ],
+  "com.foxnews.android": [
+    "Google",
+    "Outbrain",
+    "Twitter",
+    "Facebook",
+    "Doubleclick",
+    "Adobe",
+    "Scorecardresearch"
+  ],
+  "com.google.android.apps.genie.geniewidget": [
+    "Google"
+  ],
+  "com.hespress.android": [
+    "Facebook",
+    "Google"
+  ],
+  "com.huffingtonpost.android": [
+    "Admarvel",
+    "Google",
+    "Adobe",
+    "Smart Adserver",
+    "Parsely",
+    "Smartadserver",
+    "Twitter",
+    "AOL",
+    "Millennialmedia",
+    "Scorecardresearch"
+  ],
+  "com.ideashower.readitlater.pro": [
+    "Google",
+    "Automattic",
+    "Twitter",
+    "Facebook"
+  ],
+  "com.idmedia.android.newsportal": [
+    "Google"
+  ],
+  "com.indomedia.tabpulsa": [
+    "Google"
+  ],
+  "com.issuu.android.app": [],
+  "com.july.ndtv": [
+    "Google",
+    "Twitter",
+    "Rubicon",
+    "Taboola",
+    "Doubleclick",
+    "Scorecardresearch"
+  ],
+  "com.makonda.blic": [
+    "Mopub",
+    "Facebook",
+    "Google"
+  ],
+  "com.mobilesrepublic.appy": [
+    "Weibo",
+    "Google",
+    "Smart Adserver",
+    "Smartadserver",
+    "Twitter",
+    "Yahoo",
+    "Outbrain",
+    "Flurry",
+    "Facebook",
+    "Inmobi",
+    "Yandex",
+    "Doubleclick",
+    "Cheetahmobile",
+    "Tencent"
+  ],
+  "com.newspaperdirect.pressreader.android": [
+    "Google",
+    "Microsoft"
+  ],
+  "com.newspaperdirect.pressreader.android.hc": [
+    "Google",
+    "Microsoft"
+  ],
+  "com.nextmedia": [
+    "Google",
+    "Facebook",
+    "Doubleclick",
+    "Scorecardresearch",
+    "Parsely"
+  ],
+  "com.nextmediatw": [
+    "Google",
+    "Doubleclick",
+    "Parsely",
+    "Cloudfront",
+    "Facebook",
+    "Intowow",
+    "Scorecardresearch"
+  ],
+  "com.nextradiotv.bfmtvandroid": [
+    "Weborama",
+    "Google",
+    "Smart Adserver",
+    "Smartadserver",
+    "Twitter",
+    "Mediametrie",
+    "Taboola",
+    "imgur",
+    "Presage"
+  ],
+  "com.now.newsapp": [
+    "Google",
+    "Bug",
+    "Doubleclick"
+  ],
+  "com.nytimes.android": [
+    "Twitter",
+    "Google",
+    "Doubleclick",
+    "Scorecardresearch"
+  ],
+  "com.sumarya": [
+    "Millennialmedia",
+    "Google",
+    "Facebook"
+  ],
+  "com.tilab": [
+    "Flurry",
+    "Google",
+    "Facebook"
+  ],
+  "com.Time": [
+    "Twitter",
+    "Google",
+    "Scorecardresearch",
+    "Brightcove"
+  ],
+  "com.toi.reader.activities": [
+    "Google",
+    "Twitter",
+    "Apsalar",
+    "Facebook",
+    "Doubleclick"
+  ],
+  "com.usatoday.android.news": [
+    "Doubleclick",
+    "Airbnb",
+    "Akamai",
+    "Medium",
+    "AOL",
+    "Yahoo",
+    "Brightcove",
+    "Amazon",
+    "Facebook",
+    "Soundcloud",
+    "Moatads",
+    "Samsung",
+    "Signal",
+    "Polar Mobile Group",
+    "Ebay",
+    "Microsoft",
+    "Google",
+    "Adobe",
+    "Twitter",
+    "Hilton",
+    "Scorecardresearch",
+    "Newrelic",
+    "imgur",
+    "Cxense Asa"
+  ],
+  "com.zing.znews": [
+    "Google",
+    "Facebook"
+  ],
+  "com.zinio.mobile.android.reader": [
+    "Google",
+    "Twitter",
+    "Webtrends",
+    "Flurry",
+    "Facebook",
+    "Microsoft"
+  ],
+  "com.zumobi.msnbc": [
+    "Google",
+    "Scorecardresearch"
+  ],
+  "de.cellular.focus": [
+    "Google",
+    "Twitter",
+    "Admob",
+    "Polar Mobile Group",
+    "Amazon",
+    "Facebook",
+    "Doubleclick"
+  ],
+  "de.cellular.tagesschau": [
+    "Twitter",
+    "Google",
+    "Facebook"
+  ],
+  "de.heute.mobile": [
+    "Admob",
+    "Google",
+    "Twitter",
+    "Doubleclick"
+  ],
+  "de.lineas.lit.ntv.android": [
+    "Twitter",
+    "Google",
+    "Facebook",
+    "Doubleclick",
+    "Ironsource"
+  ],
+  "fr.lepoint.android": [
+    "Smartadserver",
+    "Google",
+    "Smart Adserver"
+  ],
+  "fr.playsoft.android.tv5mondev2": [
+    "Flurry",
+    "Mediametrie",
+    "Twitter"
+  ],
+  "fr.playsoft.lefigarov3": [
+    "Google",
+    "Outbrain",
+    "Liverail",
+    "Twitter",
+    "Brightcove",
+    "Chartbeat",
+    "Appnexus"
+  ],
+  "id.co.babe": [
+    "Flurry",
+    "Google",
+    "Twitter"
+  ],
+  "in.AajTak.headlines": [
+    "Google",
+    "Outbrain",
+    "Twitter",
+    "Pushwoosh",
+    "Facebook",
+    "Scorecardresearch"
+  ],
+  "net.aljazeera.english": [
+    "Google",
+    "Automattic",
+    "Flurry",
+    "Bug"
+  ],
+  "net.trikoder.android.kurir": [
+    "Google"
+  ],
+  "org.detikcom.rss": [
+    "Twitter",
+    "Google",
+    "Inmobi"
+  ],
+  "ru.rian.reader": [
+    "Flurry",
+    "Google",
+    "Yandex"
+  ],
+  "se.sr.android": [
+    "Google"
+  ],
+  "uk.co.economist": [
+    "Twitter",
+    "Google",
+    "Doubleclick"
+  ],
+  "blibli.mobile.commerce": [
+    "Google",
+    "Newrelic"
+  ],
+  "br.com.dafiti": [
+    "Google"
+  ],
+  "com.acerstore.android": [],
+  "com.alibaba.aliexpresshd": [],
+  "com.appnana.android.giftcardrewards": [
+    "Vungle",
+    "Flurry",
+    "Google",
+    "Ironsource"
+  ],
+  "com.asda.android": [
+    "Twitter",
+    "Google"
+  ],
+  "com.asos.app": [
+    "Google"
+  ],
+  "com.ebay.kleinanzeigen": [
+    "Rubicon",
+    "Twitter",
+    "Paypal",
+    "Adjust",
+    "Google"
+  ],
+  "com.ebay.mobile": [
+    "Twitter",
+    "Google",
+    "Ebay"
+  ],
+  "com.elevenst": [
+    "Google",
+    "Twitter",
+    "Facebook",
+    "Tnkfactory"
+  ],
+  "com.elevenst.deals": [
+    "Twitter",
+    "Google",
+    "Facebook"
+  ],
+  "com.etsy.android": [
+    "Appboy",
+    "Google"
+  ],
+  "com.flipkart.android": [
+    "Twitter",
+    "Google"
+  ],
+  "com.geomobile.tiendeo": [
+    "Google"
+  ],
+  "com.goldtouch.ct.yad2": [
+    "Admob",
+    "Google",
+    "Doubleclick"
+  ],
+  "com.groupon": [
+    "Twitter",
+    "Google",
+    "Microsoft"
+  ],
+  "com.hmallapp": [
+    "Igaworks",
+    "Google",
+    "Mocomplex"
+  ],
+  "com.hnsmall": [
+    "Google"
+  ],
+  "com.homeshop18.activity": [
+    "Facebook",
+    "Google"
+  ],
+  "com.interpark.shop": [
+    "Twitter",
+    "Google"
+  ],
+  "com.jabong.android": [
+    "Google"
+  ],
+  "com.lamoda.lite": [
+    "Twitter",
+    "Google",
+    "Vk",
+    "Newrelic"
+  ],
+  "com.mercadolibre": [
+    "Flurry",
+    "Google",
+    "Twitter"
+  ],
+  "com.mobisoft.morhipo": [
+    "Twitter",
+    "Google"
+  ],
+  "com.myntra.android": [
+    "Google",
+    "Twitter",
+    "Apsalar",
+    "Facebook"
+  ],
+  "com.opensooq.OpenSooq": [
+    "Facebook",
+    "Google",
+    "Mixpanel"
+  ],
+  "com.sahibinden": [
+    "Twitter",
+    "Google"
+  ],
+  "com.shopclues": [
+    "Google",
+    "Facebook"
+  ],
+  "com.shopping.limeroad": [
+    "Google"
+  ],
+  "com.shpock.android": [
+    "Flurry",
+    "Google"
+  ],
+  "com.snapdeal.main": [
+    "Optimizely",
+    "Google",
+    "Facebook",
+    "Twitter"
+  ],
+  "com.souq.app": [
+    "Apsalar",
+    "Appboy",
+    "Google",
+    "Newrelic"
+  ]
+}

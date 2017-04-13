@@ -1,0 +1,4 @@
+remove unecessary tracker domains
+fgrep
+only search smali
+gather all urls first using regex, then find trackers.
