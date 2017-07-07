@@ -14,7 +14,7 @@ angular.module('dci')
             controller: function($scope, $timeout, utils) {
                     var ADD_APP_LEVEL = true, // add app level
                         heightPCT = $scope.heightpct && parseFloat($scope.heightpct) / 100.0 || 1.0,
-                        allData = $scope.$parent.allData,
+                        hTc = $scope.$parent.h2c,
                         hosts = $scope.$parent.hosts,
                         details = $scope.details = $scope.$parent.details,
                         pitypes = $scope.$parent.pitypes,
@@ -54,7 +54,7 @@ angular.module('dci')
                                 sankey.relayout();
                                 link.attr("d", path);
                             },
-                            data = $scope.$parent.allData.filter((x) => x.app === $scope.app),
+                            // data = $scope.$parent.allData.filter((x) => x.app === $scope.app),
 
                             isPDCI = $scope.$parent.pdciApps && $scope.$parent.pdciApps.length || false,
                             pdciApps = isPDCI ? $scope.$parent.pdciApps : [],
@@ -62,19 +62,19 @@ angular.module('dci')
                             hTc = $scope.$parent.h2c,
                             c2pi = $scope.c2pi = utils.makeCompany2pi($scope.app, hosts, pitypes, hTc, 0),
                             cat2c2pi = $scope.cat2c2pi = utils.makeCategories($scope.appcompany, details, c2pi),
-                            aTc = $scope.aTc = utils.makeApp2company(apps, data, c2pi, hosts, 0),
+                            aTc = $scope.aTc = utils.makeApp2company(apps, c2pi, hosts, hTc, 0),
                             app_ids = _.keys(aTc);
 
-                        console.info("APPIS ", $scope.app, 'aTc is ', aTc, ' - data is:', data, ' c2pi ', c2pi);
+                        console.info("APPIS ", $scope.app, 'aTc is ', aTc, ' c2pi ', c2pi);
 
                         if (isPDCI) {
                             console.info("APPIS isPDCI", isPDCI);
                             // redefine data - to include all pdci apps as well
 
-                            data = allData.filter((x) => x.app === $scope.app || $scope.$parent.pdciApps.indexOf(x.app) >= 0);
-                            c2pi = utils.makePDCIc2pi(apps, data, hosts, pitypes, 0);
+                            // data = allData.filter((x) => x.app === $scope.app || $scope.$parent.pdciApps.indexOf(x.app) >= 0);
+                            c2pi = utils.makePDCIc2pi(apps, hosts, pitypes, hTc, 0);
                             cat2c2pi = utils.makeCategories($scope.appcompany, details, c2pi);
-                            aTc = utils.makeApp2company(apps, data, c2pi, hosts, 0);
+                            aTc = utils.makeApp2company(apps, c2pi, hosts, hTc, 0);
                             app_ids = _.keys(aTc);
                         }
 
