@@ -11,7 +11,7 @@ create table app_versions(
   screen_flags  int                     not null,
 );
 
-create table uk_playstore_apps(
+create table playstore_apps(
   id                      int                 primary key not null,
   app                     int references app_versions(id) not null,
   title                  text                             not null,
