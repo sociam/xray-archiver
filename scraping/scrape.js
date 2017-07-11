@@ -10,7 +10,8 @@ python process. That downloader was cool so hey, why not use it!
 https://www.npmjs.com/package/google-play-scraper
 
 NOTE: 120 is max number of apps to receive at once through list method...
-
+NOTE: this has a permission section could inspect when throw this into folder
+NOTE: cronjob...
 TODO: to avoid the situation of askign for a captcha use a throttle keyword
 , all methods now support a throttle property, which defines an upper bound to the amount of requests that will be attempted per second. Once that limit is reached, further requests will be held until the second passes.
 
@@ -19,6 +20,7 @@ TODO: we can a call a update to a folder through python periodically... does nod
 */ 
 var gplay = require('google-play-scraper'); //google play store query scrapper. 
 var PythonShell = require('python-shell'); //Shell based python spawn - cleaner + get errs
+var fs = require('fs');
 
 
 
@@ -31,9 +33,19 @@ var PythonShell = require('python-shell'); //Shell based python spawn - cleaner 
 
 var PythonShell = require('python-shell');
 
+//$PYTHONPATH check for gplaycli or call the exe
+
+
+var storeLoci = "APK_ARCHIVE"
+if(!fs.existsSync(dir)){
+  fs.mkdirSync(dir)
+}
+
 var options = {
-  scriptPath: '../../scrapeTools/gplaycli/gplaycli',
-  args: ["-d", "com.dxco.pandavszombies"]
+  scriptPath: '../../scrapeTools/gplaycli/gplaycli', 
+  args: ["-d", "com.dxco.pandavszombies",
+         "-f", storeLoci,
+         "-p",]
 };
 
 //Pretty nice tool can just use this and then organise apps by section...
