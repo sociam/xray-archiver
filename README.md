@@ -62,5 +62,12 @@ Requires root access to the android device.
 4. Start ADB demon as root adb root
 5. Run `python install-from-store-random-motog.py`
 
-This should result in the APK files being written to a directory outside the repo called `apks'
+This should result in the APK files being written to a directory outside the repo called `apks`
+
+## Static analysis
+
+1. Adjust the path in `static/config.json` to point to your APK folder
+2. in the `static` directory, run `node ./trie.js`
+3. this should write the LibRadar output to json files in the output directory
+4. Todo: hostsearch.py 
 
