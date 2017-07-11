@@ -1,3 +1,4 @@
+/* global require */
 
 var fs = require('fs'),
 	promise = require('bluebird'),
@@ -5,17 +6,17 @@ var fs = require('fs'),
 	config = JSON.parse(fs.readFileSync('./config.json')),
 	spawn = require('child_process'),
 	deleteFolderRecursive = function(path) {
-	  if( fs.existsSync(path) ) {
-	      fs.readdirSync(path).forEach(function(file) {
-	        var curPath = path + "/" + file;
-	          if(fs.statSync(curPath).isDirectory()) { // recurse
-	              deleteFolderRecursive(curPath);
-	          } else { // delete file
-	              fs.unlinkSync(curPath);
-	          }
-	      });
-	      fs.rmdirSync(path);
-	    }
+		if( fs.existsSync(path) ) {
+				fs.readdirSync(path).forEach(function(file) {
+					var curPath = path + "/" + file;
+						if(fs.statSync(curPath).isDirectory()) { // recurse
+							deleteFolderRecursive(curPath);
+						} else { // delete file
+							fs.unlinkSync(curPath);
+						}
+				});
+				fs.rmdirSync(path);
+			}
 	};
 
 var trie_mkchild = (name, fullname) => ({ name:name, fullname: fullname, children:{}, subtree:[] }),
@@ -50,14 +51,14 @@ var trie_mkchild = (name, fullname) => ({ name:name, fullname: fullname, childre
 				// get rid of all that are longer
 				so_far = so_far.filter((sfm) => sfm.indexOf(x.name) < 0);
 
-				// console.log('checking dupe ', so_far, x.name, 
-				// 	'unique ? ', 
-				// 	so_far.filter((sf) => x.name.indexOf(sf) >= 0),
-				// 	so_far.filter((sf) => x.name.indexOf(sf) >= 0).length === 0
+				// console.log('checking dupe ', so_far, x.name,
+				//		'unique ? ',
+				//		so_far.filter((sf) => x.name.indexOf(sf) >= 0),
+				//		so_far.filter((sf) => x.name.indexOf(sf) >= 0).length === 0
 				// );
 
 				// only add us if we are the shortest
-				if (so_far.filter((sf) => x.name.indexOf(sf) >= 0).length === 0) { 
+				if (so_far.filter((sf) => x.name.indexOf(sf) >= 0).length === 0) {
 					so_far.push(x.name);
 				}
 			}
@@ -82,8 +83,8 @@ var walkDir = (dirname, appname, subdirname, basedir) => {
 
 //		console.log('fullpath > ', relevant_part);
 
-		if (stat && stat.isDirectory()) { 
-			trie_add(pathsplits); 
+		if (stat && stat.isDirectory()) {
+			trie_add(pathsplits);
 			walkDir(fullpath, appname, subdirname, basedir);
 		}
 	});
@@ -92,14 +93,15 @@ var walkDir = (dirname, appname, subdirname, basedir) => {
 
 // now let's try doing some magic
 
-var apktoolpath = config.apktoolpath,
-	tmpdir = config.tmpdir,
+var resolve = require('path').resolve;
+var apktoolpath = resolve(config.apktoolpath),
+	tmpdir = resolve(config.tmpdir),
 	by_app = {},
 	toplevel = () => {
 	fs.readdirSync(config.appsdir).map((apkname) => {
 		var apk = apkname.indexOf('.apk') >= 0,
 			appname = apkname.slice(0,-4),
-			apkpath = [config.appsdir,apkname].join('/'),
+			apkpath = resolve([config.appsdir,apkname].join('/')),
 			cmd = `java -jar ${apktoolpath} d ${apkpath} -f`,
 			unpackroot = [config.tmpdir, appname].join('/');
 
@@ -121,10 +123,10 @@ var apktoolpath = config.apktoolpath,
 			console.error('skipping ', appname);
 		}
 		try {
-			// delete the app 
-			console.error('cleaning up ', unpackroot);			
+			// delete the app
+			console.error('cleaning up ', unpackroot);
 			deleteFolderRecursive(unpackroot);
-		} catch(e) { 
+		} catch(e) {
 			console.error("error cleaning up ", e);
 		}
 	});
