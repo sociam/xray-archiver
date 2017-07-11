@@ -1,0 +1,65 @@
+create table scraped(
+  id                          int               primary key not null,
+  app_id                     text                           not null,
+  title                      text                           not null,
+  version                    text                           not null,
+  summary                    text                                   ,
+  description                text                                   ,
+  store_url                  text                           not null,
+  screen_flags                int                                   ,
+  price                     money                           not null,
+  free                       bool                           not null,
+  rating             numeric(1,1)                                   ,
+  num_reviews                 int                                   ,
+  genre                      text                                   ,
+  family_genre               text                                   ,
+  min_installs                int                                   ,
+  max_installs                int                                   ,
+  developer_id               text references developers(id) not null,
+  updated                    date                           not null,
+  android_ver                text                           not null,
+  content_rating             text                           not null,
+  screenshots              text[]                                   ,
+  video                      text                                   ,
+  recent_changes           text[]                                   ,
+  scrape_date                text                           not null,
+);
+
+create table app_perms(
+  id       int references apps(id) primary key not null,
+  perms text[]                                 not null,
+);
+
+-- Contains the hostnames that were found in apps via analysis
+create table app_hosts(
+  id         int references apps(id) primary key not null,
+  hosts    int[]             element references hosts(id),
+  pis   text[][]                                         ,
+);
+
+create table hosts(
+  id        int   primary key not null,
+  hostname text               not null,
+  company  text references company(id),
+);
+
+create table companies(
+  id                  text         primary key not null,
+  company_ch          text                             ,
+  name                text                     not null,
+  company_old         text                             ,
+  hosts              int[] element references hosts(id),
+  founded             date                             ,
+  acquired            date                             ,
+  type              text[]                             ,
+  typetag           text[]                             ,
+  jurisdiction        text                             ,
+  jurisdiction_code   text                             ,
+  parent              text     references companies(id),
+  capital            money                             ,
+  equity             money                             ,
+  min_size             int                             ,
+  max_size             int                             ,
+  data_sources      text[]                             ,
+  description         text                             ,
+);
