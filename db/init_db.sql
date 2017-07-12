@@ -1,7 +1,7 @@
 create table apps(
-  id            int        primary key not null,
-  app_id       text                    not null,
-  versions    int[] references app_versions(id),
+  id            int primary key not null,
+  app_id       text             not null,
+  versions    int[]                     ,
 );
 
 create table app_versions(
@@ -52,7 +52,7 @@ create table app_perms(
 -- Contains the hostnames that were found in apps via analysis
 create table app_hosts(
   id         int references apps(id) primary key not null,
-  hosts    int[]                     references hosts(id),
+  hosts    int[]                                         ,
   pis   text[][]                                         ,
 );
 
@@ -67,7 +67,7 @@ create table companies(
   company_ch          text                         ,
   name                text                 not null,
   company_old         text                         ,
-  hosts              int[]     references hosts(id),
+  hosts              int[]                         ,
   founded             date                         ,
   acquired            date                         ,
   type              text[]                         ,
