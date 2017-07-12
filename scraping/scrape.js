@@ -49,9 +49,9 @@ var _ = require('lodash');
 
 function requeryOnAppId(scrapeBase) {
   //console.log(scrapeBase);
-  _.forEach(scrapeBase, function(index){
+  return _.forEach(scrapeBase, function(index){
       var id = index.appId;
-      //console.log(id);
+      console.log(id);
       var scrapeResults = gplay.app({
         appId: id
           }).then(function(data) {
@@ -60,8 +60,6 @@ function requeryOnAppId(scrapeBase) {
           });
   });
 }
-
-
 
 //Iterate over json top apps  
 function scrapeCollectionResult(collectionType) {
@@ -74,15 +72,19 @@ function scrapeCollectionResult(collectionType) {
     });
 }
 
+function scraper() {
+  return scrapeCollectionResult(gplay.collection.TRENDING).then(requeryOnAppId);
+}
 
-var someResult = scrapeCollectionResult(gplay.collection.TRENDING).then(requeryOnAppId);
-console.log(someResult.then(console.log));
+scrapeResults= scrapeCollectionResult(gplay.collection.TRENDING).then(requeryOnAppId);
 
-
-//Comms with python download
-//await scrapeResults;
+scrapeResults.then(function(data) {
+  console.log(data);
+});
+//scraper.then(console.log);
 
 scrapeResults.then(console.log,console.log);
+
 var PythonShell = require('python-shell');
 
 //$PYTHONPATH check for gplaycli or call the exe
