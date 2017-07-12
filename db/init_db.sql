@@ -5,7 +5,7 @@ create table apps(
 );
 
 create table app_versions(
-	id            int         primary key not null,
+  id            int         primary key not null,
   app           int references apps(id) not null,
   version      text                     not null,
   screen_flags  int                     not null,
@@ -38,7 +38,7 @@ create table playstore_apps(
 );
 
 create table developers(
-	id     int primary key not null
+  id     int primary key not null
   name  text not null,
   email text ,
   site  text ,
