@@ -1,14 +1,14 @@
 create table apps(
   id            int primary key not null,
   app_id       text             not null,
-  versions    int[]                     ,
+  versions    int[]
 );
 
 create table app_versions(
   id            int         primary key not null,
   app           int references apps(id) not null,
   version      text                     not null,
-  screen_flags  int                     not null,
+  screen_flags  int                     not null
 );
 
 create table playstore_apps(
@@ -34,32 +34,32 @@ create table playstore_apps(
   video                  text                                     ,
   recent_changes       text[]                                     ,
   region                 text                             not null,
-  crawl_date             date                             not null,
+  crawl_date             date                             not null
 );
 
 create table developers(
   id     int primary key not null,
   name  text             not null,
   email text                     ,
-  site  text                     ,
+  site  text
 );
 
 create table app_perms(
   id       int references apps(id) primary key not null,
-  perms text[]                                 not null,
+  perms text[]                                 not null
 );
 
 -- Contains the hostnames that were found in apps via analysis
 create table app_hosts(
   id         int references apps(id) primary key not null,
   hosts    int[]                                         ,
-  pis   text[][]                                         ,
+  pis   text[][]
 );
 
 create table hosts(
   id        int   primary key not null,
   hostname text               not null,
-  company  text references company(id),
+  company  text references company(id)
 );
 
 create table companies(
@@ -80,5 +80,5 @@ create table companies(
   min_size             int                         ,
   max_size             int                         ,
   data_sources      text[]                         ,
-  description         text                         ,
+  description         text
 );
