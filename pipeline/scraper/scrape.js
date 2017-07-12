@@ -18,9 +18,10 @@ TODO: we can a call a update to a folder through python periodically... does nod
 
 */ 
 var gplay = require('google-play-scraper'); //google play store query scrapper. 
-var PythonShell = require('python-shell'); //Shell based python spawn - cleaner + get errs
 var fs = require('fs');    
 var _ = require('lodash');
+var config = require('/etc/xray/config')
+
 
 //console.log($PYTHONPATH)
 
@@ -90,7 +91,7 @@ var PythonShell = require('python-shell');
 
 //$PYTHONPATH check for gplaycli or call the exe
 
-var saveDir = "apk_archive"
+var saveDir = config.apkdir;
 if(!fs.existsSync(saveDir)){
   fs.mkdirSync(saveDir);
 } 
