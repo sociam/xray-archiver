@@ -16,7 +16,7 @@ create table playstore_apps(
   summary                text                                                 ,
   description            text                                                 ,
   store_url              text                                         not null,
-  price                 money                                         not null,
+  price                  text                                         not null,
   free                   bool                                         not null,
   rating         numeric(2,1)                                                 ,
   num_reviews             int                                                 ,

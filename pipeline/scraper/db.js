@@ -100,7 +100,7 @@ module.exports = {
 					app.summary,
 					app.description,
 					app.url,
-					parseFloat(app.price),
+					app.price,
 					app.free,
 					parseFloat(app.rating),
 					app.reviews,
