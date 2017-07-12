@@ -45,21 +45,15 @@ create table developers(
 );
 
 create table app_perms(
-  id       int references apps(id) primary key not null,
-  perms text[]                                 not null
+  id       int references app_versions(id) primary key not null,
+  perms text[]                                         not null
 );
 
 -- Contains the hostnames that were found in apps via analysis
 create table app_hosts(
-  id         int references apps(id) primary key not null,
-  hosts    int[]                                         ,
+  id         int references app_versions(id) primary key not null,
+  hosts    int[]                                                 ,
   pis   text[][]
-);
-
-create table hosts(
-  id        int   primary key not null,
-  hostname text               not null,
-  company  text references company(id)
 );
 
 create table companies(
@@ -81,4 +75,10 @@ create table companies(
   max_size             int                         ,
   data_sources      text[]                         ,
   description         text
+);
+
+create table hosts(
+  id        int   primary key not null,
+  hostname text               not null,
+  company  text references companies(id)
 );
