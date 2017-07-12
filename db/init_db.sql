@@ -10,6 +10,14 @@ create table app_versions(
   screen_flags  int                     not null
 );
 
+create table developers(
+  id            int primary key not null,
+  email      text[]             not null,
+  name         text             not null,
+  store_site   text                     ,
+  site         text
+);
+
 create table playstore_apps(
   id                      int primary key references app_versions(id) not null,
   title                  text                                         not null,
@@ -24,7 +32,7 @@ create table playstore_apps(
   family_genre           text                                                 ,
   min_installs            int                                                 ,
   max_installs            int                                                 ,
-  developer_id           text               references developers(id) not null,
+  developer               int               references developers(id) not null,
   updated                date                                         not null,
   android_ver            text                                         not null,
   content_rating         text                                         not null,
@@ -33,14 +41,6 @@ create table playstore_apps(
   recent_changes       text[]                                                 ,
   region                 text                                         not null,
   crawl_date             date                                         not null
-);
-
-create table developers(
-  id            int primary key not null,
-  email      text[]             not null,
-  name         text             not null,
-  store_site   text                     ,
-  site         text
 );
 
 create table app_perms(
