@@ -1,7 +1,7 @@
 create table apps(
-  id            int                primary key not null,
-  app_id       text                            not null,
-  versions    int[] element references app_versions(id),
+  id            int        primary key not null,
+  app_id       text                    not null,
+  versions    int[] references app_versions(id),
 );
 
 create table app_versions(
@@ -52,7 +52,7 @@ create table app_perms(
 -- Contains the hostnames that were found in apps via analysis
 create table app_hosts(
   id         int references apps(id) primary key not null,
-  hosts    int[]             element references hosts(id),
+  hosts    int[]                     references hosts(id),
   pis   text[][]                                         ,
 );
 
@@ -63,22 +63,22 @@ create table hosts(
 );
 
 create table companies(
-  id                  text         primary key not null,
-  company_ch          text                             ,
-  name                text                     not null,
-  company_old         text                             ,
-  hosts              int[] element references hosts(id),
-  founded             date                             ,
-  acquired            date                             ,
-  type              text[]                             ,
-  typetag           text[]                             ,
-  jurisdiction        text                             ,
-  jurisdiction_code   text                             ,
-  parent              text     references companies(id),
-  capital            money                             ,
-  equity             money                             ,
-  min_size             int                             ,
-  max_size             int                             ,
-  data_sources      text[]                             ,
-  description         text                             ,
+  id                  text     primary key not null,
+  company_ch          text                         ,
+  name                text                 not null,
+  company_old         text                         ,
+  hosts              int[]     references hosts(id),
+  founded             date                         ,
+  acquired            date                         ,
+  type              text[]                         ,
+  typetag           text[]                         ,
+  jurisdiction        text                         ,
+  jurisdiction_code   text                         ,
+  parent              text references companies(id),
+  capital            money                         ,
+  equity             money                         ,
+  min_size             int                         ,
+  max_size             int                         ,
+  data_sources      text[]                         ,
+  description         text                         ,
 );
