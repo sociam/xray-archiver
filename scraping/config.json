@@ -1,0 +1,5 @@
+{
+	"apkdir": "/var/apk_archive",
+	"unpackdir": "/var/apk_unpacked",
+	"sockpath": "/run/apk_scraper"
+}
