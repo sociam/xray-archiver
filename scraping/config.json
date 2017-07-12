@@ -7,7 +7,7 @@
 			"user": "",
 			"database": "xraydb",
 			"password": "",
-			"host": sociamnat.cs.ox.ac.uk,
+			"host": "sociamnat.cs.ox.ac.uk",
 			"port": 5432
 		}
 	},
@@ -16,7 +16,7 @@
 			"user": "",
 			"database": "xraydb",
 			"password": "",
-			"host": sociamnat.cs.ox.ac.uk,
+			"host": "sociamnat.cs.ox.ac.uk",
 			"port": 5432
 		}
 	}
