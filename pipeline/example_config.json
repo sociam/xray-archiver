@@ -2,6 +2,7 @@
 	"apkdir": "/var/xray/apk_archive",
 	"unpackdir": "/var/xray/apk_unpacked",
 	"sockpath": "/run/xray/apks",
+	"credDownload": "/etc/credentials.conf",
 	"scraper": {
 		"db": {
 			"user": "",

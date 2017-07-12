@@ -87,10 +87,6 @@ scrapeResults.then(function(data) {
 
 //scrapeResults.then(console.log,console.log);
 
-var PythonShell = require('python-shell');
-
-//$PYTHONPATH check for gplaycli or call the exe
-
 var saveDir = config.apkdir;
 if(!fs.existsSync(saveDir)){
   fs.mkdirSync(saveDir);
@@ -103,9 +99,11 @@ scrapeResults.then(function(result) {
   _.forEach(result, function(element) {
     console.log(element.appId);
     
-    var args =  ["-d ", element.appId,
-                "-f ", saveDir,
-                "-p "]
+    var args =  ["-d "+ element.appId,
+                "-f "+ saveDir,
+		"-c " + config.credDownload,
+                "-p"]
+    console.log(args);
     
     //Pretty nice tool can just use this and then organise apps by section...
     console.log("Python downloader playstore starting");
