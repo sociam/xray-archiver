@@ -99,9 +99,9 @@ scrapeResults.then(function(result) {
   _.forEach(result, function(element) {
     console.log(element.appId);
     
-    var args =  ["-d "+ element.appId,
-                "-f "+ saveDir,
-		"-c " + config.credDownload,
+    var args =  ["-d", element.appId,
+                "-f", saveDir,
+		"-c", config.credDownload,
                 "-p"]
     console.log(args);
     
