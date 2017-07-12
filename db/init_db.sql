@@ -38,10 +38,10 @@ create table playstore_apps(
 );
 
 create table developers(
-  id     int primary key not null
-  name  text not null,
-  email text ,
-  site  text ,
+  id     int primary key not null,
+  name  text             not null,
+  email text                     ,
+  site  text                     ,
 );
 
 create table app_perms(
