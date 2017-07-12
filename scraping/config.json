@@ -1,5 +1,23 @@
 {
-	"apkdir": "/var/apk_archive",
-	"unpackdir": "/var/apk_unpacked",
-	"sockpath": "/run/apk_scraper"
+	"apkdir": "/var/xray/apk_archive",
+	"unpackdir": "/var/xray/apk_unpacked",
+	"sockpath": "/run/xray/apks",
+	"scraper": {
+		"db": {
+			"user": "",
+			"database": "xraydb",
+			"password": "",
+			"host": sociamnat.cs.ox.ac.uk,
+			"port": 5432
+		}
+	},
+	"analyzer": {
+		"db": {
+			"user": "",
+			"database": "xraydb",
+			"password": "",
+			"host": sociamnat.cs.ox.ac.uk,
+			"port": 5432
+		}
+	}
 }

@@ -22,6 +22,7 @@ var PythonShell = require('python-shell'); //Shell based python spawn - cleaner 
 var fs = require('fs');    
 var _ = require('lodash');
 
+//console.log($PYTHONPATH)
 
 // var http = require('http'), unixSocket = require("unix-socket");
 // /*Socket for pushing out data found */
@@ -79,42 +80,50 @@ function scraper() {
 scrapeResults= scrapeCollectionResult(gplay.collection.TRENDING).then(requeryOnAppId);
 
 scrapeResults.then(function(data) {
-  console.log(data);
+  //console.log(data);
 });
-//scraper.then(console.log);
+//scraper().then(console.log);
 
-scrapeResults.then(console.log,console.log);
+//scrapeResults.then(console.log,console.log);
 
 var PythonShell = require('python-shell');
 
 //$PYTHONPATH check for gplaycli or call the exe
 
-var saveDir = "APK_ARCHIVE"
+var saveDir = "apk_archive"
 if(!fs.existsSync(saveDir)){
   fs.mkdirSync(saveDir);
 } 
 
 //iterate results over gplay list
 scrapeResults.then(function(result) { 
-  console.log(result);
+  //console.log(result);
+
   _.forEach(result, function(element) {
     console.log(element.appId);
-    var options = {
-      scriptPath: '../../scrapeTools/gplaycli/gplaycli', 
-      args: ["-d", element.appId,
-            "-f", saveDir,
-            "-p",]
-    };
-
-    //TODO: Split version after 
-    //todo: net socket datagram
-
+    
+    var args =  ["-d ", element.appId,
+                "-f ", saveDir,
+                "-p "]
+    
     //Pretty nice tool can just use this and then organise apps by section...
     console.log("Python downloader playstore starting");
-    PythonShell.run('gplaycli.py', options, function (err, results) {
-      if (err) throw err;
-      // results is an array consisting of messages collected during execution
-      console.log('results: %j', results);
+    
+    const spw = require('child_process').spawn;
+    const apk_downloader = spw('gplaycli',args);
+
+    apk_downloader.stdout.on('data', (data) => {
+      console.log(`stdout: ${data}`);
     });
+
+    apk_downloader.stderr.on('data', (data) => {
+      console.log(`stderr: ${data}`);
+    });
+
+    apk_downloader.on('close', (code) => {
+      console.log(`child process exited with code ${code}`);
+    });
+
+
   });
 });
