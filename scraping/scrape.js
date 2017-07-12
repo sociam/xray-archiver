@@ -20,15 +20,10 @@ TODO: we can a call a update to a folder through python periodically... does nod
 var gplay = require('google-play-scraper'); //google play store query scrapper. 
 var PythonShell = require('python-shell'); //Shell based python spawn - cleaner + get errs
 var fs = require('fs');    
-
-//var http = require('http'), unixSocket = require("unix-socket");
-
 var _ = require('lodash');
 
-
-
-
-/*Socket for pushing out data found */
+// var http = require('http'), unixSocket = require("unix-socket");
+// /*Socket for pushing out data found */
 // var server = http.Server();
 
 // var option = { 
@@ -45,6 +40,8 @@ var _ = require('lodash');
 //     }
 // });
 
+//space for socket
+
 //Iterate over all the gplay store files... 
 //Can do this through a method of og g-play-scraper via category. 
 //Could do it through searching for title a* ... there might be more than MAX query a* though
@@ -53,21 +50,30 @@ var _ = require('lodash');
 
 //Top categories 
 
-
-
-var scrapeResults = gplay.app({
-  appId: "com.turbochilli.rollingsky"
+var scrapeResults = gplay.list({
+  collection: gplay.collection.TRENDING,
+  num: 120
 }).then(function(data) {
-   // console.log(data);
-    //document.getElementsByTagName('body')[0].textContent = JSON.parse(data).value.joke;
     //console.log(data);
-    var value = data.appId;
-    console.log(value);
-    return value  ;
+    _.forEach(data, function(index) {   
+      var id = index.appId;
+      console.log(id);
+      var scrapeResults = gplay.app({
+        appId: id
+          }).then(function(data) {
+              console.log(data);
+              return data;
+            }, function(error) {
+              console.log('Scraping rejected from precise details.');
+              console.log(error.message);
+          });
+    });
+    return "";
   }, function(error) {
-    console.log('Promise rejected.');
+    console.log('Scraping rejected from trending.');
     console.log(error.message);
 });
+
 
 //Comms with python download
 //await scrapeResults;
@@ -84,7 +90,7 @@ if(!fs.existsSync(saveDir)){
 
 //iterate results over gplay list
 _.forEach(scrapeResults, function(element) {
-    console.log(scrapeResults.appId);
+   // console.log(scrapeResults.appId);
 
     //console.log(elementappId);
     var options = {
