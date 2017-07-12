@@ -1,47 +1,46 @@
 create table apps(
-  id            int primary key not null,
-  app_id       text             not null,
-  versions    int[]
+  id        text primary key not null,
+  versions int[]
 );
 
 create table app_versions(
   id            int         primary key not null,
-  app           int references apps(id) not null,
+  app          text references apps(id) not null,
   version      text                     not null,
   screen_flags  int                     not null
 );
 
 create table playstore_apps(
-  id                      int                 primary key not null,
-  app                     int references app_versions(id) not null,
-  title                  text                             not null,
-  summary                text                                     ,
-  description            text                                     ,
-  store_url              text                             not null,
-  price                 money                             not null,
-  free                   bool                             not null,
-  rating         numeric(1,1)                                     ,
-  num_reviews             int                                     ,
-  genre                  text                                     ,
-  family_genre           text                                     ,
-  min_installs            int                                     ,
-  max_installs            int                                     ,
-  developer_id            int   references developers(id) not null,
-  updated                date                             not null,
-  android_ver            text                             not null,
-  content_rating         text                             not null,
-  screenshots          text[]                                     ,
-  video                  text                                     ,
-  recent_changes       text[]                                     ,
-  region                 text                             not null,
-  crawl_date             date                             not null
+  id                      int primary key references app_versions(id) not null,
+  title                  text                                         not null,
+  summary                text                                                 ,
+  description            text                                                 ,
+  store_url              text                                         not null,
+  price                 money                                         not null,
+  free                   bool                                         not null,
+  rating         numeric(2,1)                                                 ,
+  num_reviews             int                                                 ,
+  genre                  text                                                 ,
+  family_genre           text                                                 ,
+  min_installs            int                                                 ,
+  max_installs            int                                                 ,
+  developer_id           text               references developers(id) not null,
+  updated                date                                         not null,
+  android_ver            text                                         not null,
+  content_rating         text                                         not null,
+  screenshots          text[]                                                 ,
+  video                  text                                                 ,
+  recent_changes       text[]                                                 ,
+  region                 text                                         not null,
+  crawl_date             date                                         not null
 );
 
 create table developers(
-  id     int primary key not null,
-  name  text             not null,
-  email text                     ,
-  site  text
+  id            int primary key not null,
+  email      text[]             not null,
+  name         text             not null,
+  store_site   text                     ,
+  site         text
 );
 
 create table app_perms(
