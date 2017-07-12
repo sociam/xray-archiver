@@ -22,6 +22,7 @@ var PythonShell = require('python-shell'); //Shell based python spawn - cleaner 
 var fs = require('fs');    
 var _ = require('lodash');
 
+
 // var http = require('http'), unixSocket = require("unix-socket");
 // /*Socket for pushing out data found */
 // var server = http.Server();
@@ -46,39 +47,42 @@ var _ = require('lodash');
 //Can do this through a method of og g-play-scraper via category. 
 //Could do it through searching for title a* ... there might be more than MAX query a* though
 
-//Iterate over json top apps  
-
-//Top categories 
-
-var scrapeResults = gplay.list({
-  collection: gplay.collection.TRENDING,
-  num: 120
-}).then(function(data) {
-    //console.log(data);
-    _.forEach(data, function(index) {   
+function requeryOnAppId(scrapeBase) {
+  //console.log(scrapeBase);
+  _.forEach(scrapeBase, function(index){
       var id = index.appId;
-      console.log(id);
+      //console.log(id);
       var scrapeResults = gplay.app({
         appId: id
           }).then(function(data) {
-              console.log(data);
+              //console.log(data);
               return data;
-            }, function(error) {
-              console.log('Scraping rejected from precise details.');
-              console.log(error.message);
           });
+  });
+}
+
+
+
+//Iterate over json top apps  
+function scrapeCollectionResult(collectionType) {
+    return gplay.list({
+      collection: gplay.collection.TRENDING,
+      num: 2
+    }).then(function(result) {
+      //console.log(result);
+      return result;
     });
-    return "";
-  }, function(error) {
-    console.log('Scraping rejected from trending.');
-    console.log(error.message);
-});
+}
+
+
+var someResult = scrapeCollectionResult(gplay.collection.TRENDING).then(requeryOnAppId);
+console.log(someResult.then(console.log));
 
 
 //Comms with python download
 //await scrapeResults;
-//console.log(scrapeResults);
 
+scrapeResults.then(console.log,console.log);
 var PythonShell = require('python-shell');
 
 //$PYTHONPATH check for gplaycli or call the exe
@@ -89,13 +93,13 @@ if(!fs.existsSync(saveDir)){
 } 
 
 //iterate results over gplay list
-_.forEach(scrapeResults, function(element) {
-   // console.log(scrapeResults.appId);
-
-    //console.log(elementappId);
+scrapeResults.then(function(result) { 
+  console.log(result);
+  _.forEach(result, function(element) {
+    console.log(element.appId);
     var options = {
       scriptPath: '../../scrapeTools/gplaycli/gplaycli', 
-      args: ["-d", "com.dxco.pandavszombies",
+      args: ["-d", element.appId,
             "-f", saveDir,
             "-p",]
     };
@@ -104,10 +108,11 @@ _.forEach(scrapeResults, function(element) {
     //todo: net socket datagram
 
     //Pretty nice tool can just use this and then organise apps by section...
+    console.log("Python downloader playstore starting");
     PythonShell.run('gplaycli.py', options, function (err, results) {
       if (err) throw err;
       // results is an array consisting of messages collected during execution
       console.log('results: %j', results);
     });
+  });
 });
-
