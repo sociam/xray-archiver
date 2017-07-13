@@ -22,50 +22,62 @@ var _ = require("lodash");
 
 
 async function rescrapeAppId(scrapeBase) {
-  return (data = await Promise.all(
-    _.map(scrapeBase, async val => {
+  return await Promise.all(_.map(scrapeBase, async val => {
       var id = val.appId;
       console.log("Scraping details on: ",id);
-      var data = await gplay.app({
+      return await gplay.app({
         appId: id
       });
-      return data;
-    })
-  ));
+    }));
 }
 
 //TODO: move region to config or section to iterate over
 var region = "us";
-
+var appStore = "play";
 async function scrapeColl(collectionType) {
   var res = await gplay.list({
     collection: collectionType,
-    num: 20,
+    num: 1,
     region: region
   });
   return await rescrapeAppId(res);
 }
 
+
 (async () => {
-  let scrapeResults = await scrapeColl(gplay.collection.TRENDING);
+  // let scrapeResults = await scrapeColl(gplay.collection.TRENDING);
+  // gplay.collection
+  let scrapeResults = 
+  _.uniqBy(
+    await Promise.all(_.flatMap(gplay.category, async catg => {  
+      return await Promise.all(_.map(gplay.collection, async coll => {
+        
+        // console.log(catg,coll);
+
+        var res = await gplay.list({
+          collection: coll,
+          category: catg,
+          num: 1,
+          region: region
+        });
+        
+        return await rescrapeAppId(res);
+      }));
+  }), e => { return e.appId; } ));
+  
+
+  console.log("Number of apps to download: ",Object.keys(scrapeResults).length);
 
   //Staggering results to prevent blowing the stack
   _.chunk(scrapeResults, 2).forEach(arr => {
     _.map(arr, function(element) {
+      //console.log(element);
       var p = require("path");
-      console.log(
-        "Resolved Save Path",
-        config.appdir,
-        element.appId,
-        "play",
-        region,
+      console.log(config.appdir,element.appId,appStore,region,
         element.version
       );
-      var saveDir = p.join(
-        config.appdir,
-        element.appId,
-        "play",
-        region,
+
+      var saveDir = p.join(config.appdir,element.appId,appStore,region,
         element.version
       );
 
@@ -106,21 +118,24 @@ async function scrapeColl(collectionType) {
           return;
         }
 
-        //The expectance: apk -store -region -version over pipe
-        console.log("Download complete for ", element.appId);
-
+        
+        console.log("Download process complete for ", element.appId);
+        //TODO: check the actual success of the download + see if the app is done? or just write tests right?
         // var db = require('./db');
 
         // var dbId = await db.insertPlayApp(element, region);
 
         // // Send a single message to the server.
 
-        // var client = unix.createSocket('unix_dgram');
-        // var unix = require('unix-dgram');
-        // var message = Buffer(dbId + "-"+ element.appId + "-" + "play" +"-"+region + "-" + element.version);
-        // client.on('error', console.error);
-        // client.send(message, 0, message.length, config.sockpath);
-        // client.close();
+        var client = unix.createSocket('unix_dgram');
+        var unix = require('unix-dgram');
+        
+        var message = Buffer(dbId + "-"+ element.appId + "-" + "play" +"-"+region + "-" + element.version);
+        
+        client.on('error', console.error);
+        client.send(message, 0, message.length, config.sockpath);
+        client.close();
+
       });
     });
   });
