@@ -11,16 +11,20 @@ type Unit struct{}
 
 var unit Unit
 
-func apkPath(apk, ver string) string {
-	return path.Join(cfg.ApkDir, fmt.Sprintf("%s-%s.apk", apk, ver))
+type App struct {
+	id, store, region, ver string
 }
 
-func outDir(apk, ver string) string {
-	return path.Join(cfg.UnpackDir, path.Join(apk, ver))
+func apkPath(app App) string {
+	return path.Join(cfg.AppDir, app.id, app.store, app.region, app.ver)
 }
 
-func unpack(apk, ver string) error {
-	cmd := exec.Command("apktool", "d", apkPath(apk, ver), "-o", outDir(apk, ver))
+func outDir(app App) string {
+	return path.Join(cfg.UnpackDir, app.id, app.store, app.region, app.ver)
+}
+
+func unpack(app App) error {
+	cmd := exec.Command("apktool", "d", apkPath(app), "-o", outDir(app))
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error '%s' unpacking apk; output below:\n%s",

@@ -9,7 +9,7 @@ import (
 )
 
 type Config struct {
-	ApkDir    string `json:"apkdir"`
+	AppDir    string `json:"appdir"`
 	UnpackDir string `json:"unpackdir"`
 	SockPath  string `json:"sockpath"`
 }
@@ -28,8 +28,8 @@ func Load(cfgFile string) Config {
 		panic("Error reading JSON: " + err.Error())
 	}
 
-	if cfg.ApkDir == "" {
-		cfg.ApkDir = "./apks"
+	if cfg.AppDir == "" {
+		cfg.AppDir = "./apks"
 	}
 	if cfg.UnpackDir == "" {
 		cfg.UnpackDir = "."
@@ -38,13 +38,13 @@ func Load(cfgFile string) Config {
 		cfg.SockPath = "/run/apkScraper"
 	}
 
-	cfg.ApkDir = path.Clean(cfg.ApkDir)
+	cfg.AppDir = path.Clean(cfg.AppDir)
 	cfg.UnpackDir = path.Clean(cfg.UnpackDir)
 	cfg.SockPath = path.Clean(cfg.SockPath)
 
 	fmt.Println("Config:")
-	fmt.Println("\tAPK directory:", cfg.ApkDir)
-	fmt.Println("\tUnpacked APK directory:", cfg.UnpackDir)
+	fmt.Println("\tApp directory:", cfg.AppDir)
+	fmt.Println("\tUnpacked app directory:", cfg.UnpackDir)
 	fmt.Println("\tMessage socket path:", cfg.SockPath)
 
 	return cfg

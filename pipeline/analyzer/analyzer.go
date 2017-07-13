@@ -76,10 +76,10 @@ func main() {
 		if len(split) < 2 {
 			fmt.Printf("failed to parse input \"%s\"\n", s)
 		} else {
-			apk, ver := split[0], split[1]
-			fmt.Printf("Got apk '%s' version '%s'\n", apk, ver)
+			app := App{split[0], split[1], split[2], split[3]}
+			fmt.Printf("Got app %v\n", app)
 			fmt.Print("Unpacking... ")
-			err = unpack(apk, ver)
+			err = unpack(app)
 			if err != nil {
 				fmt.Println()
 				fmt.Println(err.Error())
@@ -87,7 +87,7 @@ func main() {
 			}
 			fmt.Println("done.")
 			fmt.Print("Running simple analysis... ")
-			_, err := simple_analyze(apk, ver)
+			_, err := simple_analyze(app)
 			if err != nil {
 				fmt.Println()
 				fmt.Println(err.Error())
