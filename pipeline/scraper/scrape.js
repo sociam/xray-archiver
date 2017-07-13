@@ -111,12 +111,12 @@ _.chunk(scrapeResults, 10).forEach((arr) => {
 
       var db = require('./db');
 
-      await db.insertPlayApp(element, region);
+      var dbId = await db.insertPlayApp(element, region);
 
       // Send a single message to the server.
 
       var unix = require('unix-dgram');
-      var message = Buffer(element.appId + "-" + "play" +"-"+region + "-" + element.version);
+      var message = Buffer(dbId + "-"+ element.appId + "-" + "play" +"-"+region + "-" + element.version);
       var client = unix.createSocket('unix_dgram');
       client.on('error', console.error);
       client.send(message, 0, message.length, config.sockpath);
