@@ -9,9 +9,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "await": "^0.2.6",
     "db": "^1.0.6",
     "google-play-scraper": "^3.3.1",
     "pg": "^6.4.0",
-    "python-shell": "^0.4.0"
+    "python-shell": "^0.4.0",
+    "shelljs": "^0.7.8"
   }
 }

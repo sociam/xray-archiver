@@ -24,8 +24,8 @@ var config = require('/etc/xray/config.json')
 
 
 //console.log($PYTHONPATH)
-
-// var http = require('http'), unixSocket = require("unix-socket");
+//apk -store -region -version over pipe
+// ar http = require('http'), unixSocket = require("unix-socket");
 // /*Socket for pushing out data found */
 // var server = http.Server();
 
@@ -64,10 +64,13 @@ async function rescrapeAppId(scrapeBase) {
 
 /*await versions */ 
 
+var region = 'us';
+
 async function scrapeCollection(collectionType) {
   var res = await gplay.list({
       collection: collectionType,
-      num: 2
+      num: 2,
+      region: region
     });
   return await rescrapeAppId(res);
 }
@@ -76,20 +79,32 @@ async function scrapeCollection(collectionType) {
   let scrapeResults = await scrapeCollection(gplay.collection.TRENDING);
   //scrapeResults = scrapeCollectionResult(gplay.collection.TRENDING).then(requeryOnAppId);
 
-  console.log(scrapeResults);
-
-var saveDir = config.apkdir;
-if(!fs.existsSync(saveDir)){
-  fs.mkdirSync(saveDir);
-} 
+  //  console.log(scrapeResults);
 
 function sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+_.chunk(scrapeResults, 10).forEach((arr) => {
 //iterate results over gplay list
-  _.forEach(scrapeResults, function(element) {
-  
+  _.forEach(arr, function(element) {
+    
+    var p = require('path');
+      
+
+    var saveDir = p.join(config.apkdir,'play',region,element.version);
+    console.log(saveDir);
+    if(!fs.existsSync(saveDir)) {
+      //fs.mkdirSync(saveDir);
+      //Needed tp create intermediate dirs if neccassary...did not know if path had this optition
+      var shell = require('shelljs');
+      shell.mkdir('-p',saveDir);
+      console.log(saveDir);
+    } 
+
+    
+      
+      
     var args =  ["-d", element.appId,
                 "-f", saveDir,
 		"-c", config.credDownload,
@@ -101,18 +116,17 @@ function sleep(ms) {
     
     const spw = require('child_process').spawn;
      
-    //Check dir element.version 
-    
+      
+
+
     const apk_downloader = spw('gplaycli',args);
 
     apk_downloader.stdout.on('data', (data) => {
-      console.log(`stdout: ${data}`);
+      //console.log(`stdout: ${data}`);
       //Was a sucess pipe the output
-      var p = require('path');
       
-      fs.rename(p.join(saveDir, element.appId + '.apk'), p.join(saveDir, element.appId +'-'+ element.version + '.apk'), function(err) {
-        if ( err ) console.log('ERROR: ' + err);
-      });
+
+
     });
 
     apk_downloader.stderr.on('data', (data) => {
@@ -123,4 +137,5 @@ function sleep(ms) {
       console.log(`child process exited with code ${code}`);
     });
   });
+});
 })();
