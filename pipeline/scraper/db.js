@@ -29,7 +29,7 @@ function connect() {
 };
 
 async function insertDev(dev) {
-	var res = await query("SELECT id FROM developers WHERE email = ANY($1)", [dev.email]);
+	var res = await query("SELECT id FROM developers WHERE $1 = ANY(email)", [dev.email]);
 	if (res.length > 0) {
 		return res.rows[0].id;
 	}
@@ -61,8 +61,8 @@ module.exports = {
 			vers = res.rows[0].versions;
 			// app exists in database, check if version does as well
 			var res1 = await query(
-				"SELECT id FROM app_versions WHERE app = $1 AND id = $2",
-				[ app.appId, app.version ]);
+				"SELECT id FROM app_versions WHERE app = $1 AND store = $2 AND region = $3 AND version = $4",
+				[ app.appId, 'play', region, app.version ]);
 
 			if (res1.length > 0) {
 				// app version is also in database
@@ -87,14 +87,14 @@ module.exports = {
 				}
 
 				let res = await client.query(
-					"INSERT INTO app_versions(app, version) VALUES ($1, $2) RETURNING id",
-					[ app.appId, app.version ]
+					"INSERT INTO app_versions(app, store, region, version) VALUES ($1, $2) RETURNING id",
+					[ app.appId, 'play', region, app.version ]
 				);
 				verId = res.rows[0].id;
 			}
 
 			await client.query(
-				"INSERT INTO playstore_apps VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)",
+				"INSERT INTO playstore_apps VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)",
 				[
 					verId,
 					app.title,
@@ -116,7 +116,6 @@ module.exports = {
 					app.screenshots,
 					app.video,
 					app.recentChanges,
-					region,
 					new Date()
 				]);
 			await client.query("SELECT * FROM apps");
