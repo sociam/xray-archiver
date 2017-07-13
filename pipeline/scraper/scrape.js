@@ -63,7 +63,7 @@ _.chunk(scrapeResults, 10).forEach((arr) => {
     
     var p = require('path');
     console.log(element.version);      
-    var saveDir = p.join(config.appdir,'play',region,element.version);
+    var saveDir = p.join(config.appdir, element.appId,'play',region,element.version);
     console.log(saveDir);
     if(!fs.existsSync(saveDir)) {
       //fs.mkdirSync(saveDir);
