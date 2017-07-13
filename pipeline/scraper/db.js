@@ -10,35 +10,35 @@ db_cfg.idleTimeoutMillis = 30000;
 //this initializes a connection pool
 //it will keep idle connections open for 30 seconds
 //and set a limit of maximum 10 idle clients
-const pool = new pg.Pool(config);
+const pool = new pg.Pool(db_cfg);
 
 pool.on('error', function (err, client) {
 	console.error('idle client error', err.message, err.stack);
 });
 
 //export the query method for passing queries to the pool
-function query(text, values, callback) {
+function query(text, values) {
 	console.log('query:', text, values);
-	return pool.query(text, values, callback);
+	return pool.query(text, values);
 };
 
 // the pool also supports checking out a client for
 // multiple operations, such as a transaction
-function connect(callback) {
-	return pool.connect(callback);
+function connect() {
+	return pool.connect();
 };
 
 async function insertDev(dev) {
 	var res = await query("SELECT id FROM developers WHERE email = ANY($1)", [dev.email]);
 	if (res.length > 0) {
-		return Promise.resolve(res.rows[0].id);
+		return res.rows[0].id;
 	}
 
 	// maybe dev id needs to be URL encoded?
 	let store_site = 'https://play.google.com/store/apps/developer?id='+dev.id;
 	res = await query("INSERT INTO developers VALUES ($1, $2, $3, $4) RETURNING id",
 	                  [dev.email, dev.name, store_site, dev.site]);
-	return Promise.resolve(res.rows[0].id);
+	return res.rows[0].id;
 }
 
 module.exports = {
@@ -51,6 +51,7 @@ module.exports = {
 		});
 
 		var appExists = false, verExists = false;
+		console.log("completed insert");
 		var vers = [];
 		var verId;
 		var res = await query("SELECT * FROM apps WHERE id = $1", [app.appId]);
