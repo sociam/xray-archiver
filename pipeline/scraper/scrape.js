@@ -49,7 +49,7 @@ var config = require('/etc/xray/config.json')
 //Can do this through a method of og g-play-scraper via category. 
 //Could do it through searching for title a* ... there might be more than MAX query a* though
 
-async function requeryOnAppId(scrapeBase) {
+async function rescrapeAppId(scrapeBase) {
 
   return data = await Promise.all(_.map(scrapeBase, async (val) => {
       var id = val.appId;
@@ -69,7 +69,7 @@ async function scrapeCollection(collectionType) {
       collection: collectionType,
       num: 2
     });
-  return await requeryOnAppId(res);
+  return await rescrapeAppId(res);
 }
 
 (async () => {
@@ -87,12 +87,9 @@ function sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-
 //iterate results over gplay list
-  //console.log(result);
   _.forEach(scrapeResults, function(element) {
   
-    
     var args =  ["-d", element.appId,
                 "-f", saveDir,
 		"-c", config.credDownload,
@@ -125,6 +122,5 @@ function sleep(ms) {
     apk_downloader.on('close', (code) => {
       console.log(`child process exited with code ${code}`);
     });
-  
-});
+  });
 })();
