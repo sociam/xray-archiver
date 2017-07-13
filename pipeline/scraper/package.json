@@ -14,6 +14,7 @@
     "google-play-scraper": "^3.3.1",
     "pg": "^6.4.0",
     "python-shell": "^0.4.0",
-    "shelljs": "^0.7.8"
+    "shelljs": "^0.7.8",
+    "unix-dgram": "^2.0.1"
   }
 }

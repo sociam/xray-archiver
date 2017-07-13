@@ -14,22 +14,12 @@ NOTE: cronjob...
 TODO: to avoid the situation of askign for a captcha use a throttle keyword
 , all methods now support a throttle property, which defines an upper bound to the amount of requests that will be attempted per second. Once that limit is reached, further requests will be held until the second passes.
 
-TODO: we can a call a update to a folder through python periodically... does node.js forever support that kind of shenanigans...
-
 */ 
 var gplay = require('google-play-scraper'); //google play store query scrapper. 
 var fs = require('fs');    
 var _ = require('lodash');
 var config = require('/etc/xray/config.json')
 
-
-
-
-//space for socket
-
-//Iterate over all the gplay store files... 
-//Can do this through a method of og g-play-scraper via category. 
-//Could do it through searching for title a* ... there might be more than MAX query a* though
 
 async function rescrapeAppId(scrapeBase) {
 
@@ -72,9 +62,8 @@ _.chunk(scrapeResults, 10).forEach((arr) => {
   _.forEach(arr, function(element) {
     
     var p = require('path');
-      
-
-    var saveDir = p.join(config.apkdir,'play',region,element.version);
+    console.log(element.version);      
+    var saveDir = p.join(config.appdir,'play',region,element.version);
     console.log(saveDir);
     if(!fs.existsSync(saveDir)) {
       //fs.mkdirSync(saveDir);
@@ -122,7 +111,7 @@ _.chunk(scrapeResults, 10).forEach((arr) => {
       // Send a single message to the server.
 
       var unix = require('unix-dgram');
-      var message = Buffer(saveDir + element.appId + "-" + "play" + "-" + element.version);
+      var message = Buffer(element.appId + "-" + "play" +"-"+region + "-" + element.version);
       var client = unix.createSocket('unix_dgram');
       client.on('error', console.error);
       client.send(message, 0, message.length, config.sockpath);
