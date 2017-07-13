@@ -64,11 +64,6 @@ func simple_analyze(apk, ver string) ([]string, error) {
 	// }
 
 	cmd := exec.Command("grep", "-Er", "\"https?://[^ >]+\"", outDir(apk, ver))
-	err = cmd.Run()
-	if err != nil {
-		return []string{}, err
-	}
-
 	urls, err := cmd.Output()
 	if err != nil {
 		return []string{}, err

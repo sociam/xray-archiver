@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -17,14 +16,11 @@ type Config struct {
 
 var UnpackDir string
 
-var cfgFile = flag.String("cfg", "./config.json", "config file location")
-
-func Load() Config {
-	flag.Parse()
-	file, err := os.Open(*cfgFile)
+func Load(cfgFile string) Config {
+	file, err := os.Open(cfgFile)
 	bytes, err := ioutil.ReadAll(file)
 	if err != nil {
-		panic("Couldn't read config file " + *cfgFile)
+		panic("Couldn't read config file " + cfgFile)
 	}
 	var cfg Config
 	err = json.Unmarshal(bytes, &cfg)
