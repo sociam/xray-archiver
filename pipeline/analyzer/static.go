@@ -28,7 +28,7 @@ type Company struct {
 	description      string
 }
 
-func simple_analyze(apk, ver string) ([]string, error) {
+func simple_analyze(app App) ([]string, error) {
 	//TODO: fix error handling
 
 	//TODO: replace with DB calls
@@ -63,12 +63,7 @@ func simple_analyze(apk, ver string) ([]string, error) {
 	// 	return nil
 	// }
 
-	cmd := exec.Command("grep", "-Er", "\"https?://[^ >]+\"", outDir(apk, ver))
-	err = cmd.Run()
-	if err != nil {
-		return []string{}, err
-	}
-
+	cmd := exec.Command("grep", "-Er", "\"https?://[^ >]+\"", outDir(app))
 	urls, err := cmd.Output()
 	if err != nil {
 		return []string{}, err
