@@ -92,11 +92,16 @@ if(!fs.existsSync(saveDir)){
   fs.mkdirSync(saveDir);
 } 
 
-//iterate results over gplay list
-scrapeResults.then(function(result) { 
-  //console.log(result);
+function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+}
 
+
+//iterate results over gplay list
+scrapeResults.then(async function(result) { 
+  //console.log(result);
   _.forEach(result, function(element) {
+  
     console.log(element.appId);
     
     var args =  ["-d", element.appId,
@@ -113,6 +118,10 @@ scrapeResults.then(function(result) {
 
     apk_downloader.stdout.on('data', (data) => {
       console.log(`stdout: ${data}`);
+      //Was a sucess pipe the output
+      fs.rename(config.saveDir + element.appId, config.saveDir + element.version, , function(err) {
+        if ( err ) console.log('ERROR: ' + err);
+      });
     });
 
     apk_downloader.stderr.on('data', (data) => {
@@ -123,6 +132,6 @@ scrapeResults.then(function(result) {
       console.log(`child process exited with code ${code}`);
     });
 
-
   });
+  
 });
