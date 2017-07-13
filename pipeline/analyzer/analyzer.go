@@ -72,8 +72,8 @@ func main() {
 			os.Exit(0)
 		}
 
-		split := strings.SplitN(s, "-", 2)
-		if len(split) < 2 {
+		split := strings.SplitN(s, "-", 4)
+		if len(split) < 4 {
 			fmt.Printf("failed to parse input \"%s\"\n", s)
 		} else {
 			app := App{split[0], split[1], split[2], split[3]}
