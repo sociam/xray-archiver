@@ -23,25 +23,7 @@ var _ = require('lodash');
 var config = require('/etc/xray/config.json')
 
 
-//console.log($PYTHONPATH)
-//apk -store -region -version over pipe
-// ar http = require('http'), unixSocket = require("unix-socket");
-// /*Socket for pushing out data found */
-// var server = http.Server();
 
-// var option = { 
-//     path: "/var/apkArchive",
-//     mode: 0666 
-// };
- 
-// unixSocket.listen(server, option, function(result) {
-//     if (result) {
-//         console.log('Server started on ' + result);
-//     } else {
-//         console.error('Error');
-//         process.exit(0);
-//     }
-// });
 
 //space for socket
 
@@ -107,7 +89,7 @@ _.chunk(scrapeResults, 10).forEach((arr) => {
       
     var args =  ["-d", element.appId,
                 "-f", saveDir,
-		"-c", config.credDownload,
+		            "-c", config.credDownload,
                 "-p"]
     //console.log(args);
     
@@ -117,16 +99,11 @@ _.chunk(scrapeResults, 10).forEach((arr) => {
     const spw = require('child_process').spawn;
      
       
-
-
     const apk_downloader = spw('gplaycli',args);
 
     apk_downloader.stdout.on('data', (data) => {
-      //console.log(`stdout: ${data}`);
+      console.log(`stdout: ${data}`);
       //Was a sucess pipe the output
-      
-
-
     });
 
     apk_downloader.stderr.on('data', (data) => {
@@ -134,7 +111,22 @@ _.chunk(scrapeResults, 10).forEach((arr) => {
     });
 
     apk_downloader.on('close', (code) => {
-      console.log(`child process exited with code ${code}`);
+      if(code != 0){
+        console.log('err')
+        console.log(`child process exited with code ${code}`);
+        return;
+      }
+
+      //The expectance: apk -store -region -version over pipe
+
+      // Send a single message to the server.
+
+      var unix = require('unix-dgram');
+      var message = Buffer(saveDir + element.appId + "-" + "play" + "-" + element.version);
+      var client = unix.createSocket('unix_dgram');
+      client.on('error', console.error);
+      client.send(message, 0, message.length, config.sockpath);
+      client.close();
     });
   });
 });
