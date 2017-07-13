@@ -4,16 +4,16 @@ create table apps(
 );
 
 create table app_versions(
-  id            int         primary key not null,
-  app          text references apps(id) not null,
-  store        text                     not null,
-  region       text                     not null
-  version      text                     not null,
-  screen_flags  int
+  id           serial         primary key not null,
+  app            text references apps(id) not null,
+  store          text                     not null,
+  region         text                     not null
+  version        text                     not null,
+  screen_flags    int
 );
 
 create table developers(
-  id            int primary key not null,
+  id         serial primary key not null,
   email      text[]             not null,
   name         text             not null,
   store_site   text                     ,
@@ -58,28 +58,25 @@ create table app_hosts(
 );
 
 create table companies(
-  id                  text     primary key not null,
-  company_ch          text                         ,
-  name                text                 not null,
-  company_old         text                         ,
-  hosts              int[]                         ,
-  founded             date                         ,
-  acquired            date                         ,
-  type              text[]                         ,
-  typetag           text[]                         ,
-  jurisdiction        text                         ,
-  jurisdiction_code   text                         ,
-  parent              text references companies(id),
-  capital            money                         ,
-  equity             money                         ,
-  min_size             int                         ,
-  max_size             int                         ,
-  data_sources      text[]                         ,
-  description         text
+  id             text     primary key not null,
+  name           text                 not null,
+  hosts         int[]                         ,
+  founded        text                         ,
+  acquired       text                         ,
+  type         text[]                         ,
+  typetag        text                         ,
+  jurisdiction   text                         ,
+  parent         text references companies(id),
+  capital        text                         ,
+  equity         text                         ,
+  min_size        int                         ,
+  max_size        int                         ,
+  data_sources text[]                         ,
+  description    text
 );
 
 create table hosts(
-  id        int   primary key not null,
-  hostname text               not null,
-  company  text references companies(id)
+  id       serial    primary key not null,
+  hostname   text                not null,
+  company    text references companies(id)
 );
