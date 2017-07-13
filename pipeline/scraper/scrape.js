@@ -20,7 +20,7 @@ TODO: we can a call a update to a folder through python periodically... does nod
 var gplay = require('google-play-scraper'); //google play store query scrapper. 
 var fs = require('fs');    
 var _ = require('lodash');
-var config = require('/etc/xray/config')
+var config = require('/etc/xray/config.json')
 
 
 //console.log($PYTHONPATH)
@@ -49,43 +49,34 @@ var config = require('/etc/xray/config')
 //Can do this through a method of og g-play-scraper via category. 
 //Could do it through searching for title a* ... there might be more than MAX query a* though
 
-function requeryOnAppId(scrapeBase) {
-  //console.log(scrapeBase);
-  return _.forEach(scrapeBase, function(index){
-      var id = index.appId;
+async function requeryOnAppId(scrapeBase) {
+
+  return data = await Promise.all(_.map(scrapeBase, async (val) => {
+      var id = val.appId;
       console.log(id);
-      var scrapeResults = gplay.app({
+      var data = await gplay.app({
         appId: id
-          }).then(function(data) {
-              //console.log(data);
-              return data;
-          });
-  });
+      });
+      //console.log(data);
+      return data;
+  }));
 }
 
-//Iterate over json top apps  
-function scrapeCollectionResult(collectionType) {
-    return gplay.list({
-      collection: gplay.collection.TRENDING,
+/*await versions */ 
+
+async function scrapeCollection(collectionType) {
+  var res = await gplay.list({
+      collection: collectionType,
       num: 2
-    }).then(function(result) {
-      //console.log(result);
-      return result;
     });
+  return await requeryOnAppId(res);
 }
 
-function scraper() {
-  return scrapeCollectionResult(gplay.collection.TRENDING).then(requeryOnAppId);
-}
+(async () => {
+  let scrapeResults = await scrapeCollection(gplay.collection.TRENDING);
+  //scrapeResults = scrapeCollectionResult(gplay.collection.TRENDING).then(requeryOnAppId);
 
-scrapeResults= scrapeCollectionResult(gplay.collection.TRENDING).then(requeryOnAppId);
-
-scrapeResults.then(function(data) {
-  //console.log(data);
-});
-//scraper().then(console.log);
-
-//scrapeResults.then(console.log,console.log);
+  console.log(scrapeResults);
 
 var saveDir = config.apkdir;
 if(!fs.existsSync(saveDir)){
@@ -98,28 +89,31 @@ function sleep(ms) {
 
 
 //iterate results over gplay list
-scrapeResults.then(async function(result) { 
   //console.log(result);
-  _.forEach(result, function(element) {
+  _.forEach(scrapeResults, function(element) {
   
-    console.log(element.appId);
     
     var args =  ["-d", element.appId,
                 "-f", saveDir,
 		"-c", config.credDownload,
                 "-p"]
-    console.log(args);
+    //console.log(args);
     
     //Pretty nice tool can just use this and then organise apps by section...
     console.log("Python downloader playstore starting");
     
     const spw = require('child_process').spawn;
+     
+    //Check dir element.version 
+    
     const apk_downloader = spw('gplaycli',args);
 
     apk_downloader.stdout.on('data', (data) => {
       console.log(`stdout: ${data}`);
       //Was a sucess pipe the output
-      fs.rename(config.saveDir + element.appId, config.saveDir + element.version, , function(err) {
+      var p = require('path');
+      
+      fs.rename(p.join(saveDir, element.appId + '.apk'), p.join(saveDir, element.appId +'-'+ element.version + '.apk'), function(err) {
         if ( err ) console.log('ERROR: ' + err);
       });
     });
@@ -131,7 +125,6 @@ scrapeResults.then(async function(result) {
     apk_downloader.on('close', (code) => {
       console.log(`child process exited with code ${code}`);
     });
-
-  });
   
 });
+})();
