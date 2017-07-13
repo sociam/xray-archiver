@@ -41,7 +41,7 @@ var region = 'us';
 async function scrapeCollection(collectionType) {
   var res = await gplay.list({
       collection: collectionType,
-      num: 2,
+      num: 20,
       region: region
     });
   return await rescrapeAppId(res);
@@ -57,42 +57,36 @@ function sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-_.chunk(scrapeResults, 10).forEach((arr) => {
+_.chunk(scrapeResults, 2).forEach((arr) => {
 //iterate results over gplay list
-  _.forEach(arr, function(element) {
-    
+  _.map(arr, function(element) {
     var p = require('path');
-    console.log(element.version);      
+    console.log("Resolved Save Path",config.appdir, element.appId,'play',region,element.version)
     var saveDir = p.join(config.appdir, element.appId,'play',region,element.version);
-    console.log(saveDir);
+    
     if(!fs.existsSync(saveDir)) {
       //fs.mkdirSync(saveDir);
       //Needed tp create intermediate dirs if neccassary...did not know if path had this optition
       var shell = require('shelljs');
       shell.mkdir('-p',saveDir);
-      console.log(saveDir);
     } 
 
-    
-      
-      
+    console.log("App save directory ", saveDir);
     var args =  ["-d", element.appId,
                 "-f", saveDir,
 		            "-c", config.credDownload,
-                "-p"]
-    //console.log(args);
+                "-v"]
     
     //Pretty nice tool can just use this and then organise apps by section...
     console.log("Python downloader playstore starting");
     
     const spw = require('child_process').spawn;
-     
       
     const apk_downloader = spw('gplaycli',args);
 
     apk_downloader.stdout.on('data', (data) => {
       console.log(`stdout: ${data}`);
-      //Was a sucess pipe the output
+      
     });
 
     apk_downloader.stderr.on('data', (data) => {
@@ -107,7 +101,7 @@ _.chunk(scrapeResults, 10).forEach((arr) => {
       }
  
       //The expectance: apk -store -region -version over pipe
-	
+      console.log("Download complete for ", element.appId);
 
       var db = require('./db');
 
@@ -115,9 +109,9 @@ _.chunk(scrapeResults, 10).forEach((arr) => {
 
       // Send a single message to the server.
 
+      var client = unix.createSocket('unix_dgram');
       var unix = require('unix-dgram');
       var message = Buffer(dbId + "-"+ element.appId + "-" + "play" +"-"+region + "-" + element.version);
-      var client = unix.createSocket('unix_dgram');
       client.on('error', console.error);
       client.send(message, 0, message.length, config.sockpath);
       client.close();
