@@ -99,14 +99,19 @@ _.chunk(scrapeResults, 10).forEach((arr) => {
       console.log(`stderr: ${data}`);
     });
 
-    apk_downloader.on('close', (code) => {
+    apk_downloader.on('close', async (code) => {
       if(code != 0){
         console.log('err')
         console.log(`child process exited with code ${code}`);
         return;
       }
-
+ 
       //The expectance: apk -store -region -version over pipe
+	
+
+      var db = require('./db');
+
+      await db.insertPlayApp(element, region);
 
       // Send a single message to the server.
 

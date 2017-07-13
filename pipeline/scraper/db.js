@@ -29,14 +29,14 @@ function connect() {
 };
 
 async function insertDev(dev) {
-	var res = await query("SELECT id FROM developers WHERE $1 = ANY(email)", [dev.email]);
+	var res = await pool.query("SELECT id FROM developers WHERE $1 = ANY(email);", [dev.email]);
 	if (res.length > 0) {
 		return res.rows[0].id;
 	}
 
 	// maybe dev id needs to be URL encoded?
 	let store_site = 'https://play.google.com/store/apps/developer?id='+dev.id;
-	res = await query("INSERT INTO developers VALUES ($1, $2, $3, $4) RETURNING id",
+	res = await query("INSERT INTO developers VALUES ($1, $2, $3, $4) RETURNING id;",
 	                  [dev.email, dev.name, store_site, dev.site]);
 	return res.rows[0].id;
 }
@@ -47,21 +47,21 @@ module.exports = {
 			name: app.developer,
 			id: app.developerId,
 			email: app.developerEmail,
-			site: app.developerSite
+			site: app.developerWebsite
 		});
 
 		var appExists = false, verExists = false;
 		console.log("completed insert");
 		var vers = [];
 		var verId;
-		var res = await query("SELECT * FROM apps WHERE id = $1", [app.appId]);
+		var res = await query("SELECT * FROM apps WHERE id = $1;", [app.appId]);
 
 		if (res.length > 0) {
 			appExists = true;
 			vers = res.rows[0].versions;
 			// app exists in database, check if version does as well
 			var res1 = await query(
-				"SELECT id FROM app_versions WHERE app = $1 AND store = $2 AND region = $3 AND version = $4",
+				"SELECT id FROM app_versions WHERE app = $1 AND store = $2 AND region = $3 AND version = $4;",
 				[ app.appId, 'play', region, app.version ]);
 
 			if (res1.length > 0) {
@@ -74,27 +74,27 @@ module.exports = {
 		var client = await connect();
 		console.log("Connected");
 
-		await client.query("BEGIN"); // maybe this should be inside the try?
+		await client.query("BEGIN;"); // maybe this should be inside the try?
 		try {
 			if (!verExists) {
 				if (appExists) {
 					vers.push(app.version);
-					await client.query("UPDATE apps SET versions=$1 WHERE id = $2",
+					await client.query("UPDATE apps SET versions=$1 WHERE id = $2;",
 					                   [ vers, app.appId ]);
 				} else {
-					await client.query("INSERT INTO apps VALUES ($1 $2)",
+					await client.query("INSERT INTO apps VALUES ($1 $2);",
 					                   [ app.appId, [app.version] ]);
 				}
 
 				let res = await client.query(
-					"INSERT INTO app_versions(app, store, region, version) VALUES ($1, $2) RETURNING id",
+					"INSERT INTO app_versions(app, store, region, version) VALUES ($1, $2) RETURNING id;",
 					[ app.appId, 'play', region, app.version ]
 				);
 				verId = res.rows[0].id;
 			}
 
 			await client.query(
-				"INSERT INTO playstore_apps VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)",
+				"INSERT INTO playstore_apps VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22);",
 				[
 					verId,
 					app.title,
@@ -118,13 +118,14 @@ module.exports = {
 					app.recentChanges,
 					new Date()
 				]);
-			await client.query("SELECT * FROM apps");
-			await client.query("COMMIT");
+			await client.query("SELECT * FROM apps;");
+			await client.query("COMMIT;");
 		} catch (e) {
-			await client.query("ROLLBACK");
+			await client.query("ROLLBACK;");
 			throw e;
 		} finally {
 			client.release();
 		}
+		return verId;
 	}
 };
