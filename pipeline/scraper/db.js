@@ -51,10 +51,9 @@ module.exports = {
 		});
 
 		var appExists = false, verExists = false;
-		console.log("completed insert");
 		var vers = [];
 		var verId;
-		var res = await query("SELECT * FROM apps WHERE id = $1;", [app.appId]);
+		var res = await query("SELECT * FROM apps WHERE id = $1", [app.appId]);
 
 		if (res.length > 0) {
 			appExists = true;
@@ -77,24 +76,24 @@ module.exports = {
 		await client.query("BEGIN;"); // maybe this should be inside the try?
 		try {
 			if (!verExists) {
-				if (appExists) {
-					vers.push(app.version);
-					await client.query("UPDATE apps SET versions=$1 WHERE id = $2;",
-					                   [ vers, app.appId ]);
-				} else {
-					await client.query("INSERT INTO apps VALUES ($1 $2);",
-					                   [ app.appId, [app.version] ]);
+				if (!appExists) {
+					await client.query("INSERT INTO apps VALUES ($1, $2)",
+					                   [ app.appId, [] ]);
 				}
 
 				let res = await client.query(
-					"INSERT INTO app_versions(app, store, region, version) VALUES ($1, $2) RETURNING id;",
+					"INSERT INTO app_versions(app, store, region, version) VALUES ($1, $2, $3, $4) RETURNING id;",
 					[ app.appId, 'play', region, app.version ]
 				);
 				verId = res.rows[0].id;
+
+				await client.query("UPDATE apps SET versions=versions || $1 WHERE id = $2;",
+				                   [ [verId], app.appId ]);
+
 			}
 
 			await client.query(
-				"INSERT INTO playstore_apps VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22);",
+				"INSERT INTO playstore_apps VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21);",
 				[
 					verId,
 					app.title,
@@ -103,22 +102,21 @@ module.exports = {
 					app.url,
 					app.price,
 					app.free,
-					app.store,
+					app.score,
 					app.reviews,
 					app.genreId,
 					app.familyGenreId,
 					app.minInstalls,
 					app.maxInstalls,
 					devId,
-					Date.parse(app.updated),
+					app.updated,
 					app.androidVersion,
 					app.contentRating,
 					app.screenshots,
 					app.video,
 					app.recentChanges,
-					new Date()
+					new Date().toDateString()
 				]);
-			await client.query("SELECT * FROM apps;");
 			await client.query("COMMIT;");
 		} catch (e) {
 			await client.query("ROLLBACK;");
