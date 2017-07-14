@@ -122,9 +122,10 @@ async function gatherResults() {
           var res = await gplay.list({
             collection: coll,
             category: catg,
-            num: 20,
+            num: 120,
             region: region,
-            fulldetail: true
+            fullDetail: true,
+            throttle: 10
           });
           downloadAppApk(res).then(console.log,console.log).catch(console.log);
 
