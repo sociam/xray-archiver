@@ -28,13 +28,13 @@ var prefixes = ['<0>', '<1>', '<2>', '<3>', '<4>', '<5>', '<6>', '<7>'];
 function log(level, txt){
   console.log(prefixes[level] + txt);
 }
-log(0, "test log");
+//log(0, "test log");
 
 async function downloadAppApk(element) {
       var p = require("path");
-      console.log(config.appdir,element.appId,appStore,region,
-        element.version
-      );
+      // console.log(config.appdir,element.appId,appStore,region,
+      //   element.version
+      // );
 
       var saveDir = p.join(config.appdir,element.appId,appStore,region,
         element.version
@@ -45,9 +45,8 @@ async function downloadAppApk(element) {
         shell.mkdir("-p", saveDir);
       }
 
-
       console.log("App save directory ", saveDir);
-      var args = ["-d", element.appId, "-f", saveDir, "-c", config.credDownload,"-v"];
+      var args = ["-pd", element.appId, "-f", saveDir, "-c", config.credDownload];
       console.log("Python downloader playstore starting");
 
       const spw = require("child_process").spawn;
@@ -66,6 +65,8 @@ async function downloadAppApk(element) {
         if (code != 0) {
           console.log("err");
           console.log(`child process exited with code ${code}`);
+
+          //TODO: clean up directory on 
           return;
         }
         console.log("Download process complete for ", element.appId);
@@ -76,7 +77,7 @@ async function downloadAppApk(element) {
 async function rescrapeAppId(scrapeBase) {
   return await _.map(scrapeBase, async val => {
       var id = val.appId;
-      console.log("Scraping details on: ",id);
+      //console.log("Scraping details on: ",id);
 
       var appData = gplay.app({
         appId: id
@@ -104,7 +105,7 @@ async function scrapeColl(collectionType) {
 
 async function gatherResults() {
       await Promise.all(_.flatMap(gplay.category, async catg => {  
-        _.map(await Promise.all(_.chunked(_.map(gplay.collection, async coll => {
+        _.map(await Promise.all(_.chunk(_.map(gplay.collection, async coll => {
 
           var res = await gplay.list({
             collection: coll,
@@ -132,78 +133,78 @@ async function gatherResults() {
   // gplay.collection
   var scrapeResults = gatherResults();
 
-  console.log("Number of apps to download: ",Object.keys(scrapeResults).length);
+  //console.log("Number of apps to download: ",Object.keys(scrapeResults).length);
 
   //Staggering results to prevent blowing the stack
-  //_.chunk(scrapeResults, 2).forEach(arr => {
-  async.map(scrapeResults, arr => {  
-    _.map(arr, function(element) {
-      //console.log(element);
-      var p = require("path");
-      console.log(config.appdir,element.appId,appStore,region,
-        element.version
-      );
+  // //_.chunk(scrapeResults, 2).forEach(arr => {
+  // async.map(scrapeResults, arr => {  
+  //   _.map(arr, function(element) {
+  //     //console.log(element);
+  //     var p = require("path");
+  //     // console.log(config.appdir,element.appId,appStore,region,
+  //     //   element.version
+  //     // );
 
-      var saveDir = p.join(config.appdir,element.appId,appStore,region,
-        element.version
-      );
+  //     var saveDir = p.join(config.appdir,element.appId,appStore,region,
+  //       element.version
+  //     );
 
-      if (!fs.existsSync(saveDir)) {
-        var shell = require("shelljs");
-        shell.mkdir("-p", saveDir);
-      }
+  //     if (!fs.existsSync(saveDir)) {
+  //       var shell = require("shelljs");
+  //       shell.mkdir("-p", saveDir);
+  //     }
 
-      console.log("App save directory ", saveDir);
-      var args = [
-        "-d",
-        element.appId,
-        "-f",
-        saveDir,
-        "-c",
-        config.credDownload,
-        "-v"
-      ];
+  //     console.log("App save directory ", saveDir);
+  //     var args = [
+  //       "-d",
+  //       element.appId,
+  //       "-f",
+  //       saveDir,
+  //       "-c",
+  //       config.credDownload,
+  //       "-v"
+  //     ];
 
-      console.log("Python downloader playstore starting");
+  //     console.log("Python downloader playstore starting");
 
-      const spw = require("child_process").spawn;
+  //     const spw = require("child_process").spawn;
 
-      const apk_downloader = spw("gplaycli", args);
+  //     const apk_downloader = spw("gplaycli", args);
 
-      apk_downloader.stdout.on("data", data => {
-        console.log(`stdout: ${data}`);
-      });
+  //     apk_downloader.stdout.on("data", data => {
+  //       console.log(`stdout: ${data}`);
+  //     });
 
-      apk_downloader.stderr.on("data", data => {
-        console.log(`stderr: ${data}`);
-      });
+  //     apk_downloader.stderr.on("data", data => {
+  //       console.log(`stderr: ${data}`);
+  //     });
 
-      apk_downloader.on("close", async code => {
-        if (code != 0) {
-          console.log("err");
-          console.log(`child process exited with code ${code}`);
-          return;
-        }
+  //     apk_downloader.on("close", async code => {
+  //       if (code != 0) {
+  //         console.log("err");
+  //         console.log(`child process exited with code ${code}`);
+  //         return;
+  //       }
 
         
-        console.log("Download process complete for ", element.appId);
-        //TODO: check the actual success of the download + see if the app is done? or just write tests right?
-        // var db = require('./db');
+  //       console.log("Download process complete for ", element.appId);
+  //       //TODO: check the actual success of the download + see if the app is done? or just write tests right?
+  //       // var db = require('./db');
 
-        // var dbId = await db.insertPlayApp(element, region);
+  //       // var dbId = await db.insertPlayApp(element, region);
 
-        // // Send a single message to the server.
+  //       // // Send a single message to the server.
 
-        var client = unix.createSocket('unix_dgram');
-        var unix = require('unix-dgram');
+  //       var client = unix.createSocket('unix_dgram');
+  //       var unix = require('unix-dgram');
         
-        var message = Buffer(dbId + "-"+ element.appId + "-" + "play" +"-"+region + "-" + element.version);
+  //       var message = Buffer(dbId + "-"+ element.appId + "-" + "play" +"-"+region + "-" + element.version);
         
-        client.on('error', console.error);
-        client.send(message, 0, message.length, config.sockpath);
-        client.close();
+  //       client.on('error', console.error);
+  //       client.send(message, 0, message.length, config.sockpath);
+  //       client.close();
 
-      });
-    });
-  });
+  //     });
+  //   });
+  // });
 })();
