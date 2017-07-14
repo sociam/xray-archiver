@@ -28,16 +28,17 @@ function log(level, txt){
 //log(0, "test log");
 
 
+process.on('unhandledRejection', (reason, p) => {
+  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+  // application specific logging, throwing an error, or other logic here
+});
 
 async function downloadAppApk(element) {
       var p = require("path");
-      // console.log(config.appdir,element.appId,appStore,region,
-      //   element.version
-      // );
 
       var saveDir = p.join(config.appdir,element.appId,appStore,region,
         element.version
-      );
+      )
 
       if (!fs.existsSync(saveDir)) {
         var shell = require("shelljs");
@@ -51,6 +52,10 @@ async function downloadAppApk(element) {
       const spw = require("child_process").spawn;
 
       const apk_downloader = await spw("gplaycli", args);
+      apk_downloader.catch(err => {
+        console.log(err);
+      })
+
 
       apk_downloader.stdout.on("data", data => {
         console.log(`stdout: ${data}`);
@@ -96,9 +101,12 @@ async function rescrapeAppId(scrapeBase) {
       var appData = gplay.app({
         appId: id
       }).then(function(val){
-        downloadAppApk(val);
+        
+        downloadAppApk(val).then(console.log,console.log).catch(console.log);
+
       }).catch(function(e){
-        console.log(e);
+        console.log("Catch promise err",e);
+      
       });   
     });
 }
@@ -107,15 +115,6 @@ async function rescrapeAppId(scrapeBase) {
 var region = "us";
 var appStore = "play";
 
-async function scrapeColl(collectionType) {
-  var res = await gplay.list({
-    collection: collectionType,
-    num: 1,
-    region: region
-  });
-  return await rescrapeAppId(res);
-}
-
 async function gatherResults() {
       await Promise.all(_.flatMap(gplay.category, async catg => {  
         _.map(await Promise.all(_.chunk(_.map(gplay.collection, async coll => {
@@ -123,18 +122,21 @@ async function gatherResults() {
           var res = await gplay.list({
             collection: coll,
             category: catg,
-            num: 1,
-            region: region
+            num: 20,
+            region: region,
+            fulldetail: true
           });
+          downloadAppApk(res).then(console.log,console.log).catch(console.log);
 
-          await rescrapeAppId(res);
         })), 10), async (collChunk) => {
           return await Promise.all(_.map(collChunk, (e) => {
             //TODO: check if already matches before download
             downloadAppApk(e);
           }));
         });
-    }), e => { return e.appId; } );
+    }), e => { return e.appId; } ).catch( err => {
+      console.log(err);
+    })
 }
 
 (async () => {
