@@ -65,12 +65,26 @@ async function downloadAppApk(element) {
         if (code != 0) {
           console.log("err");
           console.log(`child process exited with code ${code}`);
-
-          //TODO: clean up directory on 
+          if (!fs.existsSync(saveDir + element.appId + ".apk")) {
+            fs.rmdirSync(saveDir)
+          } 
           return;
         }
+        
         console.log("Download process complete for ", element.appId);
- 
+                    console.log("Download process complete for ", element.appId);
+
+        var db = require('./db');
+        var dbId = await db.insertPlayApp(element, region);
+        var client = unix.createSocket('unix_dgram');
+        var unix = require('unix-dgram');
+        
+        var message = Buffer(dbId + "-"+ element.appId + "-" + "play" +"-"+region + "-" + element.version);
+      
+        client.on('error', console.error);
+        client.send(message, 0, message.length, config.sockpath);
+        client.close();
+
       });
 }
 
