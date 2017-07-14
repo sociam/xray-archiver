@@ -21,19 +21,78 @@ var fs = require("fs");
 var _ = require("lodash");
 
 
+//Logger
+const EMERG = 0, ALERT = 1, CRIT = 2, ERR = 3, WARN = 4, NOTICE = 5, INFO = 6, DEBUG = 7;
+
+var prefixes = ['<0>', '<1>', '<2>', '<3>', '<4>', '<5>', '<6>', '<7>'];
+function log(level, txt){
+  console.log(prefixes[level] + txt);
+}
+log(0, "test log");
+
+async function downloadAppApk(element) {
+      var p = require("path");
+      console.log(config.appdir,element.appId,appStore,region,
+        element.version
+      );
+
+      var saveDir = p.join(config.appdir,element.appId,appStore,region,
+        element.version
+      );
+
+      if (!fs.existsSync(saveDir)) {
+        var shell = require("shelljs");
+        shell.mkdir("-p", saveDir);
+      }
+
+
+      console.log("App save directory ", saveDir);
+      var args = ["-d", element.appId, "-f", saveDir, "-c", config.credDownload,"-v"];
+      console.log("Python downloader playstore starting");
+
+      const spw = require("child_process").spawn;
+
+      const apk_downloader = await spw("gplaycli", args);
+
+      apk_downloader.stdout.on("data", data => {
+        console.log(`stdout: ${data}`);
+      });
+
+      apk_downloader.stderr.on("data", data => {
+        console.log(`stderr: ${data}`);
+      });
+
+      apk_downloader.on("close", async code => {
+        if (code != 0) {
+          console.log("err");
+          console.log(`child process exited with code ${code}`);
+          return;
+        }
+        console.log("Download process complete for ", element.appId);
+ 
+      });
+}
+
 async function rescrapeAppId(scrapeBase) {
-  return await Promise.all(_.map(scrapeBase, async val => {
+  return await _.map(scrapeBase, async val => {
       var id = val.appId;
       console.log("Scraping details on: ",id);
-      return await gplay.app({
+
+      var appData = gplay.app({
         appId: id
-      });
-    }));
+      }).then(function(val){
+        downloadAppApk(val);
+      }).catch(function(e){
+        console.log(e);
+      });   
+    });
 }
 
 //TODO: move region to config or section to iterate over
 var region = "us";
 var appStore = "play";
+
+
 async function scrapeColl(collectionType) {
   var res = await gplay.list({
     collection: collectionType,
@@ -43,33 +102,41 @@ async function scrapeColl(collectionType) {
   return await rescrapeAppId(res);
 }
 
+async function gatherResults() {
+      await Promise.all(_.flatMap(gplay.category, async catg => {  
+        _.map(await Promise.all(_.chunked(_.map(gplay.collection, async coll => {
+
+          var res = await gplay.list({
+            collection: coll,
+            category: catg,
+            num: 1,
+            region: region
+          });
+
+          await rescrapeAppId(res);
+        })), 10), async (collChunk) => {
+          return await Promise.all(_.map(collChunk, (e) => {
+            //TODO: check if already matches before download
+            downloadAppApk(e);
+
+
+
+          }));
+        });
+    }), e => { return e.appId; } );
+}
+
 
 (async () => {
   // let scrapeResults = await scrapeColl(gplay.collection.TRENDING);
   // gplay.collection
-  let scrapeResults = 
-  _.uniqBy(
-    await Promise.all(_.flatMap(gplay.category, async catg => {  
-      return await Promise.all(_.map(gplay.collection, async coll => {
-        
-        // console.log(catg,coll);
-
-        var res = await gplay.list({
-          collection: coll,
-          category: catg,
-          num: 1,
-          region: region
-        });
-        
-        return await rescrapeAppId(res);
-      }));
-  }), e => { return e.appId; } ));
-  
+  var scrapeResults = gatherResults();
 
   console.log("Number of apps to download: ",Object.keys(scrapeResults).length);
 
   //Staggering results to prevent blowing the stack
-  _.chunk(scrapeResults, 2).forEach(arr => {
+  //_.chunk(scrapeResults, 2).forEach(arr => {
+  async.map(scrapeResults, arr => {  
     _.map(arr, function(element) {
       //console.log(element);
       var p = require("path");
