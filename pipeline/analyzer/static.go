@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	//	"encoding/xml"
+	"errors"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -9,23 +11,24 @@ import (
 )
 
 type Company struct {
-	ch               string
-	id               string
-	companyOld       string `json:"company-old"`
-	name             string `json:"company"`
-	domains          []string
-	founded          string
-	acquired         string `json:"acquired in"`
-	c_type           string `json:"type"`
-	typetag          string
-	jurisdiction     string
-	jurisdictionCode string `json:"jurisdiction_code"`
-	parent           string
-	capital          string
-	equity           string
-	size             string
-	dataSource       string `json:"data source"`
-	description      string
+	Id           string   `json:"id"`
+	Name         string   `json:"company"`
+	Domains      []string `json:"domains"`
+	Founded      string   `json:"founded"`
+	Acquired     string   `json:"acquired in"`
+	CType        string   `json:"type"`
+	TypeTag      string   `json:"typetag"`
+	Jurisdiction string   `json:"jurisdiction_code"`
+	Parent       string   `json:"parent"`
+	Capital      string   `json:"capital"`
+	Equity       string   `json:"equity"`
+	Size         string   `json:"size"`
+	DataSource   string   `json:"data source"`
+	Description  string   `json:"description"`
+}
+
+func get_perms(app App) error {
+	return errors.New("Not implemented!")
 }
 
 func simple_analyze(app App) ([]string, error) {
@@ -73,11 +76,11 @@ func simple_analyze(app App) ([]string, error) {
 
 	irrelevant := []string{"app", "identity", "n/a", "other", "", "library"}
 	for name, company := range companies {
-		for _, domain := range company.domains {
+		for _, domain := range company.Domains {
 			if strings.Contains(string(domain), string(urls)) {
 				toAppend := true
 				for _, cat := range irrelevant {
-					if companies[name].typetag == cat {
+					if companies[name].TypeTag == cat {
 						toAppend = false
 						break
 					}

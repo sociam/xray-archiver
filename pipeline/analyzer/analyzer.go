@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 )
 
@@ -72,11 +73,16 @@ func main() {
 			os.Exit(0)
 		}
 
-		split := strings.SplitN(s, "-", 4)
-		if len(split) < 4 {
+		split := strings.SplitN(s, "-", 5)
+		if len(split) < 5 {
 			fmt.Printf("failed to parse input \"%s\"\n", s)
 		} else {
-			app := App{split[0], split[1], split[2], split[3]}
+			id, err := strconv.Atoi(split[0])
+			if err != nil {
+				fmt.Printf("Given app id %s isn't a number!\n", id)
+				continue
+			}
+			app := App{id, split[1], split[2], split[3], split[4]}
 			fmt.Printf("Got app %v\n", app)
 			fmt.Print("Unpacking... ")
 			err = unpack(app)
@@ -86,13 +92,12 @@ func main() {
 				continue
 			}
 			fmt.Println("done.")
-			fmt.Print("Running simple analysis... ")
-			_, err := simple_analyze(app)
+			fmt.Println("Running simple analysis... ")
+			out, err := simple_analyze(app)
 			if err != nil {
-				fmt.Println()
 				fmt.Println(err.Error())
 			}
-			fmt.Println("done.")
+			fmt.Printf("Hosts found: %v\n\n", out)
 		}
 	}
 }

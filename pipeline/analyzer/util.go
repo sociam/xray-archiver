@@ -12,11 +12,14 @@ type Unit struct{}
 var unit Unit
 
 type App struct {
+	dbId                   int
 	id, store, region, ver string
 }
 
 func apkPath(app App) string {
-	return path.Join(cfg.AppDir, app.id, app.store, app.region, app.ver)
+	return path.Join(
+		cfg.AppDir, app.id, app.store, app.region,
+		app.ver, app.id+".apk")
 }
 
 func outDir(app App) string {
