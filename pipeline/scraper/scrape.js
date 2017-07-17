@@ -192,7 +192,8 @@ var fs = require('fs');
 var parse = require('csv-parse');
 var async = require('async');
 
-var inputFile='mwords.csv';
+var inputFile='wordStash';
+
 
 var parser = parse({delimiter: ','}, function (err, data) {
   async.eachSeries(data, function (line, callback) {
@@ -208,7 +209,20 @@ var parser = parse({delimiter: ','}, function (err, data) {
     });
   })
 });
-fs.createReadStream(inputFile).pipe(parser);
+
+// Loop through all the files in the temp directory
+fs.readdir( moveFrom, function( err, files ) {
+
+  if( err ) {
+      console.error( "Could not list the directory.", err );
+      process.exit( 1 );
+  } 
+
+  files.forEach( file => {
+      fs.createReadStream(file).pipe(parser);
+    }
+  )
+}
 
 // var words = ['cat', 'cow'];
 
