@@ -7,7 +7,7 @@ create table app_versions(
   id           serial         primary key not null,
   app            text references apps(id) not null,
   store          text                     not null,
-  region         text                     not null
+  region         text                     not null,
   version        text                     not null,
   screen_flags    int
 );
