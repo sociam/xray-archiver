@@ -33,34 +33,43 @@ var prefixes = ['<0>', '<1>', '<2>', '<3>', '<4>', '<5>', '<6>', '<7>'];
 function log(level, txt) {
     console.log(prefixes[level] + txt);
 }
-//log(0, "test log");
+//TODO: Use Logger eg - log(0, "test log");
 
 
-// process.on('unhandledRejection', (reason, p) => {
-//   console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
-//   // application specific logging, throwing an error, or other logic here
-// });
+//TODO: move region to config or section to iterate over
+var region = "us";
+var appStore = "play";
+
 
 async function downloadAppApk(appData) {
+    // 
+
+    // TODO: Refactor 
+    // TODO: Remove Async, use promises.
+
+    // Set up directory for archiving of app apks
     var p = require("path");
 
-    var saveDir = p.join(config.appdir, appData.appId, appStore, region,
-        appData.version
-    )
+    // archive location *heavily* dependent on config file settings.
+    var saveDir = p.join(config.appdir, appData.appId /* apk name */ , appStore /* app store it was taken from */ , region /*  */ , appData.version /*  */ );
 
+    /* check that the dir created from config exists. */
     if (!fs.existsSync(saveDir)) {
-        var shell = require("shelljs");
+        var shell = require("shelljs"); /* Note For Adam - Is there a reason why this is here, is it global regardless of scope? */
         shell.mkdir("-p", saveDir);
     }
 
+
     console.log("App save directory ", saveDir);
-    var args = ["-pd", appData.appId, "-f", saveDir, "-c", config.credDownload];
+    var args = ["-pd", appData.appId, "-f", saveDir, "-c", config.credDownload]; /* Command line args for gplay cli */
     console.log("Python downloader playstore starting");
 
+    // TODO: (from dean) this could be used in a promise??
     const spw = require("child_process").spawn;
 
     const apk_downloader = await spw("gplaycli", args);
     //console.log("Apk downloader", apk_downloader);
+
     apk_downloader.stdout.on("data", data => {
         console.log(`stdout: ${data}`);
     });
@@ -69,54 +78,43 @@ async function downloadAppApk(appData) {
         console.log(`stderr: ${data}`);
     });
 
+    /* Waiting for the process to finish before handling anything */
     apk_downloader.on("close", async code => {
+        /* Check for errors first. */
         if (code != 0) {
             console.log("err");
             console.log(`child process exited with code ${code}`);
+
             if (!fs.existsSync(saveDir + appData.appId + ".apk")) {
-                fs.rmdirSync(saveDir)
+                fs.rmdirSync(saveDir);
             }
             return;
         }
 
         console.log("Download process complete for ", appData.appId);
-        console.log("Download process complete for ", appData.appId);
 
+        // TODO: DB Comms... this can be factorised.
         var db = require('./db');
         var dbId = await db.insertPlayApp(appData, region);
+
         var client = unix.createSocket('unix_dgram');
         var unix = require('unix-dgram');
 
-        var message = Buffer(dbId + "-" + appData.appId + "-" + "play" + "-" + region + "-" + appData.version);
+        // TODO: Check that '-' won't mess things up on the DB side... eg if region was something like 'en-gb'
+        var message = Buffer(dbId + "-" + appData.appId + "-" + config.appStore + "-" + region + "-" + appData.version);
 
         client.on('error', console.error);
         client.send(message, 0, message.length, config.sockpath);
-        client.close();
+        client.close(); /* The end of one single app download and added to the DB */
 
     });
 
 }
 
-async function rescrapeAppId(scrapeBase) {
-    return await _.map(scrapeBase, async val => {
-        var id = val.appId;
-        //console.log("Scraping details on: ",id);
 
-        var appData = gplay.app({
-            appId: id
-        }).then(function(val) {
-
-            downloadAppApk(val).then(console.log, console.log).catch(console.log);
-
-        }).catch(function(e) {
-            console.log("Catch promise err", e);
-
-        });
-    });
-}
-
-function scrape(scrapeBase) {
-    return scrapeBase.map((val) => {
+//Base scrapes array apps based on google-play-scraper app json format - PROMISE FORMAT
+function scrape(appsData) {
+    return appsData.map((val) => {
         return gplay.app({ appId: val.appId }).then(function(some_other_val) {
             return downloadAppApk(val).then(() => {
                 console.log('finished downloading', val.appId);
@@ -130,48 +128,21 @@ function scrape(scrapeBase) {
 }
 
 
-//TODO: move region to config or section to iterate over
-var region = "us";
-var appStore = "play";
-
-// var gplay = require('google-play-scraper');
-// gplay.app({appId: 'com.dxco.pandavszombies'})
-//   .then(console.log, console.log);
-
-// let searchResult = gplay.list({
-//         collection: gplay.collection.NEW_FREE,
-//         category: gplay.category.BUSINESS,
-//         num: 20,
-//         region: region,
-//         fullDetail: true,
-//         throttle: 10
-//       })
-
-// searchResult.then(res => {
-//    console.log("Results found: ",res.length);
-// })
-
-
-//scrape(searchResult);
-
-
-//console.log(res);
-
-
-
 function scrapeWords(wordList) {
+    /* Map an array of gplay search results */
     return _.map(wordList, word => {
         console.log("Word defintion", word);
 
         let scraped = gplay.search({
             term: word,
-            num: 12,
+            num: 120,
             region: region,
             fullDetail: true,
             throttle: 10
         });
 
         console.log(scraped);
+        /*  */
         scraped.then(appsScraped => {
             appsScraped.map(app => {
                 console.log("search chunk", app.appId);
@@ -181,13 +152,13 @@ function scrapeWords(wordList) {
 
     });
 
-    console.log("The current chunk", chunk);
 }
 
+/* Get an array of gplay Search results */
 function scrapeWord(word) {
     return gplay.search({
         term: word,
-        num: 12,
+        num: 120,
         region: region,
         fullDetail: true,
         throttle: 10
@@ -202,24 +173,28 @@ var async = require('async');
 
 var wordStash = config.wordStashDir;
 
+//TODO: Promise that you'll change this to promises.
+/* parse 'Top Words' and download apps based on the search results. */
+// NOTE: word csv's are not comma seperated, actually '\n'...
 var parser = parse({ delimiter: ',' }, function(err, data) {
-    async.eachSeries(data, function(line, callback) {
-        // do something with the line
-        scrapeWord(line).then(appsScraped => {
-            console.log(line);
+
+    async.eachSeries(data, function(currWord, callback) {
+        scrapeWord(currWord).then(appsScraped => {
+
             appsScraped.map(app => {
-                console.log("search chunk", app.appId);
+                console.log("Downloading app: ", app.appId);
                 downloadAppApk(app);
             });
+
             // when processing finishes invoke the callback to move to the next one
             callback();
         });
     })
 });
 
-// Loop through all the files in the temp directory
-fs.readdir(wordStash, function(err, files) {
 
+// Loop through all the files in the word stash
+fs.readdir(wordStash, function(err, files) {
     if (err) {
         console.error("Could not list the directory.", err);
         process.exit(1);
@@ -229,77 +204,3 @@ fs.readdir(wordStash, function(err, files) {
         fs.createReadStream(wordStash + file).pipe(parser);
     });
 });
-
-// var words = ['cat', 'cow'];
-
-// scrapeWords(words); 
-
-
-// async function gatherResults() {
-//       await Promise.all(_.flatMap(gplay.category, async catg => {  
-//         _.map(await Promise.all(_.chunk(_.map(gplay.collection, async coll => {
-
-//           var res = await gplay.list({
-//             collection: coll,
-//             category: catg,
-//             num: 120,
-//             region: region,
-//             fullDetail: true,
-//             throttle: 10
-//           });
-
-//           //downloadAppApk(res).then(console.log,console.log).catch(console.log);
-
-//         })), 10), async (collChunk) => {
-//           return await Promise.all(_.map(collChunk, (e) => {
-//             //TODO: check if already matches before download
-//             downloadAppApk(e);
-//           }));
-//         });
-//     }), e => { return e.appId; } ).catch( err => {
-//       console.log(err);
-//     })
-// }
-
-// (async () => {
-//   var scrapeResults = gatherResults();
-// })();
-
-
-
-
-
-//Promise version
-
-// function gatherScapingResults() {
-//   return _.map(gplay.category, (catg) => {
-//     console.log("Began gathering on category",catg);
-//     return _.chunk( _.map(gplay.collection, coll => {
-//       console.log("Began gathering on coll",coll);
-//       var res = gplay.list({
-//             collection: gplay.collection.NEW_FREE,
-//             category: gplay.category.BUSINESS,
-//             num: 10,
-//             region: region,
-//             fullDetail: true,
-//             throttle: 10
-//       }).then( (chunkData) => {
-//           if(chunkData !== undefined){ //Does not function on paid apps
-//             console.log("Initalising downloading: ", chunkData.appId);
-//             // downloadAppApk(chunkData).then(() => { 
-//             // console.log('finished downloading:', chunkData.appId); 
-//             // return val; // whatever you return here will get passed on to the next val in the promise chain..
-//             // }).catch((e) => {
-//             //     console.error('error downloading ', chunkData.appId, e.toString());
-//             //     throw e;
-//             // });
-//           }
-//       }).catch((e) => {
-//         console.error('error downloading ', chunkData.appId, e.toString());
-//         throw e;
-//       });;
-//     },10));
-//   });
-// }
-
-// let results = gatherScapingResults();
