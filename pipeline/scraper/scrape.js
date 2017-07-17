@@ -126,7 +126,15 @@ function scrape(scrapeBase) {
 }
 
 
-    
+function scrapeWords(wordList) {
+  return wordList.map(word => {
+      return gplay.search({
+        
+      })
+    }
+  )
+
+}
 
 //TODO: move region to config or section to iterate over
 var region = "us";
@@ -159,6 +167,8 @@ var appStore = "play";
 
 
 
+
+
 async function gatherResults() {
       await Promise.all(_.flatMap(gplay.category, async catg => {  
         _.map(await Promise.all(_.chunk(_.map(gplay.collection, async coll => {
@@ -171,8 +181,9 @@ async function gatherResults() {
             fullDetail: true,
             throttle: 10
           });
-          downloadAppApk(res).then(console.log,console.log).catch(console.log);
 
+          //downloadAppApk(res).then(console.log,console.log).catch(console.log);
+ 
         })), 10), async (collChunk) => {
           return await Promise.all(_.map(collChunk, (e) => {
             //TODO: check if already matches before download
@@ -187,6 +198,9 @@ async function gatherResults() {
 (async () => {
   var scrapeResults = gatherResults();
 })();
+
+
+
 
 
 //Promise version
