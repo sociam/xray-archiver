@@ -8,10 +8,24 @@ import (
 	"path"
 )
 
+type DbCfg struct {
+	Database string `json:"database"`
+	User     string `json:"user"`
+	Password string `json:"password"`
+	Host     string `json:"host"`
+	Port     string `json:"port"`
+}
+
+type AnalyzerCfg struct {
+	Db DbCfg `json:"db"`
+}
+
 type Config struct {
-	AppDir    string `json:"appdir"`
-	UnpackDir string `json:"unpackdir"`
-	SockPath  string `json:"sockpath"`
+	AppDir    string      `json:"appdir"`
+	UnpackDir string      `json:"unpackdir"`
+	SockPath  string      `json:"sockpath"`
+	Analyzer  AnalyzerCfg `json:"analyzer"`
+	Db        DbCfg       `json:"-"`
 }
 
 var UnpackDir string

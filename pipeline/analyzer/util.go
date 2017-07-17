@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"path"
 )
@@ -34,6 +35,26 @@ func unpack(app App) error {
 			err.Error(), string(out)))
 	}
 	return nil
+}
+
+func checkDir(dir, name string) {
+	fif, err := os.Stat(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			err = os.MkdirAll(dir, 0644)
+			if err != nil {
+				//TODO: something else
+				panic(fmt.Sprintf("Couldn't create %s: %s", name, err.Error()))
+			}
+		} else {
+			//TODO: something else
+			panic(err)
+		}
+	}
+
+	if !fif.IsDir() {
+		panic(fmt.Sprintf("%s isn't a directory!", name))
+	}
 }
 
 func combine(a, b map[string]Unit) map[string]Unit {

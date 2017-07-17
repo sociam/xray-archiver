@@ -2,13 +2,41 @@ package main
 
 import (
 	"encoding/json"
-	//	"encoding/xml"
-	"errors"
+	"encoding/xml"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 )
+
+type Permission struct {
+	Id        string `xml:"name,attr"`
+	maxSdkVer string `xml:"maxSdkVersion,attr"`
+}
+
+type AndroidManifest struct {
+	Perms      []Permission `xml:"uses-permission"`
+	Sdk23Perms []Permission `xml:"uses-permission-sdk-23"`
+}
+
+func getPerms(app App) ([]Permission, error) {
+	manifest := AndroidManifest{}
+	manifestFile, err := os.Open(path.Join(outDir(app), "AndroidManifest.xml"))
+	if err != nil {
+		return nil, err
+	}
+	bytes, err := ioutil.ReadAll(manifestFile)
+	if err != nil {
+		return nil, err
+	}
+	err = xml.Unmarshal(bytes, &manifest)
+	if err != nil {
+		return nil, err
+	}
+
+	return append(manifest.Perms, manifest.Sdk23Perms...), nil
+}
 
 type Company struct {
 	Id           string   `json:"id"`
@@ -27,11 +55,7 @@ type Company struct {
 	Description  string   `json:"description"`
 }
 
-func get_perms(app App) error {
-	return errors.New("Not implemented!")
-}
-
-func simple_analyze(app App) ([]string, error) {
+func simpleAnalyze(app App) ([]string, error) {
 	//TODO: fix error handling
 
 	//TODO: replace with DB calls
