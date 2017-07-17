@@ -15,8 +15,12 @@ Setup to scrape platstore for free apks to later analysis the permission setup.
 
 All expectance comes from a config.json file. See example_config.json.
 
-# App Updateing
+## Words Search
 
+In order to a scrape a wide distribution of apps from the playstore the search bar is taken advantage off. 
+A one word item per line list can then be passed to the scrape.js to scrape on.
+
+# App Updateing
 
 
 

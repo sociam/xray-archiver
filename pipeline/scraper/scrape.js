@@ -34,14 +34,10 @@ function log(level, txt) {
 }
 //TODO: Use Logger eg - log(0, "test log");
 
-process.on('unhandledRejection', (reason, p) => {
-  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
-  // application specific logging, throwing an error, or other logic here
-});
+
 //TODO: move region to config or section to iterate over
 var region = "us";
 var appStore = "play";
-
 
 async function downloadAppApk(appData) {
     // TODO: Refactor 
@@ -88,7 +84,7 @@ async function downloadAppApk(appData) {
     /* Waiting for the process to finish before handling anything */
     apk_downloader.on("close", async code => {
         /* Check for errors in downloading first. */
-        if (code != 0 || !fs.existsSync( ) {
+        if (code != 0 || !fs.existsSync(appSaveDir)){
             console.log("err could not download");
             console.log(`child process exited with code ${code}`);
             console.log('process could not save,')
@@ -159,7 +155,7 @@ function scrapeWords(wordList) {
 function scrapeWord(word) {
     return gplay.search({
         term: word,
-        num: 4,
+        num: 120,
         region: region,
         fullDetail: true,
         throttle: 1
@@ -171,7 +167,7 @@ var wordStash = config.wordStashDir;
 //Reading from folder of csv files
 var fs = require('fs');
 var fs_promise = require('fs-readdir-promise');
-   readline = require('readline');
+var readline = require('readline');
 
 function reader (filepath) {
     return readline.createInterface({
@@ -179,12 +175,8 @@ function reader (filepath) {
     });
 }
 
-var parse = require('csv-parse');
-var async = require('async');
 
-let wordStashFiles = fs_promise(wordStash);
-
-//Mutex
+var wordStashFiles = fs_promise(wordStash);
 
 wordStashFiles.then(files => {
     var q = Promise.resolve();
@@ -254,7 +246,8 @@ wordStashFiles.then(files => {
 
 
 
-
+//var parse = require('csv-parse');
+//var async = require('async');
 //TODO: Promise that you'll change this to promises.
 /* parse 'Top Words' and download apps based on the search results. */
 // NOTE: word csv's are not comma seperated, actually '\n'...
