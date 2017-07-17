@@ -192,7 +192,6 @@ var parser = parse({ delimiter: ',' }, function(err, data) {
     })
 });
 
-
 // Loop through all the files in the word stash
 fs.readdir(wordStash, function(err, files) {
     if (err) {
@@ -201,6 +200,7 @@ fs.readdir(wordStash, function(err, files) {
     }
 
     files.forEach(file => {
-        fs.createReadStream(wordStash + file).pipe(parser);
+        var p = require("path");
+        fs.createReadStream(p.join(wordStash,file)).pipe(parser);
     });
 });
