@@ -192,7 +192,7 @@ var fs = require('fs');
 var parse = require('csv-parse');
 var async = require('async');
 
-var wordStash = '../../../wordStash/';
+var wordStash = '/home/deanott/wordStash/';
 
 var parser = parse({delimiter: ','}, function (err, data) {
   async.eachSeries(data, function (line, callback) {
@@ -218,7 +218,7 @@ fs.readdir( wordStash, function( err, files ) {
   } 
 
   files.forEach( file => {
-      fs.createReadStream(file).pipe(parser);
+      fs.createReadStream(wordStash +file).pipe(parser);
     }
   );
 });
