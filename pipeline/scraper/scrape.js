@@ -52,10 +52,7 @@ async function downloadAppApk(appData) {
       const spw = require("child_process").spawn;
 
       const apk_downloader = await spw("gplaycli", args);
-      apk_downloader.catch(err => {
-        console.log(err);
-      })
-
+      //console.log("Apk downloader", apk_downloader);
       apk_downloader.stdout.on("data", data => {
         console.log(`stdout: ${data}`);
       });
@@ -165,6 +162,7 @@ function scrapeWords(wordList) {
         fullDetail: true,
         throttle: 10
     });
+
     console.log(scraped);
     scraped.then(appsScraped => {
         appsScraped.map(app => {
@@ -176,12 +174,45 @@ function scrapeWords(wordList) {
     });
     
     console.log("The current chunk",chunk);
-    chunk
 }
 
-var words = ['cat', 'cow'];
+function scrapeWord(word) {
+  return gplay.search({
+    term: word,
+        num: 12,
+        region: region,
+        fullDetail: true,
+        throttle: 10
+    });
+  }
 
-scrapeWords(words); 
+
+//Reading from folder of csv files
+var fs = require('fs');
+var parse = require('csv-parse');
+var async = require('async');
+
+var inputFile='mwords.csv';
+
+var parser = parse({delimiter: ','}, function (err, data) {
+  async.eachSeries(data, function (line, callback) {
+    // do something with the line
+    scrapeWord(line).then(appsScraped => {
+      console.log(line);
+      appsScraped.map(app => {
+          console.log("search chunk",app.appId);
+          downloadAppApk(app);
+      });
+      // when processing finishes invoke the callback to move to the next one
+      callback();
+    });
+  })
+});
+fs.createReadStream(inputFile).pipe(parser);
+
+// var words = ['cat', 'cow'];
+
+// scrapeWords(words); 
 
 
 // async function gatherResults() {

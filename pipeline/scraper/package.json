@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "async": "^2.5.0",
     "await": "^0.2.6",
     "db": "^1.0.6",
     "google-play-scraper": "^3.3.1",
