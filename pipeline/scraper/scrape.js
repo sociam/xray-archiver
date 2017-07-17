@@ -35,7 +35,10 @@ function log(level, txt) {
 }
 //TODO: Use Logger eg - log(0, "test log");
 
-
+process.on('unhandledRejection', (reason, p) => {
+  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+  // application specific logging, throwing an error, or other logic here
+});
 //TODO: move region to config or section to iterate over
 var region = "us";
 var appStore = "play";
@@ -44,11 +47,16 @@ var appStore = "play";
 async function downloadAppApk(appData) {
     // TODO: Refactor 
     // TODO: Remove Async, use promises.
-
     // Set up directory for archiving of app apks
     var p = require("path");
-
     // archive location *heavily* dependent on config file settings.
+    console.log("ad:", appData);
+    if (!appData.appId) { return Promise.reject(appData.appId); }
+
+    console.log("appdir:", config.appdir, "\nappId", appData.appId, "\nappStore", appStore, "\nregion", region, "\nversion", appData.version);
+    
+    if (!appData.version) 
+        appData.version = appData.updated;
     var saveDir = p.join(config.appdir, appData.appId /* apk name */ , appStore /* app store it was taken from */ , region /*  */ , appData.version /*  */ );
 
     /* check that the dir created from config exists. */
@@ -56,7 +64,6 @@ async function downloadAppApk(appData) {
         var shell = require("shelljs"); /* Note For Adam - Is there a reason why this is here, is it global regardless of scope? */
         shell.mkdir("-p", saveDir);
     }
-
 
     console.log("App save directory ", saveDir);
     var args = ["-pd", appData.appId, "-f", saveDir, "-c", config.credDownload]; /* Command line args for gplay cli */
@@ -104,11 +111,8 @@ async function downloadAppApk(appData) {
         client.on('error', console.error);
         client.send(message, 0, message.length, config.sockpath);
         client.close(); /* The end of one single app download and added to the DB */
-
     });
-
 }
-
 
 //Base scrapes array apps based on google-play-scraper app json format - PROMISE FORMAT
 function scrape(appsData) {
@@ -124,8 +128,6 @@ function scrape(appsData) {
         });
     });
 }
-
-
 function scrapeWords(wordList) {
     /* Map an array of gplay search results */
     return _.map(wordList, word => {
@@ -136,7 +138,7 @@ function scrapeWords(wordList) {
             num: 120,
             region: region,
             fullDetail: true,
-            throttle: 10
+            throttle: 0.1
         });
 
         console.log(scraped);
@@ -159,7 +161,7 @@ function scrapeWord(word) {
         num: 4,
         region: region,
         fullDetail: true,
-        throttle: 100
+        throttle: 1
     });
 }
 
@@ -169,7 +171,6 @@ var wordStash = config.wordStashDir;
 var fs = require('fs');
 var fs_promise = require('fs-readdir-promise');
    readline = require('readline');
-
 
 function reader (filepath) {
     return readline.createInterface({
@@ -182,31 +183,71 @@ var async = require('async');
 
 let wordStashFiles = fs_promise(wordStash);
 
+//Mutex
+
 wordStashFiles.then(files => {
-    // console.log(files);
-    // files.map(file => {
-    //     var p = require("path");
-    //     return parseCSVFile(p.join(wordStash,file));
-    // })
-    _.map(files, file => {
+    var q = Promise.resolve();
 
-        var filepath = require("path").join(wordStash,file);
-        var rd = reader(filepath);
+    files.map(file => {
+        q = q.then(() => {
+            return new Promise((resolve, reject) => {
+                var filepath = require("path").join(wordStash,file);
+                
+                var rd = reader(filepath);
+                
+                var p = Promise.resolve();
 
-        rd.on('line', function(word) {
-            //console.log(word);
-            var scrapedAppData = scrapeWord(word);
+                rd.on('line', (word) => {
+                    p = p.then(() => {
+                        console.log("searching on word:", word);
 
-            scrapedAppData.then(appData => {
-                console.log(appData.appId);
-                downloadAppApk(appData);
+                        return scrapeWord(word).then(function(appsData){
+
+                            console.log("Appdata",appsData.appId);
+                            var r = Promise.resolve();
+
+                            appsData.forEach(app => {
+                                r = r.then( () => {
+                                    console.log(app);
+                                    return downloadAppApk(app);  
+                                });
+                            });
+
+                        }, (err) => { console.log("scrapeword failed:", err)});
+                    });
+                });
+
+                rd.on('end', () => {
+                    p.then(() => { resolve(); }, (err) => { console.log("last dl failed:", err); });
+                });
             });
-        });
-    });
+        }, (err) => { console.log("q failed:", err); });
+    }, (err) => { console.log("stashfiles failed:", err); });
+    
+    // _.map(files, file => {
+
+
+
+
+    //     rd.on('line', function(word) {
+    //         p = p.then(() => {            
+    //             console.log("searching on word:",word);
+    //             var scrapedAppData = scrapeWord(word);
+
+    //             return scrapedAppData.then(appData => {
+    //                 console.log(appData.appId);
+    //                 downloadAppApk(appData);
+    //             });
+    //         });
+    //     });
+
+    // });
 
 }).catch(function(err) {
   console.log("Err with word stash",err.message);
 });
+
+
 
 
 
