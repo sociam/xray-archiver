@@ -56,7 +56,6 @@ async function downloadAppApk(appData) {
         console.log(err);
       })
 
-
       apk_downloader.stdout.on("data", data => {
         console.log(`stdout: ${data}`);
       });
@@ -126,16 +125,6 @@ function scrape(scrapeBase) {
 }
 
 
-function scrapeWords(wordList) {
-  return wordList.map(word => {
-      return gplay.search({
-        
-      })
-    }
-  )
-
-}
-
 //TODO: move region to config or section to iterate over
 var region = "us";
 var appStore = "play";
@@ -165,39 +154,65 @@ var appStore = "play";
 
 
 
+function scrapeWords(wordList) {
+  return _.map(wordList, word => {
+    console.log("Word defintion",word);
 
+    let scraped =  gplay.search({
+        term: word,
+        num: 12,
+        region: region,
+        fullDetail: true,
+        throttle: 10
+    });
+    console.log(scraped);
+    scraped.then(appsScraped => {
+        appsScraped.map(app => {
+          console.log("search chunk",app.appId);
+          downloadAppApk(app);
+      });
+    });
 
-
-
-async function gatherResults() {
-      await Promise.all(_.flatMap(gplay.category, async catg => {  
-        _.map(await Promise.all(_.chunk(_.map(gplay.collection, async coll => {
-
-          var res = await gplay.list({
-            collection: coll,
-            category: catg,
-            num: 120,
-            region: region,
-            fullDetail: true,
-            throttle: 10
-          });
-
-          //downloadAppApk(res).then(console.log,console.log).catch(console.log);
- 
-        })), 10), async (collChunk) => {
-          return await Promise.all(_.map(collChunk, (e) => {
-            //TODO: check if already matches before download
-            downloadAppApk(e);
-          }));
-        });
-    }), e => { return e.appId; } ).catch( err => {
-      console.log(err);
-    })
+    });
+    
+    console.log("The current chunk",chunk);
+    chunk
 }
 
-(async () => {
-  var scrapeResults = gatherResults();
-})();
+var words = ['cat', 'cow'];
+
+scrapeWords(words); 
+
+
+// async function gatherResults() {
+//       await Promise.all(_.flatMap(gplay.category, async catg => {  
+//         _.map(await Promise.all(_.chunk(_.map(gplay.collection, async coll => {
+
+//           var res = await gplay.list({
+//             collection: coll,
+//             category: catg,
+//             num: 120,
+//             region: region,
+//             fullDetail: true,
+//             throttle: 10
+//           });
+
+//           //downloadAppApk(res).then(console.log,console.log).catch(console.log);
+ 
+//         })), 10), async (collChunk) => {
+//           return await Promise.all(_.map(collChunk, (e) => {
+//             //TODO: check if already matches before download
+//             downloadAppApk(e);
+//           }));
+//         });
+//     }), e => { return e.appId; } ).catch( err => {
+//       console.log(err);
+//     })
+// }
+
+// (async () => {
+//   var scrapeResults = gatherResults();
+// })();
 
 
 
