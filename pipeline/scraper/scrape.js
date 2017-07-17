@@ -19,11 +19,19 @@ var fs = require("fs");
 var _ = require("lodash");
 
 //Logging mechanisim for script
-const EMERG = 0, ALERT = 1, CRIT = 2, ERR = 3, WARN = 4, NOTICE = 5, INFO = 6, DEBUG = 7;
+const EMERG = 0,
+    ALERT = 1,
+    CRIT = 2,
+    ERR = 3,
+    WARN = 4,
+    NOTICE = 5,
+    INFO = 6,
+    DEBUG = 7;
 
 var prefixes = ['<0>', '<1>', '<2>', '<3>', '<4>', '<5>', '<6>', '<7>'];
-function log(level, txt){
-  console.log(prefixes[level] + txt);
+
+function log(level, txt) {
+    console.log(prefixes[level] + txt);
 }
 //log(0, "test log");
 
@@ -34,84 +42,84 @@ function log(level, txt){
 // });
 
 async function downloadAppApk(appData) {
-      var p = require("path");
+    var p = require("path");
 
-      var saveDir = p.join(config.appdir,appData.appId,appStore,region,
+    var saveDir = p.join(config.appdir, appData.appId, appStore, region,
         appData.version
-      )
+    )
 
-      if (!fs.existsSync(saveDir)) {
+    if (!fs.existsSync(saveDir)) {
         var shell = require("shelljs");
         shell.mkdir("-p", saveDir);
-      }
+    }
 
-      console.log("App save directory ", saveDir);
-      var args = ["-pd", appData.appId, "-f", saveDir, "-c", config.credDownload];
-      console.log("Python downloader playstore starting");
+    console.log("App save directory ", saveDir);
+    var args = ["-pd", appData.appId, "-f", saveDir, "-c", config.credDownload];
+    console.log("Python downloader playstore starting");
 
-      const spw = require("child_process").spawn;
+    const spw = require("child_process").spawn;
 
-      const apk_downloader = await spw("gplaycli", args);
-      //console.log("Apk downloader", apk_downloader);
-      apk_downloader.stdout.on("data", data => {
+    const apk_downloader = await spw("gplaycli", args);
+    //console.log("Apk downloader", apk_downloader);
+    apk_downloader.stdout.on("data", data => {
         console.log(`stdout: ${data}`);
-      });
+    });
 
-      apk_downloader.stderr.on("data", data => {
+    apk_downloader.stderr.on("data", data => {
         console.log(`stderr: ${data}`);
-      });
+    });
 
-      apk_downloader.on("close", async code => {
+    apk_downloader.on("close", async code => {
         if (code != 0) {
-          console.log("err");
-          console.log(`child process exited with code ${code}`);
-          if (!fs.existsSync(saveDir + appData.appId + ".apk")) {
-            fs.rmdirSync(saveDir)
-          } 
-          return;
+            console.log("err");
+            console.log(`child process exited with code ${code}`);
+            if (!fs.existsSync(saveDir + appData.appId + ".apk")) {
+                fs.rmdirSync(saveDir)
+            }
+            return;
         }
-        
+
         console.log("Download process complete for ", appData.appId);
-                    console.log("Download process complete for ", appData.appId);
+        console.log("Download process complete for ", appData.appId);
 
         var db = require('./db');
         var dbId = await db.insertPlayApp(appData, region);
         var client = unix.createSocket('unix_dgram');
         var unix = require('unix-dgram');
-        
-        var message = Buffer(dbId + "-"+ appData.appId + "-" + "play" +"-"+region + "-" + appData.version);
-      
+
+        var message = Buffer(dbId + "-" + appData.appId + "-" + "play" + "-" + region + "-" + appData.version);
+
         client.on('error', console.error);
         client.send(message, 0, message.length, config.sockpath);
         client.close();
 
-      });
+    });
 
 }
 
 async function rescrapeAppId(scrapeBase) {
-  return await _.map(scrapeBase, async val => {
-      var id = val.appId;
-      //console.log("Scraping details on: ",id);
+    return await _.map(scrapeBase, async val => {
+        var id = val.appId;
+        //console.log("Scraping details on: ",id);
 
-      var appData = gplay.app({
-        appId: id
-      }).then(function(val){
-        
-        downloadAppApk(val).then(console.log,console.log).catch(console.log);
+        var appData = gplay.app({
+            appId: id
+        }).then(function(val) {
 
-      }).catch(function(e){
-        console.log("Catch promise err",e);
-      
-      });   
+            downloadAppApk(val).then(console.log, console.log).catch(console.log);
+
+        }).catch(function(e) {
+            console.log("Catch promise err", e);
+
+        });
     });
 }
 
 function scrape(scrapeBase) {
     return scrapeBase.map((val) => {
-        return gplay.app({appId: val.appId}).then(function(some_other_val){ 
-            return downloadAppApk(val).then(() => { 
-                console.log('finished downloading', val.appId); 
+        return gplay.app({ appId: val.appId }).then(function(some_other_val) {
+            return downloadAppApk(val).then(() => {
+                console.log('finished downloading', val.appId);
                 return val; // whatever you return here will get passed on to the next val in the promise chain..
             }).catch((e) => {
                 console.error('error downloading ', val.appId, e.toString());
@@ -138,12 +146,12 @@ var appStore = "play";
 //         fullDetail: true,
 //         throttle: 10
 //       })
-      
+
 // searchResult.then(res => {
 //    console.log("Results found: ",res.length);
 // })
-      
-  
+
+
 //scrape(searchResult);
 
 
@@ -152,39 +160,39 @@ var appStore = "play";
 
 
 function scrapeWords(wordList) {
-  return _.map(wordList, word => {
-    console.log("Word defintion",word);
+    return _.map(wordList, word => {
+        console.log("Word defintion", word);
 
-    let scraped =  gplay.search({
+        let scraped = gplay.search({
+            term: word,
+            num: 12,
+            region: region,
+            fullDetail: true,
+            throttle: 10
+        });
+
+        console.log(scraped);
+        scraped.then(appsScraped => {
+            appsScraped.map(app => {
+                console.log("search chunk", app.appId);
+                downloadAppApk(app);
+            });
+        });
+
+    });
+
+    console.log("The current chunk", chunk);
+}
+
+function scrapeWord(word) {
+    return gplay.search({
         term: word,
         num: 12,
         region: region,
         fullDetail: true,
         throttle: 10
     });
-
-    console.log(scraped);
-    scraped.then(appsScraped => {
-        appsScraped.map(app => {
-          console.log("search chunk",app.appId);
-          downloadAppApk(app);
-      });
-    });
-
-    });
-    
-    console.log("The current chunk",chunk);
 }
-
-function scrapeWord(word) {
-  return gplay.search({
-    term: word,
-        num: 12,
-        region: region,
-        fullDetail: true,
-        throttle: 10
-    });
-  }
 
 
 //Reading from folder of csv files
@@ -192,35 +200,34 @@ var fs = require('fs');
 var parse = require('csv-parse');
 var async = require('async');
 
-var wordStash = '/home/deanott/wordStash/';
+var wordStash = config.wordStashDir;
 
-var parser = parse({delimiter: ','}, function (err, data) {
-  async.eachSeries(data, function (line, callback) {
-    // do something with the line
-    scrapeWord(line).then(appsScraped => {
-      console.log(line);
-      appsScraped.map(app => {
-          console.log("search chunk",app.appId);
-          downloadAppApk(app);
-      });
-      // when processing finishes invoke the callback to move to the next one
-      callback();
-    });
-  })
+var parser = parse({ delimiter: ',' }, function(err, data) {
+    async.eachSeries(data, function(line, callback) {
+        // do something with the line
+        scrapeWord(line).then(appsScraped => {
+            console.log(line);
+            appsScraped.map(app => {
+                console.log("search chunk", app.appId);
+                downloadAppApk(app);
+            });
+            // when processing finishes invoke the callback to move to the next one
+            callback();
+        });
+    })
 });
 
 // Loop through all the files in the temp directory
-fs.readdir( wordStash, function( err, files ) {
+fs.readdir(wordStash, function(err, files) {
 
-  if( err ) {
-      console.error( "Could not list the directory.", err );
-      process.exit( 1 );
-  } 
-
-  files.forEach( file => {
-      fs.createReadStream(wordStash +file).pipe(parser);
+    if (err) {
+        console.error("Could not list the directory.", err);
+        process.exit(1);
     }
-  );
+
+    files.forEach(file => {
+        fs.createReadStream(wordStash + file).pipe(parser);
+    });
 });
 
 // var words = ['cat', 'cow'];
@@ -242,7 +249,7 @@ fs.readdir( wordStash, function( err, files ) {
 //           });
 
 //           //downloadAppApk(res).then(console.log,console.log).catch(console.log);
- 
+
 //         })), 10), async (collChunk) => {
 //           return await Promise.all(_.map(collChunk, (e) => {
 //             //TODO: check if already matches before download
