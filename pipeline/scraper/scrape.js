@@ -28,16 +28,16 @@ function log(level, txt){
 //log(0, "test log");
 
 
-process.on('unhandledRejection', (reason, p) => {
-  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
-  // application specific logging, throwing an error, or other logic here
-});
+// process.on('unhandledRejection', (reason, p) => {
+//   console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+//   // application specific logging, throwing an error, or other logic here
+// });
 
-async function downloadAppApk(element) {
+async function downloadAppApk(appData) {
       var p = require("path");
 
-      var saveDir = p.join(config.appdir,element.appId,appStore,region,
-        element.version
+      var saveDir = p.join(config.appdir,appData.appId,appStore,region,
+        appData.version
       )
 
       if (!fs.existsSync(saveDir)) {
@@ -46,7 +46,7 @@ async function downloadAppApk(element) {
       }
 
       console.log("App save directory ", saveDir);
-      var args = ["-pd", element.appId, "-f", saveDir, "-c", config.credDownload];
+      var args = ["-pd", appData.appId, "-f", saveDir, "-c", config.credDownload];
       console.log("Python downloader playstore starting");
 
       const spw = require("child_process").spawn;
@@ -69,21 +69,21 @@ async function downloadAppApk(element) {
         if (code != 0) {
           console.log("err");
           console.log(`child process exited with code ${code}`);
-          if (!fs.existsSync(saveDir + element.appId + ".apk")) {
+          if (!fs.existsSync(saveDir + appData.appId + ".apk")) {
             fs.rmdirSync(saveDir)
           } 
           return;
         }
         
-        console.log("Download process complete for ", element.appId);
-                    console.log("Download process complete for ", element.appId);
+        console.log("Download process complete for ", appData.appId);
+                    console.log("Download process complete for ", appData.appId);
 
         var db = require('./db');
-        var dbId = await db.insertPlayApp(element, region);
+        var dbId = await db.insertPlayApp(appData, region);
         var client = unix.createSocket('unix_dgram');
         var unix = require('unix-dgram');
         
-        var message = Buffer(dbId + "-"+ element.appId + "-" + "play" +"-"+region + "-" + element.version);
+        var message = Buffer(dbId + "-"+ appData.appId + "-" + "play" +"-"+region + "-" + appData.version);
       
         client.on('error', console.error);
         client.send(message, 0, message.length, config.sockpath);
@@ -111,9 +111,53 @@ async function rescrapeAppId(scrapeBase) {
     });
 }
 
+function scrape(scrapeBase) {
+    return scrapeBase.map((val) => {
+        return gplay.app({appId: val.appId}).then(function(some_other_val){ 
+            return downloadAppApk(val).then(() => { 
+                console.log('finished downloading', val.appId); 
+                return val; // whatever you return here will get passed on to the next val in the promise chain..
+            }).catch((e) => {
+                console.error('error downloading ', val.appId, e.toString());
+                throw e;
+            });
+        });
+    });
+}
+
+
+    
+
 //TODO: move region to config or section to iterate over
 var region = "us";
 var appStore = "play";
+
+// var gplay = require('google-play-scraper');
+// gplay.app({appId: 'com.dxco.pandavszombies'})
+//   .then(console.log, console.log);
+
+// let searchResult = gplay.list({
+//         collection: gplay.collection.NEW_FREE,
+//         category: gplay.category.BUSINESS,
+//         num: 20,
+//         region: region,
+//         fullDetail: true,
+//         throttle: 10
+//       })
+      
+// searchResult.then(res => {
+//    console.log("Results found: ",res.length);
+// })
+      
+  
+//scrape(searchResult);
+
+
+//console.log(res);
+
+
+
+
 
 async function gatherResults() {
       await Promise.all(_.flatMap(gplay.category, async catg => {  
@@ -143,3 +187,39 @@ async function gatherResults() {
 (async () => {
   var scrapeResults = gatherResults();
 })();
+
+
+//Promise version
+
+// function gatherScapingResults() {
+//   return _.map(gplay.category, (catg) => {
+//     console.log("Began gathering on category",catg);
+//     return _.chunk( _.map(gplay.collection, coll => {
+//       console.log("Began gathering on coll",coll);
+//       var res = gplay.list({
+//             collection: gplay.collection.NEW_FREE,
+//             category: gplay.category.BUSINESS,
+//             num: 10,
+//             region: region,
+//             fullDetail: true,
+//             throttle: 10
+//       }).then( (chunkData) => {
+//           if(chunkData !== undefined){ //Does not function on paid apps
+//             console.log("Initalising downloading: ", chunkData.appId);
+//             // downloadAppApk(chunkData).then(() => { 
+//             // console.log('finished downloading:', chunkData.appId); 
+//             // return val; // whatever you return here will get passed on to the next val in the promise chain..
+//             // }).catch((e) => {
+//             //     console.error('error downloading ', chunkData.appId, e.toString());
+//             //     throw e;
+//             // });
+//           }
+//       }).catch((e) => {
+//         console.error('error downloading ', chunkData.appId, e.toString());
+//         throw e;
+//       });;
+//     },10));
+//   });
+// }
+
+// let results = gatherScapingResults();
