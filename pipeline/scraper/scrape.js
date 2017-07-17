@@ -42,8 +42,6 @@ var appStore = "play";
 
 
 async function downloadAppApk(appData) {
-    // 
-
     // TODO: Refactor 
     // TODO: Remove Async, use promises.
 
@@ -158,49 +156,88 @@ function scrapeWords(wordList) {
 function scrapeWord(word) {
     return gplay.search({
         term: word,
-        num: 120,
+        num: 4,
         region: region,
         fullDetail: true,
-        throttle: 10
+        throttle: 100
     });
 }
 
+var wordStash = config.wordStashDir;
 
 //Reading from folder of csv files
 var fs = require('fs');
+var fs_promise = require('fs-readdir-promise');
+   readline = require('readline');
+
+
+function reader (filepath) {
+    return readline.createInterface({
+        input: fs.createReadStream(filepath)
+    });
+}
+
 var parse = require('csv-parse');
 var async = require('async');
 
-var wordStash = config.wordStashDir;
+let wordStashFiles = fs_promise(wordStash);
+
+wordStashFiles.then(files => {
+    // console.log(files);
+    // files.map(file => {
+    //     var p = require("path");
+    //     return parseCSVFile(p.join(wordStash,file));
+    // })
+    _.map(files, file => {
+
+        var filepath = require("path").join(wordStash,file);
+        var rd = reader(filepath);
+
+        rd.on('line', function(word) {
+            //console.log(word);
+            var scrapedAppData = scrapeWord(word);
+
+            scrapedAppData.then(appData => {
+                console.log(appData.appId);
+                downloadAppApk(appData);
+            });
+        });
+    });
+
+}).catch(function(err) {
+  console.log("Err with word stash",err.message);
+});
+
+
 
 //TODO: Promise that you'll change this to promises.
 /* parse 'Top Words' and download apps based on the search results. */
 // NOTE: word csv's are not comma seperated, actually '\n'...
-var parser = parse({ delimiter: ',' }, function(err, data) {
+// var parser = parse({ delimiter: ',' }, function(err, data) {
+//     async.eachSeries(data, function(currWord, callback) {
+//         scrapeWord(currWord).then(appsScraped => {
 
-    async.eachSeries(data, function(currWord, callback) {
-        scrapeWord(currWord).then(appsScraped => {
+//             appsScraped.map(app => {
+//                 console.log("Downloading app: ", app.appId);
+//                 downloadAppApk(app);
+//             });
 
-            appsScraped.map(app => {
-                console.log("Downloading app: ", app.appId);
-                downloadAppApk(app);
-            });
+//             // when processing finishes invoke the callback to move to the next one
+//             callback();
+//         });
+//     })
+// });
 
-            // when processing finishes invoke the callback to move to the next one
-            callback();
-        });
-    })
-});
+// // Loop through all the files in the word stash
+// fs.readdir(wordStash, function(err, files) {
+//     if (err) {
+//         console.error("Could not list the directory.", err);
+//         process.exit(1);
+//     }
+    
+//     files.forEach(file => {
+//         var p = require("path");
+//         fs.createReadStream(p.join(wordStash,file)).pipe(parser);
+//     });
+// });
 
-// Loop through all the files in the word stash
-fs.readdir(wordStash, function(err, files) {
-    if (err) {
-        console.error("Could not list the directory.", err);
-        process.exit(1);
-    }
-
-    files.forEach(file => {
-        var p = require("path");
-        fs.createReadStream(p.join(wordStash,file)).pipe(parser);
-    });
-});
