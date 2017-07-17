@@ -1,6 +1,6 @@
 /* 
 
-Scraoper script searching google playstore for apps and archving said apps.
+Scraper script searching store for apps and archiving app data said apps.
 
 NOTE: 120 is max number of apps to receive at once through list method...
 NOTE: this has a permission section could inspect when throw this into folder
@@ -12,9 +12,8 @@ the amount of requests that will be attempted per second. Once that limit is rea
 further requests will be held until the second passes.
 
 */
-
-var gplay = require("google-play-scraper");
 var config = require("/etc/xray/config.json"); //See example_config.json
+var gplay = require("google-play-scraper");
 var fs = require("fs");
 var _ = require("lodash");
 
@@ -55,18 +54,21 @@ async function downloadAppApk(appData) {
 
     console.log("appdir:", config.appdir, "\nappId", appData.appId, "\nappStore", appStore, "\nregion", region, "\nversion", appData.version);
     
-    if (!appData.version) 
+    //NOTE: If app version is undefined set at date
+    if (!appData.version) {
         appData.version = appData.updated;
-    var saveDir = p.join(config.appdir, appData.appId /* apk name */ , appStore /* app store it was taken from */ , region /*  */ , appData.version /*  */ );
-
-    /* check that the dir created from config exists. */
-    if (!fs.existsSync(saveDir)) {
-        var shell = require("shelljs"); /* Note For Adam - Is there a reason why this is here, is it global regardless of scope? */
-        shell.mkdir("-p", saveDir);
     }
 
-    console.log("App save directory ", saveDir);
-    var args = ["-pd", appData.appId, "-f", saveDir, "-c", config.credDownload]; /* Command line args for gplay cli */
+    let appSaveDir = p.join(config.appdir, appData.appId, appStore, region, appData.version);
+
+    /* check that the dir created from config exists. */
+    if (!fs.existsSync(appSaveDir)) {
+        var shell = require("shelljs");
+        shell.mkdir("-p", appSaveDir);
+    }
+
+    console.log("App save directory ", appSaveDir);
+    var args = ["-pd", appData.appId, "-f", appSaveDir, "-c", config.credDownload]; /* Command line args for gplay cli */
     console.log("Python downloader playstore starting");
 
     // TODO: (from dean) this could be used in a promise??
@@ -85,16 +87,15 @@ async function downloadAppApk(appData) {
 
     /* Waiting for the process to finish before handling anything */
     apk_downloader.on("close", async code => {
-        /* Check for errors first. */
-        if (code != 0) {
-            console.log("err");
+        /* Check for errors in downloading first. */
+        if (code != 0 || !fs.existsSync( ) {
+            console.log("err could not download");
             console.log(`child process exited with code ${code}`);
-
-            if (!fs.existsSync(saveDir + appData.appId + ".apk")) {
-                fs.rmdirSync(saveDir);
-            }
+            console.log('process could not save,')
             return;
         }
+
+        
 
         console.log("Download process complete for ", appData.appId);
 
@@ -204,13 +205,16 @@ wordStashFiles.then(files => {
                         return scrapeWord(word).then(function(appsData){
 
                             console.log("Appdata",appsData.appId);
+                          
                             var r = Promise.resolve();
 
                             appsData.forEach(app => {
+
                                 r = r.then( () => {
                                     console.log(app);
                                     return downloadAppApk(app);  
                                 });
+                                
                             });
 
                         }, (err) => { console.log("scrapeword failed:", err)});
