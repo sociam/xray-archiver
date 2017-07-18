@@ -56,7 +56,7 @@ function resolveAPKDir(appData){
     const fsEx = require('fs-extra');
    
     return fsEx.pathExists(appSaveDir).then(exists => {
-            console.log("Does app save exit? : ", exists);
+            console.log("Does app save exist already? : ", exists);
             if(exists) {
                 console.log("App version already exists", appSaveDir);
                 return Promise.reject(appData.appId); 
@@ -208,30 +208,30 @@ function processAppData(appsData,processFn) {
 }
 
 
-function topApps() {
-    gplay.category.forEach( cat => {
-        gplay.collection.forEach( coll => {
-            //TODO: this might all happen at once... review owrdStashFiles
-            //finish below off then scrape data + download
-            gplay.list({
-                collection
-                category
-                num: 12,
-                region: region,
-                fullDetail: true,
-                throttle: 0.01
-            }).then( app => {
+// function topApps() {
+//     gplay.category.forEach( cat => {
+//         gplay.collection.forEach( coll => {
+//             //TODO: this might all happen at once... review owrdStashFiles
+//             //finish below off then scrape data + download
+//             gplay.list({
+//                 collection
+//                 category
+//                 num: 12,
+//                 region: region,
+//                 fullDetail: true,
+//                 throttle: 0.01
+//             }).then( app => {
 
-                //TODO: later before begin scraping you do a similar search here
+//                 //TODO: later before begin scraping you do a similar search here
 
-                return extractAppData(app);  
-            }).catch( err => {
-                console.log("Err with word stash",err.message);
-            });
+//                 return extractAppData(app);  
+//             }).catch( err => {
+//                 console.log("Err with word stash",err.message);
+//             });
 
-        });
-    });
-}
+//         });
+//     });
+// }
 
 var wordStashFiles = fs_promise(wordStash);
 
