@@ -207,6 +207,32 @@ function processAppData(appsData,processFn) {
     next();
 }
 
+
+function topApps() {
+    gplay.category.forEach( cat => {
+        gplay.collection.forEach( coll => {
+            //TODO: this might all happen at once... review owrdStashFiles
+            //finish below off then scrape data + download
+            gplay.list({
+                collection
+                category
+                num: 12,
+                region: region,
+                fullDetail: true,
+                throttle: 0.01
+            }).then( app => {
+
+                //TODO: later before begin scraping you do a similar search here
+
+                return extractAppData(app);  
+            }).catch( err => {
+                console.log("Err with word stash",err.message);
+            });
+
+        });
+    });
+}
+
 var wordStashFiles = fs_promise(wordStash);
 
 wordStashFiles.then(files => {
