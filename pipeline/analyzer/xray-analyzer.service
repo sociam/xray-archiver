@@ -2,7 +2,7 @@
 Description=The app analyzer for the XRay project
 
 [Service]
-PermissionStartOnly=true
+PermissionsStartOnly=true
 ExecStartPre=/bin/mkdir -p /var/run/xray
 ExecStartPre=/bin/chown -R xray:xray /var/run/xray
 
