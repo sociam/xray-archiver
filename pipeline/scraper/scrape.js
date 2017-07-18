@@ -90,7 +90,7 @@ function spawnGplayDownloader(args) {
     return apkDownloader;
 }
 
-function downloadAppApk(appData) {
+function extractAppData(appData) {
     //Check appData state
     if (!appData.appId) { return Promise.reject(appData.appId); }
 
@@ -146,7 +146,7 @@ function downloadAppApk(appData) {
 function scrape(appsData) {
     return appsData.map((val) => {
         return gplay.app({ appId: val.appId }).then(function(some_other_val) {
-            return downloadAppApk(val).then(() => {
+            return extractAppData(val).then(() => {
                 console.log('finished downloading', val.appId);
                 return val; // whatever you return here will get passed on to the next val in the promise chain..
             }).catch((e) => {
@@ -162,7 +162,7 @@ function scrape(appsData) {
 function scrapeWord(word) {
     return gplay.search({
         term: word,
-        num: 1,
+        num: 12,
         region: region,
         fullDetail: true,
         throttle: 0.01
@@ -182,6 +182,21 @@ function reader (filepath) {
     });
 }
 
+
+//Do processing syncrounously do prevent gplay having a moan
+function processAppData(appsData,processFn) {
+    var index = 0;
+
+    function next() {
+        if(index < appsData.length) {
+            console.log("Processing ", index);
+             processFn(appsData[index++])
+             .then(next)
+             .catch((err) => { console.log("downloading app failed:", err)});
+        }     
+    }
+    next();
+}
 
 var wordStashFiles = fs_promise(wordStash);
 
@@ -205,15 +220,17 @@ wordStashFiles.then(files => {
 
                             console.log("Search apps total: ",appsData.length);
                           
-                            var r = Promise.resolve();
+                            // var r = Promise.resolve();
 
-                            appsData.forEach(app => {
+                            // appsData.forEach(app => {
 
-                                r = r.then( () => {
-                                    console.log("Attempting to download:",app.appId);
-                                    return downloadAppApk(app);  
-                                }, (err) => { console.log("downloading app failed:", err)});
-                            });
+                            //     r = r.then( () => {
+                            //         console.log("Attempting to download:",app.appId);
+                            //         return extractAppData(app);  
+                            //     }, (err) => { console.log("downloading app failed:", err)});
+                            // });
+                            processAppData(appsData,extractAppData);
+
                         }, (err) => { console.log("scrapeword failed:", err)});
                     });
                 });
