@@ -49,21 +49,21 @@ function resolveAPKDir(appData){
         appData.version = appData.updated;
     }
 
-    let appSaveDir = path.join(config.appdir, appData.appId, appStore, region, appData.version);
-    console.log("App desired save dir ", appSaveDir);
+    let appSavePath = path.join(config.appdir, appData.appId, appStore, region, appData.version,appData.appId+".apk");
+    console.log("App desired save dir ", appSavePath);
 
     /* check that the dir created from config exists. */
     const fsEx = require('fs-extra');
    
-    return fsEx.pathExists(appSaveDir).then(exists => {
+    return fsEx.pathExists(appSavePath).then(exists => {
             console.log("Does app save exist already? : ", exists);
             if(exists) {
-                console.log("App version already exists", appSaveDir);
+                console.log("App version already exists", appSavePath);
                 return Promise.reject(appData.appId); 
             } else {
-                console.log("New app version", appSaveDir);
-                require("shelljs").mkdir("-p", appSaveDir);
-                return Promise.resolve(appSaveDir);
+                console.log("New app version", appSavePath);
+                require("shelljs").mkdir("-p", appSavePath);
+                return Promise.resolve(appSavePath);
             }
         }).catch(function (err) {
             console.error('Could not create a app save dir ', err);
@@ -74,9 +74,9 @@ function resolveAPKDir(appData){
 
 function spawnGplayDownloader(args) {
 
-    const apkDownloader = spw("gplaycli", args);
     const spw = require('child-process-promise').spawn;
-    console.log("Apk downloader", apkDownloader);
+    const apkDownloader = spw("gplaycli", args);
+
     var downloadProcess = apkDownloader.childProcess;
 
     console.log('[spawn] APK downloader childProcess.pid: ', downloadProcess.pid);
@@ -104,19 +104,11 @@ function extractAppData(appData) {
         let args = ["-pd", appData.appId, "-f", appSaveDir, "-c", config.credDownload]; /* Command line args for gplay cli */
         
         console.log("Python downloader playstore starting");
-        
+    
         let spawnGplay = spawnGplayDownloader(args);
-        console.log("Gplay spwaner",spawnGplay);
+        //console.log("Gplay spwaner",spawnGplay);
 
         spawnGplay.then(pipeCode => {
-
-            /* Check for errors in downloading first. */
-            if (pipeCode != 0 || !fs.existsSync(appSaveDir)){
-                console.log("err could not download");
-                console.log(`child process exited with code ${pipeCode}`);
-                console.log('process could not save,')
-                return Promise.reject(appData.appId);
-            }
 
             console.log("Download process complete for ", appData.appId);
 
@@ -135,15 +127,16 @@ function extractAppData(appData) {
                 client.send(message, 0, message.length, config.sockpath);
                 client.close(); /* The end of one single app download and added to the DB */
             }).catch(function(err) {
-                console.error('Could not write to db ', err);
+                console.error('Could not write to db ', err.message);
                 return Promise.reject(appData.appId);
             });       
         }).catch(function (err) {
-            console.error('[spawn] download ERROR: ', err);
+            console.error('[spawn] download ERROR: ', err.message);
+            
             return Promise.reject(appData.appId); 
         });   
     }).catch(function (err) {
-        console.error('Could not save app ', err);
+        console.error('Could not save app ', err.message);
         return Promise.reject(appData.appId); 
     });   
 }
@@ -171,10 +164,11 @@ function scrape(appsData) {
 function scrapeWord(word) {
     return gplay.search({
         term: word,
-        num: 12,
+        num: 4,
         region: region,
+        price: 'free',
         fullDetail: true,
-        throttle: 0.01
+        throttle: 0.01,
     });
 }
 
