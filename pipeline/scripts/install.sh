@@ -59,7 +59,7 @@ if ! id -u xray &> /dev/null; then
 	useradd xray -r -d "$DATA_DIR"
 fi
 
-install -o xray -dm775 "$DATA_DIR/apk_archive"
+install -o xray -Ddm775 "$DATA_DIR/apk_archive"
 
 install -Dm755 analyzer/analyzer "$PREFIX/bin/analyzer"
 
