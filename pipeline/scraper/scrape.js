@@ -39,76 +39,102 @@ function log(level, txt) {
 var region = "us";
 var appStore = "play";
 
-async function downloadAppApk(appData) {
-    // TODO: Refactor 
-    // TODO: Remove Async, use promises.
-    // Set up directory for archiving of app apks
-    var p = require("path");
-    // archive location *heavily* dependent on config file settings.
-    console.log("ad:", appData);
-    if (!appData.appId) { return Promise.reject(appData.appId); }
 
-    console.log("appdir:", config.appdir, "\nappId", appData.appId, "\nappStore", appStore, "\nregion", region, "\nversion", appData.version);
-    
-    //NOTE: If app version is undefined set at date
+function generateAPKDir(appData){
+
+    let path = require("path");
+    //console.log("appdir:", config.appdir, "\nappId", appData.appId, "\nappStore", appStore, "\nregion", region, "\nversion", appData.version);
+    //NOTE: If app version is undefined setting to  date
     if (!appData.version) {
         appData.version = appData.updated;
     }
 
-    let appSaveDir = p.join(config.appdir, appData.appId, appStore, region, appData.version);
-
+    let appSaveDir = path.join(config.appdir, appData.appId, appStore, region, appData.version);
+    console.log("appsavedir ", appSaveDir);
     /* check that the dir created from config exists. */
-    if (!fs.existsSync(appSaveDir)) {
-        var shell = require("shelljs");
-        shell.mkdir("-p", appSaveDir);
-    }
+    const fsEx = require('fs-extra');
+    fsEx.exists(appSaveDir).then(exists => {
+        console.log("Does app save exit? : ", exists);
+        if(exists) {
+            console.log("App version already exists", appSaveDir);
+            return Promise.reject(appData.appId); 
+        } else {
+            console.log("New app version", appSaveDir);
+            require("shelljs").mkdir("-p", appSaveDir);
+            return Promise.resolve(appSaveDir);
+        }
+    }).catch(function (err) {
+        console.error('Could not create a app save dir ', err);
+        return Promise.reject(appData.appId); 
+    });
+}
 
-    console.log("App save directory ", appSaveDir);
-    var args = ["-pd", appData.appId, "-f", appSaveDir, "-c", config.credDownload]; /* Command line args for gplay cli */
-    console.log("Python downloader playstore starting");
 
-    // TODO: (from dean) this could be used in a promise??
-    const spw = require("child_process").spawn;
+function spawnGplayDownload(args) {
 
-    const apk_downloader = await spw("gplaycli", args);
-    //console.log("Apk downloader", apk_downloader);
+    const spw = require('child-process-promise').spawn;
+    const apkDownloader = spw("gplaycli", args);
+    var downloadProcess = apkDownloader.childProcess;
+    console.log('[spawn] APK downloader childProcess.pid: ', downloadProcess.pid);
 
-    apk_downloader.stdout.on("data", data => {
+    downloadProcess.stdout.on("data", data => {
         console.log(`stdout: ${data}`);
     });
 
-    apk_downloader.stderr.on("data", data => {
+    downloadProcess.stderr.on("data", data => {
         console.log(`stderr: ${data}`);
     });
 
-    /* Waiting for the process to finish before handling anything */
-    apk_downloader.on("close", async code => {
-        /* Check for errors in downloading first. */
-        if (code != 0 || !fs.existsSync(appSaveDir)){
-            console.log("err could not download");
-            console.log(`child process exited with code ${code}`);
-            console.log('process could not save,')
-            return;
-        }
+    return downloadProcess;
+}
 
+function downloadAppApk(appData) {
+    //Check appData state
+    if (!appData.appId) { return Promise.reject(appData.appId); }
+
+    generateAPKDir(appData).then(appSaveDir => {
         
+        let args = ["-pd", appData.appId, "-f", appSaveDir, "-c", config.credDownload]; /* Command line args for gplay cli */
+        console.log("Python downloader playstore starting");
 
-        console.log("Download process complete for ", appData.appId);
+        spawnGplayDownload(args).then(pipeCode => {
 
-        // TODO: DB Comms... this can be factorised.
-        var db = require('./db');
-        var dbId = await db.insertPlayApp(appData, region);
+            /* Check for errors in downloading first. */
+            if (pipeCode != 0 || !fs.existsSync(appSaveDir)){
+                console.log("err could not download");
+                console.log(`child process exited with code ${pipeCode}`);
+                console.log('process could not save,')
+                return Promise.reject(appData.appId);
+            }
 
-        var client = unix.createSocket('unix_dgram');
-        var unix = require('unix-dgram');
+            console.log("Download process complete for ", appData.appId);
 
-        // TODO: Check that '-' won't mess things up on the DB side... eg if region was something like 'en-gb'
-        var message = Buffer(dbId + "-" + appData.appId + "-" + config.appStore + "-" + region + "-" + appData.version);
+            // TODO: DB Comms... this can be factorised.
+            var db = require('./db');
+            var dbId = db.insertPlayApp(appData, region);
 
-        client.on('error', console.error);
-        client.send(message, 0, message.length, config.sockpath);
-        client.close(); /* The end of one single app download and added to the DB */
-    });
+            dbId.then(() => {
+                var client = unix.createSocket('unix_dgram');
+                var unix = require('unix-dgram');
+
+                // TODO: Check that '-' won't mess things up on the DB side... eg if region was something like 'en-gb'
+                var message = Buffer(dbId + "-" + appData.appId + "-" + config.appStore + "-" + region + "-" + appData.version);
+
+                client.on('error', console.error);
+                client.send(message, 0, message.length, config.sockpath);
+                client.close(); /* The end of one single app download and added to the DB */
+            }).catch(function(err) {
+                console.error('Could not write to db ', err);
+                return Promise.reject(appData.appId);
+            });       
+        }).catch(function (err) {
+            console.error('[spawn] download ERROR: ', err);
+            return Promise.reject(appData.appId); 
+        });   
+    }).catch(function (err) {
+        console.error('Could not save app ', err);
+        return Promise.reject(appData.appId); 
+    });   
 }
 
 //Base scrapes array apps based on google-play-scraper app json format - PROMISE FORMAT
@@ -125,40 +151,16 @@ function scrape(appsData) {
         });
     });
 }
-function scrapeWords(wordList) {
-    /* Map an array of gplay search results */
-    return _.map(wordList, word => {
-        console.log("Word defintion", word);
 
-        let scraped = gplay.search({
-            term: word,
-            num: 120,
-            region: region,
-            fullDetail: true,
-            throttle: 0.1
-        });
-
-        console.log(scraped);
-        /*  */
-        scraped.then(appsScraped => {
-            appsScraped.map(app => {
-                console.log("search chunk", app.appId);
-                downloadAppApk(app);
-            });
-        });
-
-    });
-
-}
 
 /* Get an array of gplay Search results */
 function scrapeWord(word) {
     return gplay.search({
         term: word,
-        num: 120,
+        num: 1,
         region: region,
         fullDetail: true,
-        throttle: 1
+        throttle: 0.01
     });
 }
 
@@ -196,14 +198,14 @@ wordStashFiles.then(files => {
 
                         return scrapeWord(word).then(function(appsData){
 
-                            console.log("Appdata",appsData.appId);
+                            console.log("Search apps total: ",appsData.length);
                           
                             var r = Promise.resolve();
 
                             appsData.forEach(app => {
 
                                 r = r.then( () => {
-                                    console.log(app);
+                                    console.log("Attempting to download:",app.appId);
                                     return downloadAppApk(app);  
                                 });
                                 
