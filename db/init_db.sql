@@ -37,11 +37,10 @@ create table playstore_apps(
   developer               int               references developers(id) not null,
   updated                date                                         not null,
   android_ver            text                                         not null,
-  content_rating         text                                         not null,
+  content_rating         text                                                 ,
   screenshots          text[]                                                 ,
   video                  text                                                 ,
   recent_changes       text[]                                                 ,
-  region                 text                                         not null,
   crawl_date             date                                         not null
 );
 
