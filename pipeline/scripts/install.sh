@@ -63,10 +63,10 @@ install -o xray -Ddm775 "$DATA_DIR/apk_archive"
 
 install -Dm755 analyzer/analyzer "$PREFIX/bin/analyzer"
 
-install -Dm644 scraper/{scrape.js,db.js} package.json "$PREFIX/lib/xray/scraper/"
+install -Dm644 scraper/{scrape.js,db.js,package.json} -t "$PREFIX/lib/xray/scraper/"
 
 install -Dm644 analyzer/xray-analyzer.service scraper/xray-scraper.service\
-        "$PREFIX/lib/systemd/system/"
+        -t "$PREFIX/lib/systemd/system/"
 
 cd "$PREFIX/lib/xray/scraper"
 npm install
