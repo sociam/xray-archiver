@@ -1,5 +1,6 @@
 [Unit]
 Description=The app scraper for the XRay project
+Requires=xray-analyzer.service
 
 [Service]
 Environment=NODE_ENV=production
@@ -13,5 +14,4 @@ Restart=on-failure
 Type=oneshot
 
 [Install]
-Requires=xray-analyzer.service
 WantedBy=multi-user.target
