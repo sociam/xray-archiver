@@ -21,11 +21,12 @@ type AnalyzerCfg struct {
 }
 
 type Config struct {
-	DataDir           string      `json:"datadir"`
-	AppDir, UnpackDir string      `json:"-"`
-	SockPath          string      `json:"sockpath"`
-	Analyzer          AnalyzerCfg `json:"analyzer"`
-	Db                DbCfg       `json:"-"`
+	DataDir   string      `json:"datadir"`
+	AppDir    string      `json:"-"`
+	UnpackDir string      `json:"unpackdir"`
+	SockPath  string      `json:"sockpath"`
+	Analyzer  AnalyzerCfg `json:"analyzer"`
+	Db        DbCfg       `json:"-"`
 }
 
 var UnpackDir string
@@ -46,7 +47,9 @@ func Load(cfgFile string) Config {
 		cfg.DataDir = "/usr/local/var/xray"
 	}
 	cfg.AppDir = path.Join(cfg.DataDir, "apk_archive")
-	cfg.UnpackDir = path.Join(cfg.DataDir, "apk_unpacked")
+	if cfg.UnpackDir == "" {
+		cfg.UnpackDir = "/tmp/unpacked_apks"
+	}
 	if cfg.SockPath == "" {
 		cfg.SockPath = "/var/run/apkScraper"
 	}
