@@ -4,16 +4,14 @@ Description=The app scraper for the XRay project
 [Service]
 Environment=NODE_ENV=production
 
-PermissionStartOnly=true
-ExecStartPre=/bin/mkdir -p /var/run/xray
-ExecStartPre=/bin/chown -R xray:xray /var/run/xray
+WorkingDirectory=/usr/local/lib/xray/scraper
 ExecStart=/usr/bin/node /usr/local/lib/xray/scraper/scraper.js
 #ExecStop=?
 User=xray
 Group=xray
-Restart=always
-RestartSec=10
-Type=simple
+Restart=on-failure
+Type=oneshot
 
 [Install]
+Requires=xray-analyzer.service
 WantedBy=multi-user.target
