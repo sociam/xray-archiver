@@ -56,27 +56,29 @@ function resolveAPKDir(appData){
     const fsEx = require('fs-extra');
    
     return fsEx.pathExists(appSaveDir).then(exists => {
-        console.log("Does app save exit? : ", exists);
-        if(exists) {
-            console.log("App version already exists", appSaveDir);
+            console.log("Does app save exit? : ", exists);
+            if(exists) {
+                console.log("App version already exists", appSaveDir);
+                return Promise.reject(appData.appId); 
+            } else {
+                console.log("New app version", appSaveDir);
+                require("shelljs").mkdir("-p", appSaveDir);
+                return Promise.resolve(appSaveDir);
+            }
+        }).catch(function (err) {
+            console.error('Could not create a app save dir ', err);
             return Promise.reject(appData.appId); 
-        } else {
-            console.log("New app version", appSaveDir);
-            require("shelljs").mkdir("-p", appSaveDir);
-            return appSaveDir;
-        }
-    }).catch(function (err) {
-        console.error('Could not create a app save dir ', err);
-        return Promise.reject(appData.appId); 
-    });
+        });
 }
 
 
 function spawnGplayDownloader(args) {
 
-    const spw = require('child-process-promise').spawn;
     const apkDownloader = spw("gplaycli", args);
+    const spw = require('child-process-promise').spawn;
+    console.log("Apk downloader", apkDownloader);
     var downloadProcess = apkDownloader.childProcess;
+
     console.log('[spawn] APK downloader childProcess.pid: ', downloadProcess.pid);
 
     downloadProcess.stdout.on("data", data => {
@@ -92,17 +94,21 @@ function spawnGplayDownloader(args) {
 
 function extractAppData(appData) {
     //Check appData state
-    if (!appData.appId) { return Promise.reject(appData.appId); }
+    if (!appData.appId) { return Promise.reject("Invalid appdata",appData.appId); }
 
     var resolveApk = resolveAPKDir(appData);
+    //console.log("Resolve apk",resolveApk).then(() => { resolve(); }, (err) => { console.log("last dl failed:", err); });
     
     resolveApk.then(appSaveDir => {
-
+        
         let args = ["-pd", appData.appId, "-f", appSaveDir, "-c", config.credDownload]; /* Command line args for gplay cli */
         
         console.log("Python downloader playstore starting");
         
-        spawnGplayDownloader(args).then(pipeCode => {
+        let spawnGplay = spawnGplayDownloader(args);
+        console.log("Gplay spwaner",spawnGplay);
+
+        spawnGplay.then(pipeCode => {
 
             /* Check for errors in downloading first. */
             if (pipeCode != 0 || !fs.existsSync(appSaveDir)){
@@ -153,7 +159,10 @@ function scrape(appsData) {
                 console.error('error downloading ', val.appId, e.toString());
                 throw e;
             });
-        });
+        }).catch(function (err) {
+            console.error('Could not save app ', err);
+            return Promise.reject(appData.appId); 
+        });   
     });
 }
 
@@ -220,19 +229,19 @@ wordStashFiles.then(files => {
 
                             console.log("Search apps total: ",appsData.length);
                           
-                            // var r = Promise.resolve();
+                            var r = Promise.resolve();
 
-                            // appsData.forEach(app => {
+                            appsData.forEach(app => {
 
-                            //     r = r.then( () => {
-                            //         console.log("Attempting to download:",app.appId);
-                            //         return extractAppData(app);  
-                            //     }, (err) => { console.log("downloading app failed:", err)});
-                            // });
-                            processAppData(appsData,extractAppData);
+                                r = r.then( () => {
+                                    console.log("Attempting to download:",app.appId);
+                                    return extractAppData(app);  
+                                }, (err) => { console.log("downloading app failed:", err)});
+                            });
+                            //processAppData(appsData,extractAppData);
 
-                        }, (err) => { console.log("scrapeword failed:", err)});
-                    });
+                        }, (err) => { console.log("scraping app on word failed:", err)});
+                    }), (err) => { console.log("scraping apps cailes :", err)};
                 });
 
                 rd.on('end', () => {
