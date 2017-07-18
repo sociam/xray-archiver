@@ -21,11 +21,11 @@ type AnalyzerCfg struct {
 }
 
 type Config struct {
-	AppDir    string      `json:"appdir"`
-	UnpackDir string      `json:"unpackdir"`
-	SockPath  string      `json:"sockpath"`
-	Analyzer  AnalyzerCfg `json:"analyzer"`
-	Db        DbCfg       `json:"-"`
+	DataDir           string      `json:"datadir"`
+	AppDir, UnpackDir string      `json:"-"`
+	SockPath          string      `json:"sockpath"`
+	Analyzer          AnalyzerCfg `json:"analyzer"`
+	Db                DbCfg       `json:"-"`
 }
 
 var UnpackDir string
@@ -42,14 +42,13 @@ func Load(cfgFile string) Config {
 		panic("Error reading JSON: " + err.Error())
 	}
 
-	if cfg.AppDir == "" {
-		cfg.AppDir = "./apks"
+	if cfg.DataDir == "" {
+		cfg.DataDir = "/usr/local/var/xray"
 	}
-	if cfg.UnpackDir == "" {
-		cfg.UnpackDir = "."
-	}
+	cfg.AppDir = path.Join(cfg.DataDir, "apk_archive")
+	cfg.UnpackDir = path.Join(cfg.DataDir, "apk_unpacked")
 	if cfg.SockPath == "" {
-		cfg.SockPath = "/run/apkScraper"
+		cfg.SockPath = "/var/run/apkScraper"
 	}
 
 	cfg.AppDir = path.Clean(cfg.AppDir)
