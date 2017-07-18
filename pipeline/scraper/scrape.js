@@ -87,7 +87,7 @@ function spawnGplayDownloader(args) {
         console.log(`stderr: ${data}`);
     });
 
-    return downloadProcess;
+    return apkDownloader;
 }
 
 function downloadAppApk(appData) {
