@@ -40,7 +40,7 @@ var region = "us";
 var appStore = "play";
 
 
-function generateAPKDir(appData){
+function resolveAPKDir(appData){
 
     let path = require("path");
     //console.log("appdir:", config.appdir, "\nappId", appData.appId, "\nappStore", appStore, "\nregion", region, "\nversion", appData.version);
@@ -50,10 +50,12 @@ function generateAPKDir(appData){
     }
 
     let appSaveDir = path.join(config.appdir, appData.appId, appStore, region, appData.version);
-    console.log("appsavedir ", appSaveDir);
+    console.log("App desired save dir ", appSaveDir);
+
     /* check that the dir created from config exists. */
     const fsEx = require('fs-extra');
-    fsEx.exists(appSaveDir).then(exists => {
+   
+    return fsEx.pathExists(appSaveDir).then(exists => {
         console.log("Does app save exit? : ", exists);
         if(exists) {
             console.log("App version already exists", appSaveDir);
@@ -61,7 +63,7 @@ function generateAPKDir(appData){
         } else {
             console.log("New app version", appSaveDir);
             require("shelljs").mkdir("-p", appSaveDir);
-            return Promise.resolve(appSaveDir);
+            return appSaveDir;
         }
     }).catch(function (err) {
         console.error('Could not create a app save dir ', err);
@@ -70,7 +72,7 @@ function generateAPKDir(appData){
 }
 
 
-function spawnGplayDownload(args) {
+function spawnGplayDownloader(args) {
 
     const spw = require('child-process-promise').spawn;
     const apkDownloader = spw("gplaycli", args);
@@ -92,12 +94,15 @@ function downloadAppApk(appData) {
     //Check appData state
     if (!appData.appId) { return Promise.reject(appData.appId); }
 
-    generateAPKDir(appData).then(appSaveDir => {
-        
-        let args = ["-pd", appData.appId, "-f", appSaveDir, "-c", config.credDownload]; /* Command line args for gplay cli */
-        console.log("Python downloader playstore starting");
+    var resolveApk = resolveAPKDir(appData);
+    
+    resolveApk.then(appSaveDir => {
 
-        spawnGplayDownload(args).then(pipeCode => {
+        let args = ["-pd", appData.appId, "-f", appSaveDir, "-c", config.credDownload]; /* Command line args for gplay cli */
+        
+        console.log("Python downloader playstore starting");
+        
+        spawnGplayDownloader(args).then(pipeCode => {
 
             /* Check for errors in downloading first. */
             if (pipeCode != 0 || !fs.existsSync(appSaveDir)){
@@ -207,10 +212,8 @@ wordStashFiles.then(files => {
                                 r = r.then( () => {
                                     console.log("Attempting to download:",app.appId);
                                     return downloadAppApk(app);  
-                                });
-                                
+                                }, (err) => { console.log("downloading app failed:", err)});
                             });
-
                         }, (err) => { console.log("scrapeword failed:", err)});
                     });
                 });
@@ -221,26 +224,6 @@ wordStashFiles.then(files => {
             });
         }, (err) => { console.log("q failed:", err); });
     }, (err) => { console.log("stashfiles failed:", err); });
-    
-    // _.map(files, file => {
-
-
-
-
-    //     rd.on('line', function(word) {
-    //         p = p.then(() => {            
-    //             console.log("searching on word:",word);
-    //             var scrapedAppData = scrapeWord(word);
-
-    //             return scrapedAppData.then(appData => {
-    //                 console.log(appData.appId);
-    //                 downloadAppApk(appData);
-    //             });
-    //         });
-    //     });
-
-    // });
-
 }).catch(function(err) {
   console.log("Err with word stash",err.message);
 });
