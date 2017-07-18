@@ -57,6 +57,46 @@ func checkDir(dir, name string) {
 	}
 }
 
+func uniqAppend(a []string, b []string) []string {
+	ret := make([]string, 0, len(a)+len(b))
+	for _, e := range a {
+		ret = append(ret, e)
+	}
+	// set ret = a
+
+	for _, be := range b {
+		add := true
+		for _, ae := range a {
+			if ae == be {
+				add = false
+				break
+			}
+		}
+		if add {
+			ret = append(ret, be)
+		}
+	}
+	return ret
+}
+
+/*
+func uniqAppend(a []interface{}, b []interface{}) []interface{} {
+	eMap = map[interface{}]Unit
+	for _, e := range a {
+		eMap[e] := unit
+	}
+	for _, e := range b {
+		eMap[e] := unit
+	}
+
+	ret := make([]interface{}, 0, len(eMap))
+	for e, _ := range eMap {
+		ret := append(ret, e)
+	}
+	return ret
+}
+*/
+
 func combine(a, b map[string]Unit) map[string]Unit {
 	ret := a
 	for e, _ := range b {

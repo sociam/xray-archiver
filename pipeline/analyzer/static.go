@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+type StaticAnalyzer struct{}
+
 type Permission struct {
 	Id        string `xml:"name,attr"`
 	maxSdkVer string `xml:"maxSdkVersion,attr"`
@@ -20,7 +22,7 @@ type AndroidManifest struct {
 	Sdk23Perms []Permission `xml:"uses-permission-sdk-23"`
 }
 
-func getPerms(app App) ([]Permission, error) {
+func parseManifest(app App) (*AndroidManifest, error) {
 	manifest := AndroidManifest{}
 	manifestFile, err := os.Open(path.Join(outDir(app), "AndroidManifest.xml"))
 	if err != nil {
@@ -35,7 +37,11 @@ func getPerms(app App) ([]Permission, error) {
 		return nil, err
 	}
 
-	return append(manifest.Perms, manifest.Sdk23Perms...), nil
+	return &manifest, nil
+}
+
+func (manifest *AndroidManifest) getPerms() []Permission {
+	return append(manifest.Perms, manifest.Sdk23Perms...)
 }
 
 type Company struct {

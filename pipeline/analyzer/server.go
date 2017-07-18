@@ -62,12 +62,13 @@ func runServer() {
 			fmt.Println("done.")
 
 			fmt.Println("Getting permissions...")
-			perms, err := getPerms(app)
+			manifest, err := parseManifest(app)
 			if err != nil {
-				fmt.Println(err.Error())
-				continue
+				fmt.Println("Error parsing manifest: ", err.Error())
+			} else {
+				perms := manifest.getPerms()
+				fmt.Printf("Permissions found: %v\n\n", perms)
 			}
-			fmt.Printf("Permissions found: %v\n\n", perms)
 
 			fmt.Println("Running simple analysis... ")
 			out, err := simpleAnalyze(app)
