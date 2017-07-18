@@ -10,7 +10,6 @@ ExecStart=/usr/bin/node /usr/local/lib/xray/scraper/scraper.js
 #ExecStop=?
 User=xray
 Group=xray
-Restart=on-failure
 Type=oneshot
 
 [Install]
