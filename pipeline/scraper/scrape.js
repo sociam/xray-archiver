@@ -22,19 +22,8 @@ var path = require('path');
 /**
  *  Creating Global Loggers...
  */
-function ensureDirectoryExistence(filePath) {
-    var dirname = path.dirname(filePath);
-    if (fs.existsSync(dirname)) {
-        return true;
-    }
-    ensureDirectoryExistence(dirname);
-    fs.mkdirSync(dirname);
-}
-ensureDirectoryExistence(config.logLocation);
-file_log = new Logger('debug', fs.createWriteStream(config.logLocation));
 
-
-//Logging mechanisim for script
+ //Logging mechanisim for script
 const EMERG = 0,
     ALERT = 1,
     CRIT = 2,
@@ -46,17 +35,34 @@ const EMERG = 0,
 
 var prefixes = ['<0>', '<1>', '<2>', '<3>', '<4>', '<5>', '<6>', '<7>'];
 
-var log = function(txt) {
-    console.log(prefixes[INFO], txt);
+var logger = {
+    //console.log(prefixes[INFO], txt);
+    info : function (txt) {
+        console.log(prefixes[INFO], txt);
+    },
+    err : function (txt) {
+        console.log(prefixes[ERR], txt);
+    },
+    alert : function (txt) {
+         console.log(prefixes[ALERT], txt);
+    },
+    crit : function (txt) {
+        console.log(prefixes[CRIT], txt);
+    },
+    warn : function (txt) {
+        console.log(prefixes[WARN], txt);
+    },
+    notice : function (txt) {
+        console.log(prefixes[NOTICE], txt);
+    },
+    debug : function (txt) {
+        console.log(prefixes[DEBUG], txt);
+    }
 }
+logger.info("Logger initialised");
 
-//TODO: log level call, must be nicer way,...
-// log(prefixes[ALERT] + txt);
-// log(prefixes[CRIT] + txt);
-// log(prefixes[WARN] + txt);
-// log(prefixes[NOTCIE] + txt);
-// log(prefixes[INFO] + txt);
-// log(prefixes[DEBUG] + txt);
+
+
 
 //Generate sub apps folders
 var fs = require("fs");
@@ -64,7 +70,7 @@ var fs = require("fs");
 var appsSaveDir = require('path').join(config.datadir, "apps");
 
 if (!require('fs').existsSync(appsSaveDir)) {
-    log("New apps folder needed", appsSaveDir);
+    logger.info("New apps folder needed", appsSaveDir);
     require("shelljs").mkdir("-p", appsSaveDir);
 }
 
@@ -85,23 +91,23 @@ function resolveAPKDir(appData) {
     }
 
     let appSavePath = path.join(config.datadir, appData.appId, appStore, region, appData.version, appData.appId + ".apk");
-    console.log("App desired save dir ", appSavePath);
+    logger.info("App desired save dir ", appSavePath);
 
     /* check that the dir created from config exists. */
     const fsEx = require('fs-extra');
 
     return fsEx.pathExists(appSavePath).then(exists => {
-        log("Does app save exist already? : ", exists);
+        logger.info("Does app save exist already? : ", exists);
         if (exists) {
-            log("App version already exists", appSavePath);
+            logger.debug("App version already exists", appSavePath);
             return Promise.reject(appData.appId);
         } else {
-            log("New app version", appSavePath);
+            logger.info("New app version", appSavePath);
             require("shelljs").mkdir("-p", appSavePath);
             return Promise.resolve(appSavePath);
         }
     }).catch(function(err) {
-        console.error('Could not create a app save dir ', err);
+        logger.err('Could not create a app save dir ', err);
         return Promise.reject(appData.appId);
     });
 }
@@ -114,14 +120,14 @@ function spawnGplayDownloader(args) {
 
     var downloadProcess = apkDownloader.childProcess;
 
-    log('[spawn] APK downloader childProcess.pid: ', downloadProcess.pid);
+    logger.info('[spawn] APK downloader childProcess.pid: ', downloadProcess.pid);
 
     downloadProcess.stdout.on("data", data => {
-        log(`stdout: ${data}`);
+        logger.info(`stdout: ${data}`);
     });
 
     downloadProcess.stderr.on("data", data => {
-        log(`stderr: ${data}`);
+        logger.err(`stderr: ${data}`);
     });
 
     return apkDownloader;
@@ -142,14 +148,14 @@ function extractAppData(appData) {
 
         let args = ["-pd", appData.appId, "-f", appSaveDir, "-c", config.credDownload]; /* Command line args for gplay cli */
 
-        log("Python downloader playstore starting");
+        logger.info("Python downloader playstore starting");
 
         let spawnGplay = spawnGplayDownloader(args);
         //log("Gplay spwaner",spawnGplay);
 
         spawnGplay.then(pipeCode => {
 
-            log("Download process complete for ", appData.appId);
+            logger.info("Download process complete for ", appData.appId);
 
             // TODO: DB Comms... this can be factorised.
             var db = require('./db');
@@ -194,7 +200,7 @@ function scrape(appsData) {
     return appsData.map((val) => {
         return gplay.app({ appId: val.appId }).then(function(some_other_val) {
             return extractAppData(val).then(() => {
-                log('finished downloading', val.appId);
+                logger('finished downloading', val.appId);
                 return val; // whatever you return here will get passed on to the next val in the promise chain..
             }).catch((e) => {
                 console.error('error downloading ', val.appId, e.toString());
@@ -240,10 +246,10 @@ function processAppData(appsData, processFn) {
 
     function next() {
         if (index < appsData.length) {
-            log("Processing ", index);
+            logger.logger("Processing ", index);
             processFn(appsData[index++])
                 .then(next)
-                .catch((err) => { log("downloading app failed:", err) });
+                .catch((err) => { logger.err("downloading app failed:", err) });
         }
     }
     next();
@@ -283,6 +289,7 @@ wordStashFiles.then(files => {
     files.map(file => {
         q = q.then(() => {
             return new Promise((resolve, reject) => {
+                logger.info("Resolving word stash", wordStash);
                 var filepath = require("path").join(wordStash, file);
 
                 var rd = reader(filepath);
@@ -291,37 +298,37 @@ wordStashFiles.then(files => {
 
                 rd.on('line', (word) => {
                     p = p.then(() => {
-                        log("searching on word:", word);
-                        file_log.info('Current Word:', word);
+                        logger.info("searching on word:", word);
+
                         return scrapeWord(word).then(function(appsData) {
 
-                            console.log("Search apps total: ", appsData.length);
+                            logger.info("Search apps total: ", appsData.length);
 
-                            log("Search apps total: ", appsData.length);
+                            logger.info("Search apps total: ", appsData.length);
 
                             var r = Promise.resolve();
 
                             appsData.forEach(app => {
 
                                 r = r.then(() => {
-                                    log("Attempting to download:", app.appId);
+                                    logger.info("Attempting to download:", app.appId);
                                     return extractAppData(app);
-                                }, (err) => { log("downloading app failed:", err) });
+                                }, (err) => { logger.err("downloading app failed:", err) });
                             });
                             //processAppData(appsData,extractAppData);
 
-                        }, (err) => { log("scraping app on word failed:", err) });
-                    }), (err) => { log("scraping apps cailes :", err) };
+                        }, (err) => { logger.err("scraping app on word failed:", err) });
+                    }), (err) => { logger.err("scraping apps cailes :", err) };
                 });
 
                 rd.on('end', () => {
-                    p.then(() => { resolve(); }, (err) => { log("last dl failed:", err); });
+                    p.then(() => { resolve(); }, (err) => { logger.err("last dl failed:", err); });
                 });
             });
-        }, (err) => { log("q failed:", err); });
-    }, (err) => { log("stashfiles failed:", err); });
+        }, (err) => { logger.err("q failed:", err); });
+    }, (err) => { logger.err("stashfiles failed:", err); });
 }).catch(function(err) {
-    log("Err with word stash", err.message);
+    logger.err("Err with word stash", err.message);
 });
 
 
