@@ -16,21 +16,12 @@ var config = require("/etc/xray/config.json"); //See example_config.json
 var gplay = require("google-play-scraper");
 var _ = require("lodash");
 var path = require('path');
-<<<<<<< HEAD
 //Reading from folder of csv files
 var fs = require('fs');
 var fs_promise = require('fs-readdir-promise');
 var readline = require('readline');
 
 //Logging mechanisim for script
-=======
-
-/**
- *  Creating Global Loggers...
- */
-
- //Logging mechanisim for script
->>>>>>> 31d9eb5fb358f9e8f4d2e272ffa7608ec26f1150
 const EMERG = 0,
     ALERT = 1,
     CRIT = 2,
@@ -44,25 +35,25 @@ var prefixes = ['<0>', '<1>', '<2>', '<3>', '<4>', '<5>', '<6>', '<7>'];
 
 var logger = {
     //console.log(prefixes[INFO], txt);
-    info : function (txt) {
+    info: function(txt) {
         console.log(prefixes[INFO], txt);
     },
-    err : function (txt) {
+    err: function(txt) {
         console.log(prefixes[ERR], txt);
     },
-    alert : function (txt) {
-         console.log(prefixes[ALERT], txt);
+    alert: function(txt) {
+        console.log(prefixes[ALERT], txt);
     },
-    crit : function (txt) {
+    crit: function(txt) {
         console.log(prefixes[CRIT], txt);
     },
-    warn : function (txt) {
+    warn: function(txt) {
         console.log(prefixes[WARN], txt);
     },
-    notice : function (txt) {
+    notice: function(txt) {
         console.log(prefixes[NOTICE], txt);
     },
-    debug : function (txt) {
+    debug: function(txt) {
         console.log(prefixes[DEBUG], txt);
     }
 }
@@ -317,13 +308,8 @@ wordStashFiles.then(files => {
 
                 rd.on('line', (word) => {
                     p = p.then(() => {
-<<<<<<< HEAD
                         log("searching on word:", word);
                         write_latest_word(word);
-=======
-                        logger.info("searching on word:", word);
-
->>>>>>> 31d9eb5fb358f9e8f4d2e272ffa7608ec26f1150
                         return scrapeWord(word).then(function(appsData) {
 
                             logger.info("Search apps total: ", appsData.length);
