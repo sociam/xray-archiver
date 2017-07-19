@@ -13,7 +13,7 @@ type DbCfg struct {
 	User     string `json:"user"`
 	Password string `json:"password"`
 	Host     string `json:"host"`
-	Port     string `json:"port"`
+	Port     int    `json:"port"`
 }
 
 type AnalyzerCfg struct {
