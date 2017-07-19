@@ -40,35 +40,35 @@ var region = "us";
 var appStore = "play";
 
 
-function resolveAPKDir(appData){
+function resolveAPKDir(appData) {
 
     let path = require("path");
-    //console.log("appdir:", config.appdir, "\nappId", appData.appId, "\nappStore", appStore, "\nregion", region, "\nversion", appData.version);
+    console.log("appdir:", config.datadir, "\nappId", appData.appId, "\nappStore", appStore, "\nregion", region, "\nversion", appData.version);
     //NOTE: If app version is undefined setting to  date
     if (!appData.version) {
         appData.version = appData.updated;
     }
 
-    let appSavePath = path.join(config.appdir, appData.appId, appStore, region, appData.version,appData.appId+".apk");
+    let appSavePath = path.join(config.datadir, appData.appId, appStore, region, appData.version, appData.appId + ".apk");
     console.log("App desired save dir ", appSavePath);
 
     /* check that the dir created from config exists. */
     const fsEx = require('fs-extra');
-   
+
     return fsEx.pathExists(appSavePath).then(exists => {
-            console.log("Does app save exist already? : ", exists);
-            if(exists) {
-                console.log("App version already exists", appSavePath);
-                return Promise.reject(appData.appId); 
-            } else {
-                console.log("New app version", appSavePath);
-                require("shelljs").mkdir("-p", appSavePath);
-                return Promise.resolve(appSavePath);
-            }
-        }).catch(function (err) {
-            console.error('Could not create a app save dir ', err);
-            return Promise.reject(appData.appId); 
-        });
+        console.log("Does app save exist already? : ", exists);
+        if (exists) {
+            console.log("App version already exists", appSavePath);
+            return Promise.reject(appData.appId);
+        } else {
+            console.log("New app version", appSavePath);
+            require("shelljs").mkdir("-p", appSavePath);
+            return Promise.resolve(appSavePath);
+        }
+    }).catch(function(err) {
+        console.error('Could not create a app save dir ', err);
+        return Promise.reject(appData.appId);
+    });
 }
 
 
@@ -94,17 +94,17 @@ function spawnGplayDownloader(args) {
 
 function extractAppData(appData) {
     //Check appData state
-    if (!appData.appId) { return Promise.reject("Invalid appdata",appData.appId); }
+    if (!appData.appId) { return Promise.reject("Invalid appdata", appData.appId); }
 
     var resolveApk = resolveAPKDir(appData);
     //console.log("Resolve apk",resolveApk).then(() => { resolve(); }, (err) => { console.log("last dl failed:", err); });
-    
+
     resolveApk.then(appSaveDir => {
-        
+
         let args = ["-pd", appData.appId, "-f", appSaveDir, "-c", config.credDownload]; /* Command line args for gplay cli */
-        
+
         console.log("Python downloader playstore starting");
-    
+
         let spawnGplay = spawnGplayDownloader(args);
         //console.log("Gplay spwaner",spawnGplay);
 
@@ -129,16 +129,16 @@ function extractAppData(appData) {
             }).catch(function(err) {
                 console.error('Could not write to db ', err.message);
                 return Promise.reject(appData.appId);
-            });       
-        }).catch(function (err) {
+            });
+        }).catch(function(err) {
             console.error('[spawn] download ERROR: ', err.message);
-            
-            return Promise.reject(appData.appId); 
-        });   
-    }).catch(function (err) {
+
+            return Promise.reject(appData.appId);
+        });
+    }).catch(function(err) {
         console.error('Could not save app ', err.message);
-        return Promise.reject(appData.appId); 
-    });   
+        return Promise.reject(appData.appId);
+    });
 }
 
 //Base scrapes array apps based on google-play-scraper app json format - PROMISE FORMAT
@@ -152,10 +152,10 @@ function scrape(appsData) {
                 console.error('error downloading ', val.appId, e.toString());
                 throw e;
             });
-        }).catch(function (err) {
+        }).catch(function(err) {
             console.error('Could not save app ', err);
-            return Promise.reject(appData.appId); 
-        });   
+            return Promise.reject(appData.appId);
+        });
     });
 }
 
@@ -179,7 +179,7 @@ var fs = require('fs');
 var fs_promise = require('fs-readdir-promise');
 var readline = require('readline');
 
-function reader (filepath) {
+function reader(filepath) {
     return readline.createInterface({
         input: fs.createReadStream(filepath)
     });
@@ -187,16 +187,16 @@ function reader (filepath) {
 
 
 //Do processing syncrounously do prevent gplay having a moan
-function processAppData(appsData,processFn) {
+function processAppData(appsData, processFn) {
     var index = 0;
 
     function next() {
-        if(index < appsData.length) {
+        if (index < appsData.length) {
             console.log("Processing ", index);
-             processFn(appsData[index++])
-             .then(next)
-             .catch((err) => { console.log("downloading app failed:", err)});
-        }     
+            processFn(appsData[index++])
+                .then(next)
+                .catch((err) => { console.log("downloading app failed:", err) });
+        }
     }
     next();
 }
@@ -235,33 +235,33 @@ wordStashFiles.then(files => {
     files.map(file => {
         q = q.then(() => {
             return new Promise((resolve, reject) => {
-                var filepath = require("path").join(wordStash,file);
-                
+                var filepath = require("path").join(wordStash, file);
+
                 var rd = reader(filepath);
-                
+
                 var p = Promise.resolve();
 
                 rd.on('line', (word) => {
                     p = p.then(() => {
                         console.log("searching on word:", word);
 
-                        return scrapeWord(word).then(function(appsData){
+                        return scrapeWord(word).then(function(appsData) {
 
-                            console.log("Search apps total: ",appsData.length);
-                          
+                            console.log("Search apps total: ", appsData.length);
+
                             var r = Promise.resolve();
 
                             appsData.forEach(app => {
 
-                                r = r.then( () => {
-                                    console.log("Attempting to download:",app.appId);
-                                    return extractAppData(app);  
-                                }, (err) => { console.log("downloading app failed:", err)});
+                                r = r.then(() => {
+                                    console.log("Attempting to download:", app.appId);
+                                    return extractAppData(app);
+                                }, (err) => { console.log("downloading app failed:", err) });
                             });
                             //processAppData(appsData,extractAppData);
 
-                        }, (err) => { console.log("scraping app on word failed:", err)});
-                    }), (err) => { console.log("scraping apps cailes :", err)};
+                        }, (err) => { console.log("scraping app on word failed:", err) });
+                    }), (err) => { console.log("scraping apps cailes :", err) };
                 });
 
                 rd.on('end', () => {
@@ -271,7 +271,7 @@ wordStashFiles.then(files => {
         }, (err) => { console.log("q failed:", err); });
     }, (err) => { console.log("stashfiles failed:", err); });
 }).catch(function(err) {
-  console.log("Err with word stash",err.message);
+    console.log("Err with word stash", err.message);
 });
 
 
@@ -303,10 +303,9 @@ wordStashFiles.then(files => {
 //         console.error("Could not list the directory.", err);
 //         process.exit(1);
 //     }
-    
+
 //     files.forEach(file => {
 //         var p = require("path");
 //         fs.createReadStream(p.join(wordStash,file)).pipe(parser);
 //     });
 // });
-
