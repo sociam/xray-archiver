@@ -43,7 +43,7 @@ var appStore = "play";
 function resolveAPKDir(appData) {
 
     let path = require("path");
-    console.log("appdir:", config.datadir, "\nappId", appData.appId, "\nappStore", appStore, "\nregion", region, "\nversion", appData.version);
+    //console.log("appdir:", config.datadir, "\nappId", appData.appId, "\nappStore", appStore, "\nregion", region, "\nversion", appData.version);
     //NOTE: If app version is undefined setting to  date
     if (!appData.version) {
         appData.version = appData.updated;
