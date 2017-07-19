@@ -2,8 +2,8 @@
 	"datadir": "/usr/local/var/xray",
 	"unpackdir": "/tmp/unpacked_apks",
 	"sockpath": "/usr/local/var/run/xray/apks",
-	"credDownload": "/etc/credentials.conf",
-	"wordStashDir": "/etc/xray/wordScraper",
+	"credDownload": "/etc/xray/credentials.conf",
+	"wordStashDir": "/etc/xray/wordStash",
 	"scraper": {
 		"db": {
 			"user": "",
