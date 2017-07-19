@@ -68,7 +68,7 @@ var fs = require("fs");
 var appsSaveDir = require('path').join(config.datadir, "apps");
 
 if (!require('fs').existsSync(appsSaveDir)) {
-    logger.info("New apps folder needed", appsSaveDir);
+    logger.info("New apps folder needed "+ appsSaveDir);
     require("shelljs").mkdir("-p", appsSaveDir);
 }
 
@@ -81,28 +81,30 @@ var appStore = "play";
 function resolveAPKDir(appData) {
 
     let path = require("path");
-    //console.log("appdir:", config.datadir, "\nappId", appData.appId, "\nappStore", appStore, "\nregion", region, "\nversion", appData.version);
-    //log("appdir:", config.appdir, "\nappId", appData.appId, "\nappStore", appStore, "\nregion", region, "\nversion", appData.version);
+    //console.log("appdir:"+ config.datadir, "\nappId"+ appData.appId, "\nappStore"+ appStore, "\nregion"+ region, "\nversion"+ appData.version);
+    //log("appdir:"+ config.appdir, "\nappId"+ appData.appId, "\nappStore"+ appStore, "\nregion"+ region, "\nversion"+ appData.version);
     //NOTE: If app version is undefined setting to  date
-    if (!appData.version) {
-        appData.version = appData.updated;
+    if (!appData.version || appData.version === "Varies with device") {
+        logger.debug("Version not found defaulting too",appData.updated);
+        let formatDate =  appData.updated.replace(/\s+/g, '').replace(',','/');
+        appData.version = formatDate;
     }
 
-    let appSavePath = path.join(config.datadir, appData.appId, appStore, region, appData.version, appData.appId + ".apk");
-    logger.info("App desired save dir ", appSavePath);
+    let appSavePath = path.join(appsSaveDir, appData.appId, appStore, region, appData.version);
+    logger.info("App desired save dir "+ appSavePath);
 
     /* check that the dir created from config exists. */
     const fsEx = require('fs-extra');
 
-    return fsEx.pathExists(appSavePath).then(exists => {
-        logger.info("Does app save exist already? : ", exists);
+    return fsEx.pathExists(appData.appId + appSavePath + ".apk").then(exists => {
+        logger.info("Does app save exist already? : "+ exists);
         if (exists) {
-            logger.debug("App version already exists", appSavePath);
+            logger.debug("App version already exists"+ appSavePath);
             return Promise.reject(appData.appId);
         } else {
-            logger.info("New app version", appSavePath);
+            logger.info("New app version "+ appSavePath);
             require("shelljs").mkdir("-p", appSavePath);
-            return Promise.resolve(appSavePath);
+            return appSavePath;
         }
     }).catch(function(err) {
         logger.err('Could not create a app save dir ', err);
@@ -114,11 +116,12 @@ function resolveAPKDir(appData) {
 function spawnGplayDownloader(args) {
 
     const spw = require('child-process-promise').spawn;
-    const apkDownloader = spw("gplaycli", args);
+     logger.info("Passing args to downloader" +args);
+    const apkDownloader = spw("gplaycli", args);    
 
     var downloadProcess = apkDownloader.childProcess;
 
-    logger.info('[spawn] APK downloader childProcess.pid: ', downloadProcess.pid);
+    logger.info('[spawn] APK downloader childProcess.pid: '+ downloadProcess.pid);
 
     downloadProcess.stdout.on("data", data => {
         logger.info(`stdout: ${data}`);
@@ -147,13 +150,14 @@ function extractAppData(appData) {
         let args = ["-pd", appData.appId, "-f", appSaveDir, "-c", config.credDownload]; /* Command line args for gplay cli */
 
         logger.info("Python downloader playstore starting");
-
+       
+       
         let spawnGplay = spawnGplayDownloader(args);
         //log("Gplay spwaner",spawnGplay);
 
         spawnGplay.then(pipeCode => {
 
-            logger.info("Download process complete for ", appData.appId);
+            logger.info("Download process complete for "+ appData.appId);
 
             // TODO: DB Comms... this can be factorised.
             var db = require('./db');
@@ -237,7 +241,6 @@ function reader(filepath) {
 //Do processing syncrounously do prevent gplay having a moan
 function processAppData(appsData, processFn) {
     var index = 0;
-
     function next() {
         if (index < appsData.length) {
             logger.logger("Processing ", index);
@@ -299,7 +302,7 @@ wordStashFiles.then(files => {
     files.map(file => {
         q = q.then(() => {
             return new Promise((resolve, reject) => {
-                logger.info("Resolving word stash", wordStash);
+                logger.info("Resolving word stash"+ wordStash);
                 var filepath = require("path").join(wordStash, file);
 
                 var rd = reader(filepath);
@@ -308,37 +311,37 @@ wordStashFiles.then(files => {
 
                 rd.on('line', (word) => {
                     p = p.then(() => {
-                        logger.info("searching on word:", word);
+                        logger.info("searching on word:"+ word);
                         write_latest_word(word);
                         return scrapeWord(word).then(function(appsData) {
 
-                            logger.info("Search apps total: ", appsData.length);
+                            logger.info("Search apps total: "+ appsData.length);
 
-                            logger.info("Search apps total: ", appsData.length);
+                            logger.info("Search apps total: "+ appsData.length);
 
                             var r = Promise.resolve();
 
                             appsData.forEach(app => {
 
                                 r = r.then(() => {
-                                    logger.info("Attempting to download:", app.appId);
+                                    logger.info("Attempting to download:"+ app.appId);
                                     return extractAppData(app);
-                                }, (err) => { logger.err("downloading app failed:", err) });
+                                }, (err) => { logger.err("downloading app failed:"+ err) });
                             });
                             //processAppData(appsData,extractAppData);
 
-                        }, (err) => { logger.err("scraping app on word failed:", err) });
-                    }), (err) => { logger.err("scraping apps cailes :", err) };
+                        }, (err) => { logger.err("scraping app on word failed:"+ err) });
+                    }), (err) => { logger.err("scraping apps cailes :"+ err) };
                 });
 
                 rd.on('end', () => {
-                    p.then(() => { resolve(); }, (err) => { logger.err("last dl failed:", err); });
+                    p.then(() => { resolve(); }, (err) => { logger.err("last dl failed:"+ err); });
                 });
             });
-        }, (err) => { logger.err("q failed:", err); });
-    }, (err) => { logger.err("stashfiles failed:", err); });
+        }, (err) => { logger.err("q failed:"+ err); });
+    }, (err) => { logger.err("stashfiles failed:"+ err); });
 }).catch(function(err) {
-    logger.err("Err with word stash", err.message);
+    logger.err("Err with word stash"+ err.message);
 });
 
 
@@ -354,7 +357,7 @@ wordStashFiles.then(files => {
 //         scrapeWord(currWord).then(appsScraped => {
 
 //             appsScraped.map(app => {
-//                 log("Downloading app: ", app.appId);
+//                 log("Downloading app: "+ app.appId);
 //                 downloadAppApk(app);
 //             });
 
@@ -367,7 +370,7 @@ wordStashFiles.then(files => {
 // // Loop through all the files in the word stash
 // fs.readdir(wordStash, function(err, files) {
 //     if (err) {
-//         console.error("Could not list the directory.", err);
+//         console.error("Could not list the directory."+ err);
 //         process.exit(1);
 //     }
 
