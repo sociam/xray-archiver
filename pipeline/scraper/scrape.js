@@ -252,7 +252,7 @@ function processAppData(appsData, processFn) {
 function wipe_scraped_word() {
     fs.writeFile(config.datadir + '/scraped_words.txt', '', function(err) {
         if (err) {
-            log('Unable wipe the scraped word file');
+            logger.err('Unable wipe the scraped word file');
         }
     })
 }
@@ -260,7 +260,7 @@ function wipe_scraped_word() {
 function write_latest_word(word) {
     fs.appendFile(config.datadir + '/scraped_words.txt', word + '\n', function(err) {
         if (err) {
-            log('Unable to log to the scraped word file');
+            logger.err('Unable to log to the scraped word file');
         }
     })
 }
@@ -308,7 +308,7 @@ wordStashFiles.then(files => {
 
                 rd.on('line', (word) => {
                     p = p.then(() => {
-                        log("searching on word:", word);
+                        logger.info("searching on word:", word);
                         write_latest_word(word);
                         return scrapeWord(word).then(function(appsData) {
 
