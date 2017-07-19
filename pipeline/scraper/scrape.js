@@ -13,12 +13,26 @@ further requests will be held  until the second passes.
 
 */
 var config = require("/etc/xray/config.json"); //See example_config.json
-
-
-
-
 var gplay = require("google-play-scraper");
 var _ = require("lodash");
+var Logger = require('log');
+var fs = require('fs');
+var path = require('path');
+
+/**
+ *  Creating Global Loggers...
+ */
+function ensureDirectoryExistence(filePath) {
+    var dirname = path.dirname(filePath);
+    if (fs.existsSync(dirname)) {
+        return true;
+    }
+    ensureDirectoryExistence(dirname);
+    fs.mkdirSync(dirname);
+}
+ensureDirectoryExistence(config.logLocation);
+file_log = new Logger('debug', fs.createWriteStream(config.logLocation));
+
 
 //Logging mechanisim for script
 const EMERG = 0,
@@ -33,7 +47,7 @@ const EMERG = 0,
 var prefixes = ['<0>', '<1>', '<2>', '<3>', '<4>', '<5>', '<6>', '<7>'];
 
 var log = function(txt) {
-    console.log(prefixes[INFO] + txt);
+    console.log(prefixes[INFO], txt);
 }
 
 //TODO: log level call, must be nicer way,...
@@ -49,7 +63,7 @@ var fs = require("fs");
 
 var appsSaveDir = require('path').join(config.datadir, "apps");
 
-if (!require('fs').existsSync(appsSaveDir) ){
+if (!require('fs').existsSync(appsSaveDir)) {
     log("New apps folder needed", appsSaveDir);
     require("shelljs").mkdir("-p", appsSaveDir);
 }
@@ -77,19 +91,19 @@ function resolveAPKDir(appData) {
     const fsEx = require('fs-extra');
 
     return fsEx.pathExists(appSavePath).then(exists => {
-            log("Does app save exist already? : ", exists);
-            if(exists) {
-                log("App version already exists", appSavePath);
-                return Promise.reject(appData.appId); 
-            } else {
-                log("New app version", appSavePath);
-                require("shelljs").mkdir("-p", appSavePath);
-                return Promise.resolve(appSavePath);
-            }
-        }).catch(function (err) {
-            console.error('Could not create a app save dir ', err);
-            return Promise.reject(appData.appId); 
-        });
+        log("Does app save exist already? : ", exists);
+        if (exists) {
+            log("App version already exists", appSavePath);
+            return Promise.reject(appData.appId);
+        } else {
+            log("New app version", appSavePath);
+            require("shelljs").mkdir("-p", appSavePath);
+            return Promise.resolve(appSavePath);
+        }
+    }).catch(function(err) {
+        console.error('Could not create a app save dir ', err);
+        return Promise.reject(appData.appId);
+    });
 }
 
 
@@ -123,13 +137,13 @@ function extractAppData(appData) {
 
     var resolveApk = resolveAPKDir(appData);
     //log("Resolve apk",resolveApk).then(() => { resolve(); }, (err) => { log("last dl failed:", err); });
-    
+
     resolveApk.then(appSaveDir => {
 
         let args = ["-pd", appData.appId, "-f", appSaveDir, "-c", config.credDownload]; /* Command line args for gplay cli */
-        
+
         log("Python downloader playstore starting");
-    
+
         let spawnGplay = spawnGplayDownloader(args);
         //log("Gplay spwaner",spawnGplay);
 
@@ -144,7 +158,7 @@ function extractAppData(appData) {
             dbId.then(() => {
                 var client = unix.createSocket('unix_dgram');
                 var unix = require('unix-dgram');
-                
+
                 // TODO: if unix fails keep trying the socket
                 // if (require('fs').existsSync(config.sockpath){
                 //     console.error('Could not bind to socket... try again later  ', err.message);
@@ -225,12 +239,12 @@ function processAppData(appsData, processFn) {
     var index = 0;
 
     function next() {
-        if(index < appsData.length) {
+        if (index < appsData.length) {
             log("Processing ", index);
-             processFn(appsData[index++])
-             .then(next)
-             .catch((err) => { log("downloading app failed:", err)});
-        }     
+            processFn(appsData[index++])
+                .then(next)
+                .catch((err) => { log("downloading app failed:", err) });
+        }
     }
     next();
 }
@@ -278,26 +292,26 @@ wordStashFiles.then(files => {
                 rd.on('line', (word) => {
                     p = p.then(() => {
                         log("searching on word:", word);
-
+                        file_log.info('Current Word:', word);
                         return scrapeWord(word).then(function(appsData) {
 
                             console.log("Search apps total: ", appsData.length);
 
-                            log("Search apps total: ",appsData.length);
-                          
+                            log("Search apps total: ", appsData.length);
+
                             var r = Promise.resolve();
 
                             appsData.forEach(app => {
 
-                                r = r.then( () => {
-                                    log("Attempting to download:",app.appId);
-                                    return extractAppData(app);  
-                                }, (err) => { log("downloading app failed:", err)});
+                                r = r.then(() => {
+                                    log("Attempting to download:", app.appId);
+                                    return extractAppData(app);
+                                }, (err) => { log("downloading app failed:", err) });
                             });
                             //processAppData(appsData,extractAppData);
 
-                        }, (err) => { log("scraping app on word failed:", err)});
-                    }), (err) => { log("scraping apps cailes :", err)};
+                        }, (err) => { log("scraping app on word failed:", err) });
+                    }), (err) => { log("scraping apps cailes :", err) };
                 });
 
                 rd.on('end', () => {
@@ -307,7 +321,7 @@ wordStashFiles.then(files => {
         }, (err) => { log("q failed:", err); });
     }, (err) => { log("stashfiles failed:", err); });
 }).catch(function(err) {
-  log("Err with word stash",err.message);
+    log("Err with word stash", err.message);
 });
 
 
