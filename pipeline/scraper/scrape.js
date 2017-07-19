@@ -9,12 +9,15 @@ NOTE: cronjob...
 TODO: to avoid the situation of askign for a captcha use a throttle keyword
 , all methods now support a throttle property, which defines an upper bound to 
 the amount of requests that will be attempted per second. Once that limit is reached, 
-further requests will be held until the second passes.
+further requests will be held  until the second passes.
 
 */
 var config = require("/etc/xray/config.json"); //See example_config.json
+
+
+
+
 var gplay = require("google-play-scraper");
-var fs = require("fs");
 var _ = require("lodash");
 
 //Logging mechanisim for script
@@ -29,10 +32,27 @@ const EMERG = 0,
 
 var prefixes = ['<0>', '<1>', '<2>', '<3>', '<4>', '<5>', '<6>', '<7>'];
 
-function log(level, txt) {
-    console.log(prefixes[level] + txt);
+var log = function(txt) {
+    console.log(prefixes[INFO] + txt);
 }
-//TODO: Use Logger eg - log(0, "test log");
+
+//TODO: log level call, must be nicer way,...
+// log(prefixes[ALERT] + txt);
+// log(prefixes[CRIT] + txt);
+// log(prefixes[WARN] + txt);
+// log(prefixes[NOTCIE] + txt);
+// log(prefixes[INFO] + txt);
+// log(prefixes[DEBUG] + txt);
+
+//Generate sub apps folders
+var fs = require("fs");
+
+var appsSaveDir = require('path').join(config.datadir, "apps");
+
+if (!require('fs').existsSync(appsSaveDir) ){
+    log("New apps folder needed", appsSaveDir);
+    require("shelljs").mkdir("-p", appsSaveDir);
+}
 
 
 //TODO: move region to config or section to iterate over
@@ -43,25 +63,27 @@ var appStore = "play";
 function resolveAPKDir(appData){
 
     let path = require("path");
-    //console.log("appdir:", config.appdir, "\nappId", appData.appId, "\nappStore", appStore, "\nregion", region, "\nversion", appData.version);
+    //log("appdir:", config.appdir, "\nappId", appData.appId, "\nappStore", appStore, "\nregion", region, "\nversion", appData.version);
     //NOTE: If app version is undefined setting to  date
     if (!appData.version) {
         appData.version = appData.updated;
     }
 
+
+
     let appSavePath = path.join(config.appdir, appData.appId, appStore, region, appData.version,appData.appId+".apk");
-    console.log("App desired save dir ", appSavePath);
+    logger("App desired save dir ", appSavePath);
 
     /* check that the dir created from config exists. */
     const fsEx = require('fs-extra');
    
     return fsEx.pathExists(appSavePath).then(exists => {
-            console.log("Does app save exist already? : ", exists);
+            log("Does app save exist already? : ", exists);
             if(exists) {
-                console.log("App version already exists", appSavePath);
+                log("App version already exists", appSavePath);
                 return Promise.reject(appData.appId); 
             } else {
-                console.log("New app version", appSavePath);
+                log("New app version", appSavePath);
                 require("shelljs").mkdir("-p", appSavePath);
                 return Promise.resolve(appSavePath);
             }
@@ -79,38 +101,42 @@ function spawnGplayDownloader(args) {
 
     var downloadProcess = apkDownloader.childProcess;
 
-    console.log('[spawn] APK downloader childProcess.pid: ', downloadProcess.pid);
+    log('[spawn] APK downloader childProcess.pid: ', downloadProcess.pid);
 
     downloadProcess.stdout.on("data", data => {
-        console.log(`stdout: ${data}`);
+        log(`stdout: ${data}`);
     });
 
     downloadProcess.stderr.on("data", data => {
-        console.log(`stderr: ${data}`);
+        log(`stderr: ${data}`);
     });
 
     return apkDownloader;
 }
 
+
+//TODO: check dir setup before attempting to search on that word
+
+//TODO: 
 function extractAppData(appData) {
     //Check appData state
     if (!appData.appId) { return Promise.reject("Invalid appdata",appData.appId); }
 
     var resolveApk = resolveAPKDir(appData);
-    //console.log("Resolve apk",resolveApk).then(() => { resolve(); }, (err) => { console.log("last dl failed:", err); });
+    //log("Resolve apk",resolveApk).then(() => { resolve(); }, (err) => { log("last dl failed:", err); });
     
     resolveApk.then(appSaveDir => {
         
         let args = ["-pd", appData.appId, "-f", appSaveDir, "-c", config.credDownload]; /* Command line args for gplay cli */
         
-        console.log("Python downloader playstore starting");
+        log("Python downloader playstore starting");
     
         let spawnGplay = spawnGplayDownloader(args);
-        //console.log("Gplay spwaner",spawnGplay);
+        //log("Gplay spwaner",spawnGplay);
 
         spawnGplay.then(pipeCode => {
 
-            console.log("Download process complete for ", appData.appId);
+            log("Download process complete for ", appData.appId);
 
             // TODO: DB Comms... this can be factorised.
             var db = require('./db');
@@ -119,14 +145,23 @@ function extractAppData(appData) {
             dbId.then(() => {
                 var client = unix.createSocket('unix_dgram');
                 var unix = require('unix-dgram');
+                
+                // TODO: if unix fails keep trying the socket
+                // if (require('fs').existsSync(config.sockpath){
+                //     console.error('Could not bind to socket... try again later  ', err.message);
+                //     return Promise.reject(appData.appId);
+                // }
 
                 // TODO: Check that '-' won't mess things up on the DB side... eg if region was something like 'en-gb'
                 var message = Buffer(dbId + "-" + appData.appId + "-" + config.appStore + "-" + region + "-" + appData.version);
 
                 client.on('error', console.error);
                 client.send(message, 0, message.length, config.sockpath);
+
                 client.close(); /* The end of one single app download and added to the DB */
+
             }).catch(function(err) {
+
                 console.error('Could not write to db ', err.message);
                 return Promise.reject(appData.appId);
             });       
@@ -146,7 +181,7 @@ function scrape(appsData) {
     return appsData.map((val) => {
         return gplay.app({ appId: val.appId }).then(function(some_other_val) {
             return extractAppData(val).then(() => {
-                console.log('finished downloading', val.appId);
+                log('finished downloading', val.appId);
                 return val; // whatever you return here will get passed on to the next val in the promise chain..
             }).catch((e) => {
                 console.error('error downloading ', val.appId, e.toString());
@@ -192,10 +227,10 @@ function processAppData(appsData,processFn) {
 
     function next() {
         if(index < appsData.length) {
-            console.log("Processing ", index);
+            log("Processing ", index);
              processFn(appsData[index++])
              .then(next)
-             .catch((err) => { console.log("downloading app failed:", err)});
+             .catch((err) => { log("downloading app failed:", err)});
         }     
     }
     next();
@@ -220,7 +255,7 @@ function processAppData(appsData,processFn) {
 
 //                 return extractAppData(app);  
 //             }).catch( err => {
-//                 console.log("Err with word stash",err.message);
+//                 log("Err with word stash",err.message);
 //             });
 
 //         });
@@ -243,35 +278,35 @@ wordStashFiles.then(files => {
 
                 rd.on('line', (word) => {
                     p = p.then(() => {
-                        console.log("searching on word:", word);
+                        log("searching on word:", word);
 
                         return scrapeWord(word).then(function(appsData){
 
-                            console.log("Search apps total: ",appsData.length);
+                            log("Search apps total: ",appsData.length);
                           
                             var r = Promise.resolve();
 
                             appsData.forEach(app => {
 
                                 r = r.then( () => {
-                                    console.log("Attempting to download:",app.appId);
+                                    log("Attempting to download:",app.appId);
                                     return extractAppData(app);  
-                                }, (err) => { console.log("downloading app failed:", err)});
+                                }, (err) => { log("downloading app failed:", err)});
                             });
                             //processAppData(appsData,extractAppData);
 
-                        }, (err) => { console.log("scraping app on word failed:", err)});
-                    }), (err) => { console.log("scraping apps cailes :", err)};
+                        }, (err) => { log("scraping app on word failed:", err)});
+                    }), (err) => { log("scraping apps cailes :", err)};
                 });
 
                 rd.on('end', () => {
-                    p.then(() => { resolve(); }, (err) => { console.log("last dl failed:", err); });
+                    p.then(() => { resolve(); }, (err) => { log("last dl failed:", err); });
                 });
             });
-        }, (err) => { console.log("q failed:", err); });
-    }, (err) => { console.log("stashfiles failed:", err); });
+        }, (err) => { log("q failed:", err); });
+    }, (err) => { log("stashfiles failed:", err); });
 }).catch(function(err) {
-  console.log("Err with word stash",err.message);
+  log("Err with word stash",err.message);
 });
 
 
@@ -287,7 +322,7 @@ wordStashFiles.then(files => {
 //         scrapeWord(currWord).then(appsScraped => {
 
 //             appsScraped.map(app => {
-//                 console.log("Downloading app: ", app.appId);
+//                 log("Downloading app: ", app.appId);
 //                 downloadAppApk(app);
 //             });
 
