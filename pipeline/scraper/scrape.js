@@ -15,24 +15,11 @@ further requests will be held  until the second passes.
 var config = require("/etc/xray/config.json"); //See example_config.json
 var gplay = require("google-play-scraper");
 var _ = require("lodash");
-var Logger = require('log');
-var fs = require('fs');
 var path = require('path');
-
-/**
- *  Creating Global Loggers...
- */
-function ensureDirectoryExistence(filePath) {
-    var dirname = path.dirname(filePath);
-    if (fs.existsSync(dirname)) {
-        return true;
-    }
-    ensureDirectoryExistence(dirname);
-    fs.mkdirSync(dirname);
-}
-ensureDirectoryExistence(config.logLocation);
-file_log = new Logger('debug', fs.createWriteStream(config.logLocation));
-
+//Reading from folder of csv files
+var fs = require('fs');
+var fs_promise = require('fs-readdir-promise');
+var readline = require('readline');
 
 //Logging mechanisim for script
 const EMERG = 0,
@@ -222,10 +209,6 @@ function scrapeWord(word) {
 
 var wordStash = config.wordStashDir;
 
-//Reading from folder of csv files
-var fs = require('fs');
-var fs_promise = require('fs-readdir-promise');
-var readline = require('readline');
 
 function reader(filepath) {
     return readline.createInterface({
@@ -249,6 +232,21 @@ function processAppData(appsData, processFn) {
     next();
 }
 
+function wipe_scraped_word() {
+    fs.writeFile(config.datadir + '/scraped_words.txt', '', function(err) {
+        if (err) {
+            log('Unable wipe the scraped word file');
+        }
+    })
+}
+
+function write_latest_word(word) {
+    fs.appendFile(config.datadir + '/scraped_words.txt', word + '\n', function(err) {
+        if (err) {
+            log('Unable to log to the scraped word file');
+        }
+    })
+}
 
 // function topApps() {
 //     gplay.category.forEach( cat => {
@@ -275,6 +273,7 @@ function processAppData(appsData, processFn) {
 //     });
 // }
 
+wipe_scraped_word();
 var wordStashFiles = fs_promise(wordStash);
 
 wordStashFiles.then(files => {
@@ -292,7 +291,7 @@ wordStashFiles.then(files => {
                 rd.on('line', (word) => {
                     p = p.then(() => {
                         log("searching on word:", word);
-                        file_log.info('Current Word:', word);
+                        write_latest_word(word);
                         return scrapeWord(word).then(function(appsData) {
 
                             console.log("Search apps total: ", appsData.length);
