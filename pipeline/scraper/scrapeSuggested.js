@@ -66,13 +66,6 @@ function scrapeSuggestedWords(startingWords) {
                 (suggestion) => {
                     _.forEach(suggestion, (word) => {
                         writeScrapedWords(word, wordStoreLocation);
-                        // gplay.suggest({ term: word })
-                        //     .then((suggestion) => {
-                        //         _.forEach(suggestion, (suggestion) => {
-                        //             // TODO: Output to a file for words.
-                        //             writeScrapedWords(suggestion, wordStoreLocation);
-                        //         })
-                        //     })
                     })
                 },
                 (err) => console.log(err)
