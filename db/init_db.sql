@@ -9,7 +9,8 @@ create table app_versions(
   store          text                     not null,
   region         text                     not null,
   version        text                     not null,
-  screen_flags    int
+  screen_flags    int                             ,
+  downloaded     bool                     not null
 );
 
 create table developers(
