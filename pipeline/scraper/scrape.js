@@ -162,7 +162,7 @@ function extractAppData(appData) {
 function scrapeWord(word) {
     return gplay.search({
         term: word,
-        num: 120,
+        num: 4,
         region: region,
         price: 'free',
         fullDetail: true,
@@ -206,7 +206,7 @@ function wipe_scraped_word() {
 function write_latest_word(word) {
     fs.appendFile(config.datadir + '/scraped_words.txt', word + '\n', function(err) {
         if (err) {
-            logger.err('Unable to log to the scraped word file');
+            logger.err('Unable to log to the scraped word file',err.message);
         }
     });
 }

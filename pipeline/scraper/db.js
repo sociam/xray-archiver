@@ -14,12 +14,12 @@ db_cfg.idleTimeoutMillis = 30000;
 const pool = new pg.Pool(db_cfg);
 
 pool.on('error', function(err) {
-    logger.err('idle client error', err.message, err.stack);
+    logger.err('idle client error '+ err.message + err.stack);
 });
 
 //export the query method for passing queries to the pool
 function query(text, values) {
-    logger.debug('query:', text, values);
+    logger.debug('query:'+ text+ values);
     return pool.query(text, values);
 }
 
