@@ -27,6 +27,12 @@ func runServer() {
 	}
 	defer apkSock.Close()
 
+	db, err := openDb()
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
 	for {
 		b := make([]byte, 1024)
 		n, err := apkSock.Read(b)
@@ -68,6 +74,7 @@ func runServer() {
 			} else {
 				perms := manifest.getPerms()
 				fmt.Printf("Permissions found: %v\n\n", perms)
+				db.addPerms(app, perms)
 			}
 
 			fmt.Println("Running simple analysis... ")
@@ -77,6 +84,9 @@ func runServer() {
 				continue
 			}
 			fmt.Printf("Hosts found: %v\n\n", out)
+			err = db.addHosts(app, out)
+
+			cleanup(app)
 		}
 	}
 }

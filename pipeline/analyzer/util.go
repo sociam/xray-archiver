@@ -37,6 +37,10 @@ func unpack(app App) error {
 	return nil
 }
 
+func cleanup(app App) error {
+	return os.RemoveAll(outDir(app))
+}
+
 func checkDir(dir, name string) {
 	fif, err := os.Stat(dir)
 	if err != nil {
