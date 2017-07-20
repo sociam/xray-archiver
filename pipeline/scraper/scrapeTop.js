@@ -177,69 +177,111 @@ function processAppData(appsData,processFn) {
     next();
 }
 
+//TODO: refactor seperate into top apps + similar apps
+
+
+ function simApps(apps){
+    _.map(apps, app => {
+        gplay.similar({appId: app.appId,
+            num: 12,
+            region: region,
+            fullDetail: true,
+            throttle: 0.01}).then (apps => {
+
+                var r = Promise.resolve();
+
+                apps.forEach(app => {
+                    r = r.then( () => {
+                        
+                        console.log("Attempting to download:",app.appId);
+                        return extractAppData(app);  
+
+                    }, (err) => { console.log("downloading app failed:", err)});
+                });
+
+            }).catch(err => {
+                console.log("Err could not gather similar apps ", err);
+                return Promise.reject();
+            });
+    });
+}
+
+
 function topApps() {
-     gplay.category.forEach( cater => {
-         gplay.collection.forEach( coll => {
-            //TODO: this might all happen at once... review owrdStashFiles
-            //finish below off then scrape data + download
+    var cats = gplay.category;
+    var coll = gplay.collection;
+    _.map(gplay.category, cater => {
+         _.map( gplay.collection, coll => {
+            console.log("Searchng on ", cater, " and ", coll);
             gplay.list({
-                collection: cater,
-                category: coll,
-                 num: 11,
-                 region: region,
-                 fullDetail: true,
-                 throttle: 0.01
-             }).then( app => {
-                 console.log('Collecting similar apps ${cater} and ${coll}')
-                 gplay.similar({appid: app.appId,
-                     num: 12,
-                     region: region,
-                     fullDetail: true,
-                     throttle: 0.01}).then (app => {(extractAppData(app))
-                     }).Promise.resolve(extractAppData(app))
-                        console.log("Err with similar",err.message);
-                        return extractAppData(app);
+                collection: gplay.collection.coll,
+                category: gplay.category.cater,
+                num: 12,
+                region: region,
+                fullDetail: true,
+                throttle: 0.01
+             }).then( apps => {
+                 console.log("Finding similar apps based on ", apps.length);
+                 return simApps(apps);
              }).catch( err => {
                  console.log("Err with word stash",err.message);
+                 return Promise.reject();
             });
-         });
+        },err => {
+             console.log("Err with collection ",err.message);
+            return Promise.reject();
+        });
+     },err => {
+        console.log("Err with category ",err.message);
+        return Promise.reject();
      });
  }
 
-var wordStashFiles = fs_promise(wordStash);
-wordStashFiles.then(files => {
-    var q = Promise.resolve();
-    files.map(file => {
-        q = q.then(() => {
-            return new Promise((resolve, reject) => {
-                var filepath = require("path").join(wordStash,file);
-                var rd = reader(filepath);
-                var p = Promise.resolve();
-                rd.on('line', (word) => {
-                    p = p.then(() => {
-                        console.log("searching on word:", word);
-                        return scrapeWord(word).then(function(appsData){
-                            console.log("Search apps total: ",appsData.length);
-                            var r = Promise.resolve();
-                            appsData.forEach(app => {
-                                r = r.then( () => {
-                                    console.log("Attempting to download:",app.appId);
-                                    return extractAppData(app);  
-                                }, (err) => { console.log("downloading app failed:", err)});
-                            });
-                            //processAppData(appsData,extractAppData);
-                        }, (err) => { console.log("scraping app on word failed:", err)});
-                    }), (err) => { console.log("scraping apps cailes :", err)};
-                });
-                rd.on('end', () => {
-                    p.then(() => { resolve(); }, (err) => { console.log("last dl failed:", err); });
-                });
-            });
-        }, (err) => { console.log("q failed:", err); });
-    }, (err) => { console.log("stashfiles failed:", err); });
-}).catch(function(err) {
-  console.log("Err with word stash",err.message);
-});
+ //topApps();
+
+topApps();
+
+// .then(data => {
+//     console.log("the state of the data", data);
+// });
+
+
+
+
+// var wordStashFiles = fs_promise(wordStash);
+// wordStashFiles.then(files => {
+//     var q = Promise.resolve();
+//     files.map(file => {
+//         q = q.then(() => {
+//             return new Promise((resolve, reject) => {
+//                 var filepath = require("path").join(wordStash,file);
+//                 var rd = reader(filepath);
+//                 var p = Promise.resolve();
+//                 rd.on('line', (word) => {
+//                     p = p.then(() => {
+//                         console.log("searching on word:", word);
+//                         return scrapeWord(word).then(function(appsData){
+//                             console.log("Search apps total: ",appsData.length);
+//                             var r = Promise.resolve();
+//                             appsData.forEach(app => {
+//                                 r = r.then( () => {
+//                                     console.log("Attempting to download:",app.appId);
+//                                     return extractAppData(app);  
+//                                 }, (err) => { console.log("downloading app failed:", err)});
+//                             });
+//                             //processAppData(appsData,extractAppData);
+//                         }, (err) => { console.log("scraping app on word failed:", err)});
+//                     }), (err) => { console.log("scraping apps cailes :", err)};
+//                 });
+//                 rd.on('end', () => {
+//                     p.then(() => { resolve(); }, (err) => { console.log("last dl failed:", err); });
+//                 });
+//             });
+//         }, (err) => { console.log("q failed:", err); });
+//     }, (err) => { console.log("stashfiles failed:", err); });
+// }).catch(function(err) {
+//   console.log("Err with word stash",err.message);
+// });
 
 //var parse = require('csv-parse');
 //var async = require('async');
