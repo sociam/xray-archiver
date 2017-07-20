@@ -96,7 +96,7 @@ function resolveAPKDir(appData) {
     /* check that the dir created from config exists. */
     const fsEx = require('fs-extra');
 
-    return fsEx.pathExists(appData.appId + appSavePath + ".apk").then(exists => {
+    return fsEx.pathExists(appSavePath).then(exists => {
         logger.info("Does app save exist already? : "+ exists);
         if (exists) {
             logger.debug("App version already exists"+ appSavePath);
@@ -121,14 +121,14 @@ function spawnGplayDownloader(args) {
 
     var downloadProcess = apkDownloader.childProcess;
 
-    logger.info('[spawn] APK downloader childProcess.pid: '+ downloadProcess.pid);
+    logger.info('APK downloader created childProcess.pid: '+ downloadProcess.pid);
 
     downloadProcess.stdout.on("data", data => {
-        logger.info(`stdout: ${data}`);
+        logger.info(`The downloader process produce the following stdout: ${data}`);
     });
 
     downloadProcess.stderr.on("data", data => {
-        logger.err(`stderr: ${data}`);
+        logger.warn(`The downloader process produce the following stderr: ${data}`);
     });
 
     return apkDownloader;
@@ -137,7 +137,6 @@ function spawnGplayDownloader(args) {
 
 //TODO: check dir setup before attempting to search on that word
 
-//TODO: 
 function extractAppData(appData) {
     //Check appData state
     if (!appData.appId) { return Promise.reject("Invalid appdata", appData.appId); }
@@ -168,31 +167,31 @@ function extractAppData(appData) {
                 var client = unix.createSocket('unix_dgram');
 
                 // TODO: if unix fails keep trying the socket
-                // if (require('fs').existsSync(config.sockpath){
-                //     console.error('Could not bind to socket... try again later  ', err.message);
-                //     return Promise.reject(appData.appId);
-                // }
+                if (require('fs').existsSync(config.sockpath)) {
+                    logger.err('Could not bind to socket... try again later  ', err.message);
+                    return Promise.reject(appData.appId);
+                }
 
                 // TODO: Check that '-' won't mess things up on the DB side... eg if region was something like 'en-gb'
                 var message = Buffer(dbId + "-" + appData.appId + "-" + config.appStore + "-" + region + "-" + appData.version);
 
-                client.on('error', console.error);
+                client.on('error', logger.err);
                 client.send(message, 0, message.length, config.sockpath);
 
                 client.close(); /* The end of one single app download and added to the DB */
 
             }).catch(function(err) {
 
-                console.error('Could not write to db ', err.message);
+                logger.err('Could not write to db ', err.message);
                 return Promise.reject(appData.appId);
             });
         }).catch(function(err) {
-            console.error('[spawn] download ERROR: ', err.message);
+            logger.warn('Downloading failed with error: ', err.message);
 
             return Promise.reject(appData.appId);
         });
     }).catch(function(err) {
-        console.error('Could not save app ', err.message);
+        logger.err('Could not save apps ', err.message);
         return Promise.reject(appData.appId);
     });
 }
@@ -205,11 +204,11 @@ function scrape(appsData) {
                 logger('finished downloading', val.appId);
                 return val; // whatever you return here will get passed on to the next val in the promise chain..
             }).catch((e) => {
-                console.error('error downloading ', val.appId, e.toString());
+                logger.err('error downloading ', val.appId, e.toString());
                 throw e;
             });
         }).catch(function(err) {
-            console.error('Could not save app ', err);
+            logger.err('Could not save app ', err);
             return Promise.reject(appData.appId);
         });
     });
@@ -246,7 +245,7 @@ function processAppData(appsData, processFn) {
             logger.logger("Processing ", index);
             processFn(appsData[index++])
                 .then(next)
-                .catch((err) => { logger.err("downloading app failed:", err) });
+                .catch((err) => { logger.warn("downloading app failure:", err) });
         }
     }
     next();
@@ -326,20 +325,20 @@ wordStashFiles.then(files => {
                                 r = r.then(() => {
                                     logger.info("Attempting to download:"+ app.appId);
                                     return extractAppData(app);
-                                }, (err) => { logger.err("downloading app failed:"+ err) });
+                                }, (err) => { logger.warn("downloading app failed:"+ err) });
                             });
                             //processAppData(appsData,extractAppData);
 
                         }, (err) => { logger.err("scraping app on word failed:"+ err) });
-                    }), (err) => { logger.err("scraping apps cailes :"+ err) };
+                    }), (err) => { logger.err("going through word list failed:"+ err) };
                 });
 
                 rd.on('end', () => {
-                    p.then(() => { resolve(); }, (err) => { logger.err("last dl failed:"+ err); });
+                    p.then(() => { resolve(); }, (err) => { logger.err("last data word failed:"+ err); });
                 });
             });
-        }, (err) => { logger.err("q failed:"+ err); });
-    }, (err) => { logger.err("stashfiles failed:"+ err); });
+        }, (err) => { logger.err("could no iterate through words in file:"+ err); });
+    }, (err) => { logger.err("iterating through dir word list failed::"+ err); });
 }).catch(function(err) {
     logger.err("Err with word stash"+ err.message);
 });
@@ -370,7 +369,7 @@ wordStashFiles.then(files => {
 // // Loop through all the files in the word stash
 // fs.readdir(wordStash, function(err, files) {
 //     if (err) {
-//         console.error("Could not list the directory."+ err);
+//         logger.err("Could not list the directory."+ err);
 //         process.exit(1);
 //     }
 
