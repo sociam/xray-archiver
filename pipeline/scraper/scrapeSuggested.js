@@ -8,7 +8,7 @@ var alphabet = require('alphabet');
 var _ = require('lodash');
 var config = require('/etc/xray/config.json');
 var fs = require('fs-extra');
-
+var logger = require('./logger.js');
 var wordStoreLocation = config.wordStashDir + '/suggested_words.txt';
 
 /**
@@ -18,9 +18,9 @@ var wordStoreLocation = config.wordStashDir + '/suggested_words.txt';
 function wipeScrapedWords(location) {
     fs.writeFile(location, '', function(err) {
         if (err) {
-            console.log(err.message);
+            logger.err(err.message);
         }
-    })
+    });
 }
 
 /**
@@ -31,9 +31,9 @@ function wipeScrapedWords(location) {
 function writeScrapedWords(word, location) {
     fs.appendFile(location, word + '\n', function(err) {
         if (err) {
-            console.log(err.message);
+            logger.err(err.message);
         }
-    })
+    });
 }
 
 /**
@@ -51,7 +51,7 @@ function cartesianProductChars() {
     }, [
         []
     ]);
-};
+}
 
 /**
  * Creates a file of suggestions made by Google play when passing
@@ -60,24 +60,26 @@ function cartesianProductChars() {
  * @param {*The list of words used to get autocompletes} startingWords 
  */
 function scrapeSuggestedWords(startingWords) {
+    //TODO: return array of suggested search terms
     _.forEach(startingWords, (letter) => {
         gplay.suggest({ term: letter })
             .then(
                 (suggestion) => {
                     _.forEach(suggestion, (word) => {
                         writeScrapedWords(word, wordStoreLocation);
-                    })
+                    });
                 },
-                (err) => console.log(err)
+                (err) => logger.err(err)
             );
     });
 }
 
+// TODO this stuff needs moving to a seperate Explorerer.
 var single = alphabet.lower;
 var double = cartesianProductChars(alphabet.lower, alphabet.lower);
 var triple = cartesianProductChars(alphabet.lower, alphabet.lower, alphabet.lower);
 
-charTriples = single.concat(double).concat(triple);
+var charTriples = single.concat(double).concat(triple);
 
 wipeScrapedWords(wordStoreLocation);
 scrapeSuggestedWords(charTriples);

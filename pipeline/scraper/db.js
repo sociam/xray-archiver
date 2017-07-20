@@ -1,9 +1,10 @@
 /*global require, module */
 
-var config = require('/etc/xray/config.json');
+const config = require('/etc/xray/config.json');
 const pg = require('pg');
+const logger = require('./logger.js');
 
-var db_cfg = config.scraper.db;
+const db_cfg = config.scraper.db;
 db_cfg.max = 10;
 db_cfg.idleTimeoutMillis = 30000;
 
@@ -12,118 +13,115 @@ db_cfg.idleTimeoutMillis = 30000;
 //and set a limit of maximum 10 idle clients
 const pool = new pg.Pool(db_cfg);
 
-pool.on('error', function (err, client) {
-	console.error('idle client error', err.message, err.stack);
+pool.on('error', function(err) {
+    logger.err('idle client error', err.message, err.stack);
 });
 
 //export the query method for passing queries to the pool
 function query(text, values) {
-	console.log('query:', text, values);
-	return pool.query(text, values);
-};
+    logger.debug('query:', text, values);
+    return pool.query(text, values);
+}
 
 // the pool also supports checking out a client for
 // multiple operations, such as a transaction
 function connect() {
-	return pool.connect();
-};
+    return pool.connect();
+}
 
 async function insertDev(dev) {
-	var res = await pool.query("SELECT id FROM developers WHERE $1 = ANY(email)", [dev.email]);
-	if (res.length > 0) {
-		return res.rows[0].id;
-	}
+    var res = await pool.query('SELECT id FROM developers WHERE $1 = ANY(email)', [dev.email]);
+    if (res.length > 0) {
+        return res.rows[0].id;
+    }
 
-	// maybe dev id needs to be URL encoded?
-	let store_site = 'https://play.google.com/store/apps/developer?id='+dev.id;
-	res = await query("INSERT INTO developers(email,name,store_site,site) VALUES ($1, $2, $3, $4) RETURNING id",
-	                  [[dev.email], dev.name, store_site, dev.site]);
-	return res.rows[0].id;
+    // maybe dev id needs to be URL encoded?
+    let store_site = 'https://play.google.com/store/apps/developer?id=' + dev.id;
+    res = await query('INSERT INTO developers(email,name,store_site,site) VALUES ($1, $2, $3, $4) RETURNING id', [
+        [dev.email], dev.name, store_site, dev.site
+    ]);
+    return res.rows[0].id;
 }
 
 module.exports = {
-	insertPlayApp: async (app, region) => {
-		var devId = await insertDev({
-			name: app.developer,
-			id: app.developerId,
-			email: app.developerEmail,
-			site: app.developerWebsite
-		});
+    insertPlayApp: async(app, region) => {
+        var devId = await insertDev({
+            name: app.developer,
+            id: app.developerId,
+            email: app.developerEmail,
+            site: app.developerWebsite
+        });
 
-		var appExists = false, verExists = false;
-		var vers = [];
-		var verId;
-		var res = await query("SELECT * FROM apps WHERE id = $1", [app.appId]);
+        var appExists = false,
+            verExists = false;
+        var verId;
+        var res = await query('SELECT * FROM apps WHERE id = $1', [app.appId]);
 
-		if (res.length > 0) {
-			appExists = true;
-			vers = res.rows[0].versions;
-			// app exists in database, check if version does as well
-			var res1 = await query(
-				"SELECT id FROM app_versions WHERE app = $1 AND store = $2 AND region = $3 AND version = $4",
-				[ app.appId, 'play', region, app.version ]);
+        if (res.length > 0) {
+            appExists = true;
+            // app exists in database, check if version does as well
+            var res1 = await query(
+                'SELECT id FROM app_versions WHERE app = $1 AND store = $2 AND region = $3 AND version = $4', [app.appId, 'play', region, app.version]);
 
-			if (res1.length > 0) {
-				// app version is also in database
-				verExists = true;
-				verId = res1.rows[0].id;
-			}
-		}
+            if (res1.length > 0) {
+                // app version is also in database
+                verExists = true;
+                verId = res1.rows[0].id;
+            }
+        }
 
-		var client = await connect();
-		console.log("Connected");
+        var client = await connect();
+        logger.debug('Connected');
 
-		await client.query("BEGIN"); // maybe this should be inside the try?
-		try {
-			if (!verExists) {
-				if (!appExists) {
-					await client.query("INSERT INTO apps VALUES ($1, $2)",
-					                   [ app.appId, [] ]);
-				}
+        await client.query('BEGIN'); // maybe this should be inside the try?
+        try {
+            if (!verExists) {
+                if (!appExists) {
+                    await client.query('INSERT INTO apps VALUES ($1, $2)', [app.appId, []]);
+                }
 
-				let res = await client.query(
-					"INSERT INTO app_versions(app, store, region, version) VALUES ($1, $2, $3, $4) RETURNING id",
-					[ app.appId, 'play', region, app.version ]
-				);
-				verId = res.rows[0].id;
+                let res = await client.query(
+                    'INSERT INTO app_versions(app, store, region, version) VALUES ($1, $2, $3, $4) RETURNING id', [app.appId, 'play', region, app.version]
+                );
+                verId = res.rows[0].id;
 
-				await client.query("UPDATE apps SET versions=versions || $1 WHERE id = $2",
-				                   [ [verId], app.appId ]);
+                await client.query('UPDATE apps SET versions=versions || $1 WHERE id = $2', [
+                    [verId], app.appId
+                ]);
 
-			}
+            }
 
-			await client.query(
-				"INSERT INTO playstore_apps VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)",
-				[
-					verId,
-					app.title,
-					app.summary,
-					app.description,
-					app.url,
-					app.price,
-					app.free,
-					app.score,
-					app.reviews,
-					app.genreId,
-					app.familyGenreId,
-					app.minInstalls,
-					app.maxInstalls,
-					devId,
-					app.updated,
-					app.androidVersion,
-					app.contentRating,
-					app.screenshots,
-					app.video,
-					app.recentChanges,
-					new Date().toDateString()
-				]);
-			await client.query("COMMIT");
-		} catch (e) {
-			await client.query("ROLLBACK");
-			throw e;
-		} finally {
-			client.release();
-		}
-		return verId;
-	}
+            await client.query(
+                'INSERT INTO playstore_apps VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)', [
+                    verId,
+                    app.title,
+                    app.summary,
+                    app.description,
+                    app.url,
+                    app.price,
+                    app.free,
+                    app.score,
+                    app.reviews,
+                    app.genreId,
+                    app.familyGenreId,
+                    app.minInstalls,
+                    app.maxInstalls,
+                    devId,
+                    app.updated,
+                    app.androidVersion,
+                    app.contentRating,
+                    app.screenshots,
+                    app.video,
+                    app.recentChanges,
+                    new Date().toDateString()
+                ]);
+            await client.query('COMMIT');
+        } catch (e) {
+            await client.query('ROLLBACK');
+            throw e;
+        } finally {
+            client.release();
+        }
+        return verId;
+    }
 };

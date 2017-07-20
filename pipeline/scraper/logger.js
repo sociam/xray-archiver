@@ -1,6 +1,6 @@
+/*eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
 /*
 Simply logger to correctly error messages to systemd.
-
 */
 
 
@@ -16,6 +16,9 @@ const EMERG = 0,
 var prefixes = ['<0>', '<1>', '<2>', '<3>', '<4>', '<5>', '<6>', '<7>'];
 
 module.exports = {
+    emerg: function(txt) {
+        console.log(prefixes[EMERG], txt);
+    },
     info: function(txt) {
         console.log(prefixes[INFO], txt);
     },
@@ -37,5 +40,4 @@ module.exports = {
     debug: function(txt) {
         console.log(prefixes[DEBUG], txt);
     }
-}
-
+};
