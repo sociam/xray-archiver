@@ -21,6 +21,10 @@ var fs = require('fs');
 var fs_promise = require('fs-readdir-promise');
 var readline = require('readline');
 
+
+var unix = require('unix-dgram');
+var client = unix.createSocket('unix_dgram');
+
 //Logging mechanisim for script
 const EMERG = 0,
     ALERT = 1,
@@ -61,6 +65,8 @@ logger.info("Logger initialised");
 
 
 
+gplay.search({term: "facebook"}).then(console.log,console.log);
+
 
 //Generate sub apps folders
 var fs = require("fs");
@@ -96,7 +102,7 @@ function resolveAPKDir(appData) {
     /* check that the dir created from config exists. */
     const fsEx = require('fs-extra');
 
-    return fsEx.pathExists(appSavePath);
+    return Promise.all([fsEx.pathExists(appSavePath), Promise.resolve(appSavePath)]);
 }
 
 
@@ -128,16 +134,18 @@ function extractAppData(appData) {
     //Check appData state
     if (!appData.appId) { return Promise.reject("Invalid appdata", appData.appId); }
 
-    var resolveApk = resolveAPKDir(appData).then(exists => {
+    var resolveApk = resolveAPKDir(appData).then(appPathInfo => {
+        let exists = appPathInfo[0], appSavePath= appPathInfo[1];
+
         logger.info("Does app save exist already? : "+ exists);
         if (exists) {
-            logger.debug("App version already exists"+ appSavePath);
+            logger.debug("App version already exists");
             logger.err('Could not save apps ', err.message);
             return Promise.reject(err.message);
         } else {
-            logger.info("New app version "+ appSavePath);
+            logger.info("New app version ");
             require("shelljs").mkdir("-p", appSavePath);
-            return appSavePath;
+            appSavePath;
         }
     }).catch(function(err) {
         logger.err('Could not create a app save dir ', err);
@@ -160,12 +168,10 @@ function extractAppData(appData) {
           return err;
         });
     }).then(() => {
-        var unix = require('unix-dgram');
-        var client = unix.createSocket('unix_dgram');
         // TODO: if unix fails keep trying the socket
         if (require('fs').existsSync(config.sockpath)) {
             logger.err('Could not bind to socket... try again later  ');
-            return;
+            return Promise.resolve();
         }
 
         // TODO: Check that '-' won't mess things up on the DB side... eg if region was something like 'en-gb'
