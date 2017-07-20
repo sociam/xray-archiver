@@ -162,7 +162,7 @@ function extractAppData(appData) {
 function scrapeWord(word) {
     return gplay.search({
         term: word,
-        num: 4,
+        num: 120,
         region: region,
         price: 'free',
         fullDetail: true,
@@ -257,29 +257,26 @@ wordStashFiles.then(files => {
                     p = p.then(() => {
                         logger.info('searching on word:' + word);
                         write_latest_word(word);
-                        return scrapeWord(word).then(function(appsData) {
+                        return scrapeWord(word).catch((err) => logger.err('scraping app on word failed:' + err));
+                    }).then(function(appsData) {
+                        logger.info('Search apps total: ' + appsData.length);
+                        let r = Promise.resolve();
 
-                            logger.info('Search apps total: ' + appsData.length);
-                            let r = Promise.resolve();
+                        appsData.forEach(app => {
+                            r = r.then(() => {
+                                logger.info('Attempting to download:' + app.appId);
+                                return extractAppData(app);
+                            }, (err) => logger.warn('downloading app failed:' + err));
+                        });
+                        //processAppData(appsData,extractAppData);
 
-                            appsData.forEach(app => {
-
-                                r = r.then(() => {
-                                    logger.info('Attempting to download:' + app.appId);
-                                    return extractAppData(app);
-                                }, (err) => logger.warn('downloading app failed:' + err));
-                            });
-                            //processAppData(appsData,extractAppData);
-
-                        }, (err) => logger.err('scraping app on word failed:' + err));
-                    }), (err) => logger.err('going through word list failed:' + err);
+                    }, (err) => logger.err('going through word list failed:' + err));
                 });
 
                 rd.on('end', () => {
+                    p.then(() => resolve());
                     p.catch((err) => logger.err('last data word failed:' + err));
                 });
-
-                p.then(() => resolve());
             });
         }, (err) => logger.err('could no iterate through words in file:' + err));
     }, (err) => logger.err('iterating through dir word list failed::' + err));
