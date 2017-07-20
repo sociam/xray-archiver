@@ -10,7 +10,7 @@ ExecStart=/usr/bin/node /usr/local/lib/xray/scraper/scrape.js
 #ExecStop=?
 User=xray
 Group=xray
-Type=oneshot
+Type=simple
 
 [Install]
 WantedBy=multi-user.target
