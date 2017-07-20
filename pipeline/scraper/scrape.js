@@ -21,45 +21,13 @@ var fs = require('fs');
 var fs_promise = require('fs-readdir-promise');
 var readline = require('readline');
 
-//Logging mechanisim for script
-const EMERG = 0,
-    ALERT = 1,
-    CRIT = 2,
-    ERR = 3,
-    WARN = 4,
-    NOTICE = 5,
-    INFO = 6,
-    DEBUG = 7;
+//Unix pipeline setup
+var unix = require('unix-dgram');
+var client = unix.createSocket('unix_dgram');
 
-var prefixes = ['<0>', '<1>', '<2>', '<3>', '<4>', '<5>', '<6>', '<7>'];
+var logger = require("./logger");
 
-var logger = {
-    //console.log(prefixes[INFO], txt);
-    info: function(txt) {
-        console.log(prefixes[INFO], txt);
-    },
-    err: function(txt) {
-        console.log(prefixes[ERR], txt);
-    },
-    alert: function(txt) {
-        console.log(prefixes[ALERT], txt);
-    },
-    crit: function(txt) {
-        console.log(prefixes[CRIT], txt);
-    },
-    warn: function(txt) {
-        console.log(prefixes[WARN], txt);
-    },
-    notice: function(txt) {
-        console.log(prefixes[NOTICE], txt);
-    },
-    debug: function(txt) {
-        console.log(prefixes[DEBUG], txt);
-    }
-}
-logger.info("Logger initialised");
-
-
+gplay.search({term: "facebook"}).then(console.log,console.log);
 
 
 //Generate sub apps folders
@@ -79,9 +47,9 @@ var appStore = "play";
 
 
 function resolveAPKDir(appData) {
-
     let path = require("path");
     //console.log("appdir:"+ config.datadir, "\nappId"+ appData.appId, "\nappStore"+ appStore, "\nregion"+ region, "\nversion"+ appData.version);
+
     //log("appdir:"+ config.appdir, "\nappId"+ appData.appId, "\nappStore"+ appStore, "\nregion"+ region, "\nversion"+ appData.version);
     //NOTE: If app version is undefined setting to  date
     if (!appData.version || appData.version === "Varies with device") {
@@ -96,20 +64,7 @@ function resolveAPKDir(appData) {
     /* check that the dir created from config exists. */
     const fsEx = require('fs-extra');
 
-    return fsEx.pathExists(appSavePath).then(exists => {
-        logger.info("Does app save exist already? : "+ exists);
-        if (exists) {
-            logger.debug("App version already exists"+ appSavePath);
-            return Promise.reject(appData.appId);
-        } else {
-            logger.info("New app version "+ appSavePath);
-            require("shelljs").mkdir("-p", appSavePath);
-            return appSavePath;
-        }
-    }).catch(function(err) {
-        logger.err('Could not create a app save dir ', err);
-        return Promise.reject(appData.appId);
-    });
+    return Promise.all([fsEx.pathExists(appSavePath), Promise.resolve(appSavePath)]);
 }
 
 
@@ -141,58 +96,55 @@ function extractAppData(appData) {
     //Check appData state
     if (!appData.appId) { return Promise.reject("Invalid appdata", appData.appId); }
 
-    var resolveApk = resolveAPKDir(appData);
-    //log("Resolve apk",resolveApk).then(() => { resolve(); }, (err) => { log("last dl failed:", err); });
+    var resolveApk = resolveAPKDir(appData).then(appPathInfo => {
+        let exists = appPathInfo[0], appSavePath= appPathInfo[1];
+
+        logger.info("Does app save exist already? : "+ exists);
+        if (exists) {
+            logger.debug("App version already exists");
+            logger.err('Could not save apps ', err.message);
+            return Promise.reject(err.message);
+        } else {
+            logger.info("New app version ");
+            require("shelljs").mkdir("-p", appSavePath);
+            appSavePath;
+        }
+    }).catch(function(err) {
+        logger.err('Could not create a app save dir ', err);
+        return Promise.reject(appData.appId);
+    });
 
     resolveApk.then(appSaveDir => {
-
         let args = ["-pd", appData.appId, "-f", appSaveDir, "-c", config.credDownload]; /* Command line args for gplay cli */
-
         logger.info("Python downloader playstore starting");
-       
-       
-        let spawnGplay = spawnGplayDownloader(args);
-        //log("Gplay spwaner",spawnGplay);
-
-        spawnGplay.then(pipeCode => {
-
-            logger.info("Download process complete for "+ appData.appId);
-
-            // TODO: DB Comms... this can be factorised.
-            var db = require('./db');
-            var dbId = db.insertPlayApp(appData, region);
-
-            dbId.then(() => {
-                var unix = require('unix-dgram');
-                var client = unix.createSocket('unix_dgram');
-
-                // TODO: if unix fails keep trying the socket
-                if (require('fs').existsSync(config.sockpath)) {
-                    logger.err('Could not bind to socket... try again later  ', err.message);
-                    return Promise.reject(appData.appId);
-                }
-
-                // TODO: Check that '-' won't mess things up on the DB side... eg if region was something like 'en-gb'
-                var message = Buffer(dbId + "-" + appData.appId + "-" + config.appStore + "-" + region + "-" + appData.version);
-
-                client.on('error', logger.err);
-                client.send(message, 0, message.length, config.sockpath);
-
-                client.close(); /* The end of one single app download and added to the DB */
-
-            }).catch(function(err) {
-
-                logger.err('Could not write to db ', err.message);
-                return Promise.reject(appData.appId);
-            });
-        }).catch(function(err) {
+        return spawnGplayDownloader(args).catch( (err) => { 
             logger.warn('Downloading failed with error: ', err.message);
-
-            return Promise.reject(appData.appId);
+            return err;            
         });
+    }).then(() => {
+        logger.info("Download process complete for "+ appData.appId);
+        // TODO: DB Comms... this can be factorised.
+        var db = require('./db');
+        return db.insertPlayApp(appData, region).catch((err) => {
+          logger.err("Inserting play app failed");
+          return err;
+        });
+    }).then(() => {
+        // TODO: if unix fails keep trying the socket
+        if (require('fs').existsSync(config.sockpath)) {
+            logger.err('Could not bind to socket... try again later  ');
+            return Promise.resolve();
+        }
+
+        // TODO: Check that '-' won't mess things up on the DB side... eg if region was something like 'en-gb'
+        var message = Buffer(dbId + "-" + appData.appId + "-" + config.appStore + "-" + region + "-" + appData.version);
+
+        client.on('error', logger.err);
+        client.send(message, 0, message.length, config.sockpath);
+        client.close(); /* The end of one single app download and added to the DB */
     }).catch(function(err) {
-        logger.err('Could not save apps ', err.message);
-        return Promise.reject(appData.appId);
+        logger.err('Could not write to db ', err.message);
+        return;
     });
 }
 
@@ -315,10 +267,7 @@ wordStashFiles.then(files => {
                         return scrapeWord(word).then(function(appsData) {
 
                             logger.info("Search apps total: "+ appsData.length);
-
-                            logger.info("Search apps total: "+ appsData.length);
-
-                            var r = Promise.resolve();
+                              var r = Promise.resolve();
 
                             appsData.forEach(app => {
 
