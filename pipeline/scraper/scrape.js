@@ -164,8 +164,8 @@ function extractAppData(appData) {
             var dbId = db.insertPlayApp(appData, region);
 
             dbId.then(() => {
-                var client = unix.createSocket('unix_dgram');
                 var unix = require('unix-dgram');
+                var client = unix.createSocket('unix_dgram');
 
                 // TODO: if unix fails keep trying the socket
                 // if (require('fs').existsSync(config.sockpath){
