@@ -25,7 +25,7 @@ var readline = require('readline');
 var unix = require('unix-dgram');
 var client = unix.createSocket('unix_dgram');
 
-var logger = require("./logger.js");
+var logger = require("./logger");
 
 gplay.search({term: "facebook"}).then(console.log,console.log);
 
