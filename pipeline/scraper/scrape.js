@@ -123,7 +123,7 @@ function extractAppData(appData) {
         return db.insertPlayApp(appData, region).catch((err) => {
             logger.err('Inserting play app failed'+ err +  region);
             return err;
-        });
+        }).catch((err) => logger.err('Could not write to db:', err.message));
     }).then((dbId) => {
         // TODO: if unix fails keep trying the socket
         if (!require('fs').existsSync(config.sockpath)) {
@@ -135,10 +135,8 @@ function extractAppData(appData) {
         let message = Buffer(dbId + '-' + appData.appId + '-' + config.appStore + '-' + region + '-' + appData.version);
 
         //client.on('error', logger.err);
-        client.send(message, 0, message.length, config.sockpath);
-        client.close(); /* The end of one single app download and added to the DB */
+        return client.send(message, 0, message.length, config.sockpath).catch((err) => logger.err('Could not connect to socket:', err.message));
     }).catch(function(err) {
-        logger.err('Could not write to db ' + err.message);
         return;
     });
 }
