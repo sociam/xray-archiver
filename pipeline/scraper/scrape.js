@@ -134,6 +134,7 @@ function extractAppData(appData) {
                 }
                 logger.warning('Downloading failed with error:', err.message);
                 appData.isDownloaded = false;
+                return Promise.resolve();
             });
         }
     }).then(() => {
@@ -179,7 +180,7 @@ function extractAppData(appData) {
 function scrapeWord(word) {
     return gplay.search({
         term: word,
-        num: 4,
+        num: 120,
         region: region,
         price: 'free',
         fullDetail: true,
@@ -272,14 +273,14 @@ function main() {
 
                     rd.on('line', (word) => {
                         p = p.then(() => {
-                            logger.info('searching on word:' + word);
+                            logger.info('searching on word:', word);
                             write_latest_word(word);
                             return scrapeWord(word).catch((err) => {
                                 logger.err('scraping app on word failed:' + err);
                                 return Promise.reject();
                             });
                         }).then(function(appsData) {
-                            logger.info('Search apps total: ' + appsData.length);
+                            logger.debug('Search apps total:', appsData.length);
                             let r = Promise.resolve();
 
                             appsData.forEach(app => {
