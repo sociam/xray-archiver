@@ -30,7 +30,7 @@ let appsSaveDir = path.join(config.datadir, 'apps');
 
 function mkdirp(path) {
     path.split(path.sep).reduce((parentDir, childDir) => {
-        const curDir = path.resolve(parentDir, childDir);
+        const curDir = path.join(parentDir, childDir);
         if (!fs.existsSync(curDir)) {
             fs.mkdirSync(curDir);
         }
