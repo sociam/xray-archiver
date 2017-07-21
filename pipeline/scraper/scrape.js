@@ -182,9 +182,6 @@ function scrapeWord(word) {
     });
 }
 
-let wordStash = config.wordStashDir;
-
-
 function reader(filepath) {
     return readline.createInterface({
         input: fs.createReadStream(filepath)
@@ -251,6 +248,7 @@ function write_latest_word(word) {
 function main() {
     wipe_scraped_word();
 
+    let wordStash = config.wordStashDir;
     let wordStashFiles = fs_promise(wordStash);
 
     // TODO: Refactor this....
