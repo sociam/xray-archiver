@@ -30,11 +30,11 @@ function connect() {
 }
 
 async function insertDev(dev) {
-    var res = await pool.query('SELECT id FROM developers WHERE $1 = ANY(email)', [dev.email]);
+    var res = await query('SELECT id FROM developers WHERE $1 = ANY(email)', [dev.email]);
     if (res.length > 0) {
         return res.rows[0].id;
     }
-    
+
     // maybe dev id needs to be URL encoded?
     let store_site = 'https://play.google.com/store/apps/developer?id=' + dev.id;
     res = await query('INSERT INTO developers(email,name,store_site,site) VALUES ($1, $2, $3, $4) RETURNING id', [
@@ -45,6 +45,7 @@ async function insertDev(dev) {
 
 module.exports = {
     insertPlayApp: async(app, region) => {
+
         var devId = await insertDev({
             name: app.developer,
             id: app.developerId,
@@ -81,7 +82,7 @@ module.exports = {
                 }
 
                 let res = await client.query(
-                    'INSERT INTO app_versions(app, store, region, version) VALUES ($1, $2, $3, $4) RETURNING id', [app.appId, 'play', region, app.version]
+                    'INSERT INTO app_versions(app, store, region, version,downloaded) VALUES ($1, $2, $3, $4, $5) RETURNING id', [app.appId, 'play', region, app.version, app.isDownloaded]
                 );
                 verId = res.rows[0].id;
 
@@ -125,3 +126,7 @@ module.exports = {
         return verId;
     }
 };
+
+if (!module.parent)  {
+    query('SELECT * FROM developers');
+}

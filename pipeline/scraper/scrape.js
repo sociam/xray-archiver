@@ -43,7 +43,7 @@ function resolveAPKDir(appData) {
 
     //log('appdir:'+ config.appdir, '\nappId'+ appData.appId, '\nappStore'+ appStore, '\nregion'+ region, '\nversion'+ appData.version);
     //NOTE: If app version is undefined setting to  date
-    if (!appData.version || appData.version === 'leties with device') {
+    if (!appData.version || appData.version === 'varies with device') {
         logger.debug('Version not found defaulting too', appData.updated);
         let formatDate = appData.updated.replace(/\s+/g, '').replace(',', '/');
         appData.version = formatDate;
@@ -112,17 +112,21 @@ function extractAppData(appData) {
             logger.warn('Downloading failed with error: ' + err.message);
             return err;
         });
-    }).then(() => {
+    }).then( () => {
         logger.info('Download process complete for ' + appData.appId);
+
+        //TODO: append previous and write seperately 
+        appData.push({isDownloaded:true});
+
         // TODO: DB Comms... this can be factorised.
         let db = require('./db');
         return db.insertPlayApp(appData, region).catch((err) => {
-            logger.err('Inserting play app failed'+ appData +  region);
+            logger.err('Inserting play app failed'+ err +  region);
             return err;
         });
     }).then((dbId) => {
         // TODO: if unix fails keep trying the socket
-        if (require('fs').existsSync(config.sockpath)) {
+        if (!require('fs').existsSync(config.sockpath)) {
             logger.err('Could not bind to socket... try again later  ');
             return Promise.resolve();
         }
@@ -130,7 +134,7 @@ function extractAppData(appData) {
         // TODO: Check that '-' won't mess things up on the DB side... eg if region was something like 'en-gb'
         let message = Buffer(dbId + '-' + appData.appId + '-' + config.appStore + '-' + region + '-' + appData.version);
 
-        client.on('error', logger.err);
+        //client.on('error', logger.err);
         client.send(message, 0, message.length, config.sockpath);
         client.close(); /* The end of one single app download and added to the DB */
     }).catch(function(err) {
@@ -237,6 +241,7 @@ function write_latest_word(word) {
 // }
 
 wipe_scraped_word();
+
 let wordStashFiles = fs_promise(wordStash);
 
 // TODO: Refactor this....
