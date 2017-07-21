@@ -22,7 +22,7 @@ const readline = require('readline');
 const unix = require('unix-dgram');
 const client = unix.createSocket('unix_dgram');
 
-const logger = require('./logger');
+const logger = require('./logger.js');
 
 let appsSaveDir = require('path').join(config.datadir, 'apps');
 

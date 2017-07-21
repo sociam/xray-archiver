@@ -68,6 +68,8 @@ install -Dm644 scraper/{scrape.js,db.js,package.json} -t "$PREFIX/lib/xray/scrap
 install -Dm644 analyzer/xray-analyzer.service scraper/xray-scraper.service\
         -t "$PREFIX/lib/systemd/system/"
 
+systemctl daemon-reload
+
 cd "$PREFIX/lib/xray/scraper"
 npm install
 
