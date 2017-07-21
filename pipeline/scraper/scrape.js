@@ -86,33 +86,23 @@ function extractAppData(appData) {
     //Check appData state
     if (!appData.appId) { return Promise.reject('Invalid appdata', appData.appId); }
 
-    let resolveApk = resolveAPKDir(appData).then(appPathInfo => {
+    return resolveAPKDir(appData).then(appPathInfo => {
         let exists = appPathInfo[0],
             appSavePath = appPathInfo[1];
 
-        logger.info('Does app save exist already? : ' + exists);
         if (exists) {
             logger.info('App version already exists');
             //logger.err('Could not save apps ', err.message);
-            return Promise.reject('App version already exists');
+            return Promise.reject();
         } else {
-            logger.info('New app version ');
+            logger.info('New app version %s-%s', appData.appId, appData.version);
             require('shelljs').mkdir('-p', appSavePath);
-            appSavePath;
+            let args = ['-pd', appData.appId, '-f', appSavePath, '-c', config.credDownload]; /* Command line args for gplay cli */
+            logger.info('Python downloader playstore starting');
+            return spawnGplayDownloader(args).catch(
+                (err) => logger.warning('Downloading failed with error:', err.message));
         }
-    }).catch(function(err) {
-        logger.err('Could not create a app save dir ' + err.message);
-        return Promise.reject(appData.appId);
-    });
-
-    resolveApk.then(appSaveDir => {
-        let args = ['-pd', appData.appId, '-f', appSaveDir, '-c', config.credDownload]; /* Command line args for gplay cli */
-        logger.info('Python downloader playstore starting');
-        return spawnGplayDownloader(args).catch((err) => {
-            logger.warning('Downloading failed with error: ' + err.message);
-            return err;
-        });
-    }).then( () => {
+    }).then(() => {
         logger.info('Download process complete for ' + appData.appId);
 
         //TODO: append previous and write seperately
@@ -128,7 +118,7 @@ function extractAppData(appData) {
         // TODO: if unix fails keep trying the socket
         if (!require('fs').existsSync(config.sockpath)) {
             logger.err('Could not bind to socket... try again later  ');
-            return Promise.resolve();
+            return Promise.reject();
         }
 
         // TODO: Check that '-' won't mess things up on the DB side... eg if region was something like 'en-gb'
