@@ -274,7 +274,10 @@ function main() {
                         p = p.then(() => {
                             logger.info('searching on word:' + word);
                             write_latest_word(word);
-                            return scrapeWord(word).catch((err) => logger.err('scraping app on word failed:' + err));
+                            return scrapeWord(word).catch((err) => {
+                                logger.err('scraping app on word failed:' + err);
+                                return Promise.reject();
+                            });
                         }).then(function(appsData) {
                             logger.info('Search apps total: ' + appsData.length);
                             let r = Promise.resolve();
