@@ -31,7 +31,7 @@ function connect() {
 
 async function insertDev(dev) {
     var res = await query('SELECT id FROM developers WHERE $1 = ANY(email)', [dev.email]);
-    if (res.length > 0) {
+    if (res.rowCount > 0) {
         return res.rows[0].id;
     }
 
@@ -58,13 +58,13 @@ module.exports = {
         var verId;
         var res = await query('SELECT * FROM apps WHERE id = $1', [app.appId]);
 
-        if (res.length > 0) {
+        if (res.rowCount > 0) {
             appExists = true;
             // app exists in database, check if version does as well
             var res1 = await query(
                 'SELECT id FROM app_versions WHERE app = $1 AND store = $2 AND region = $3 AND version = $4', [app.appId, 'play', region, app.version]);
 
-            if (res1.length > 0) {
+            if (res1.rowCount > 0) {
                 // app version is also in database
                 verExists = true;
                 verId = res1.rows[0].id;
@@ -82,7 +82,8 @@ module.exports = {
                 }
 
                 let res = await client.query(
-                    'INSERT INTO app_versions(app, store, region, version,downloaded) VALUES ($1, $2, $3, $4, $5) RETURNING id', [app.appId, 'play', region, app.version, app.isDownloaded]
+                    'INSERT INTO app_versions(app, store, region, version, downloaded) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+                    [app.appId, 'play', region, app.version, app.isDownloaded]
                 );
                 verId = res.rows[0].id;
 
