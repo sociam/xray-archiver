@@ -116,7 +116,7 @@ function extractAppData(appData) {
         logger.info('Download process complete for ' + appData.appId);
 
         //TODO: append previous and write seperately
-        appData.push({isDownloaded:true});
+        appData.isDownloaded = true;
 
         // TODO: DB Comms... this can be factorised.
         let db = require('./db');
