@@ -34,7 +34,7 @@ async function insertDev(dev) {
     if (res.length > 0) {
         return res.rows[0].id;
     }
-
+    
     // maybe dev id needs to be URL encoded?
     let store_site = 'https://play.google.com/store/apps/developer?id=' + dev.id;
     res = await query('INSERT INTO developers(email,name,store_site,site) VALUES ($1, $2, $3, $4) RETURNING id', [

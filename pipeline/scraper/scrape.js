@@ -117,7 +117,7 @@ function extractAppData(appData) {
         // TODO: DB Comms... this can be factorised.
         let db = require('./db');
         return db.insertPlayApp(appData, region).catch((err) => {
-            logger.err('Inserting play app failed');
+            logger.err('Inserting play app failed', appData, region);
             return err;
         });
     }).then((dbId) => {
