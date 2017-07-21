@@ -104,7 +104,7 @@ function downloadApp(appData, appSavePath) {
         logger.warning('DL process %d stderr:', downloadProcess.pid, data);
     });
 
-    return apkDownloader;
+    return apkDownloader.catch((err) => logger.err('Error downloading app:', err));
 }
 
 
