@@ -127,6 +127,11 @@ function extractAppData(appData) {
             //TODO: append previous and write seperately
             appData.isDownloaded = true;
             return downloadApp(appData, appSavePath).catch((err) => {
+                try {
+                    fs.rmdir(appSavePath);
+                } catch (err) {
+                    // TODO: something
+                }
                 logger.warning('Downloading failed with error:', err.message);
                 appData.isDownloaded = false;
             });
