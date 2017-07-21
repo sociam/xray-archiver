@@ -1,43 +1,47 @@
+'use strict';
 /*eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
 /*
 Simply logger to correctly error messages to systemd.
 */
 
-
 const EMERG = 0,
-    ALERT = 1,
-    CRIT = 2,
-    ERR = 3,
-    WARNING = 4,
-    NOTICE = 5,
-    INFO = 6,
-    DEBUG = 7;
+      ALERT = 1,
+      CRIT = 2,
+      ERR = 3,
+      WARNING = 4,
+      NOTICE = 5,
+      INFO = 6,
+      DEBUG = 7;
 
 var prefixes = ['<0>', '<1>', '<2>', '<3>', '<4>', '<5>', '<6>', '<7>'];
 
+function log(level, args) {
+    process.stdout.write(prefixes[level]+require('util').format.apply(null, args));
+}
+
 module.exports = {
-    emerg: function(txt) {
-        console.log(prefixes[EMERG], txt);
+    emerg: function() {
+        log(EMERG, arguments);
     },
-    info: function(txt) {
-        console.log(prefixes[INFO], txt);
+    alert: function() {
+        log(ALERT, arguments);
     },
-    err: function(txt) {
-        console.log(prefixes[ERR], txt);
+    crit: function() {
+        log(CRIT, arguments);
     },
-    alert: function(txt) {
-        console.log(prefixes[ALERT], txt);
+    err: function() {
+        log(ERR, arguments);
     },
-    crit: function(txt) {
-        console.log(prefixes[CRIT], txt);
+    warning: function() {
+        log(WARNING, arguments);
     },
-    warn: function(txt) {
-        console.log(prefixes[WARNING], txt);
+    notice: function() {
+        log(NOTICE, arguments);
     },
-    notice: function(txt) {
-        console.log(prefixes[NOTICE], txt);
+    info: function() {
+        log(INFO, arguments);
     },
-    debug: function(txt) {
-        console.log(prefixes[DEBUG], txt);
+    debug: function() {
+        log(DEBUG, arguments);
     }
 };
