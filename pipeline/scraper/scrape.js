@@ -7,8 +7,8 @@ NOTE: this has a permission section could inspect when throw this into folder
 NOTE: cronjob...
 
 TODO: to avoid the situation of askign for a captcha use a throttle keyword
-, all methods now support a throttle property, which defines an upper bound to 
-the amount of requests that will be attempted per second. Once that limit is reached, 
+, all methods now support a throttle property, which defines an upper bound to
+the amount of requests that will be attempted per second. Once that limit is reached,
 further requests will be held  until the second passes.
 */
 const config = require('/etc/xray/config.json'); //See example_config.json
@@ -43,7 +43,7 @@ function resolveAPKDir(appData) {
 
     //log('appdir:'+ config.appdir, '\nappId'+ appData.appId, '\nappStore'+ appStore, '\nregion'+ region, '\nversion'+ appData.version);
     //NOTE: If app version is undefined setting to  date
-    if (!appData.version || appData.version === 'varies with device') {
+    if (!appData.version || appData.version === 'Varies with device') {
         logger.debug('Version not found defaulting too', appData.updated);
         let formatDate = appData.updated.replace(/\s+/g, '').replace(',', '/');
         appData.version = formatDate;
@@ -115,7 +115,7 @@ function extractAppData(appData) {
     }).then( () => {
         logger.info('Download process complete for ' + appData.appId);
 
-        //TODO: append previous and write seperately 
+        //TODO: append previous and write seperately
         appData.push({isDownloaded:true});
 
         // TODO: DB Comms... this can be factorised.
@@ -231,7 +231,7 @@ function write_latest_word(word) {
 
 //                 //TODO: later before begin scraping you do a similar search here
 
-//                 return extractAppData(app);  
+//                 return extractAppData(app);
 //             }).catch( err => {
 //                 log('Err with word stash',err.message);
 //             });
