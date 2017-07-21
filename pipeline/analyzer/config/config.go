@@ -46,7 +46,7 @@ func Load(cfgFile string) Config {
 	if cfg.DataDir == "" {
 		cfg.DataDir = "/usr/local/var/xray"
 	}
-	cfg.AppDir = path.Join(cfg.DataDir, "apk_archive")
+	cfg.AppDir = path.Join(cfg.DataDir, "apps")
 	if cfg.UnpackDir == "" {
 		cfg.UnpackDir = "/tmp/unpacked_apks"
 	}
