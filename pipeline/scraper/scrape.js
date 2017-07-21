@@ -101,7 +101,7 @@ function extractAppData(appData) {
             appSavePath;
         }
     }).catch(function(err) {
-        logger.err('Could not create a app save dir ', err);
+        logger.err('Could not create a app save dir ' + err.message);
         return Promise.reject(appData.appId);
     });
 
@@ -109,7 +109,7 @@ function extractAppData(appData) {
         let args = ['-pd', appData.appId, '-f', appSaveDir, '-c', config.credDownload]; /* Command line args for gplay cli */
         logger.info('Python downloader playstore starting');
         return spawnGplayDownloader(args).catch((err) => {
-            logger.warn('Downloading failed with error: ', err.message);
+            logger.warn('Downloading failed with error: ' + err.message);
             return err;
         });
     }).then(() => {
@@ -117,7 +117,7 @@ function extractAppData(appData) {
         // TODO: DB Comms... this can be factorised.
         let db = require('./db');
         return db.insertPlayApp(appData, region).catch((err) => {
-            logger.err('Inserting play app failed', appData, region);
+            logger.err('Inserting play app failed'+ appData +  region);
             return err;
         });
     }).then((dbId) => {
@@ -134,7 +134,7 @@ function extractAppData(appData) {
         client.send(message, 0, message.length, config.sockpath);
         client.close(); /* The end of one single app download and added to the DB */
     }).catch(function(err) {
-        logger.err('Could not write to db ', err.message);
+        logger.err('Could not write to db ' + err.message);
         return;
     });
 }
@@ -206,7 +206,7 @@ function wipe_scraped_word() {
 function write_latest_word(word) {
     fs.appendFile(config.datadir + '/scraped_words.txt', word + '\n', function(err) {
         if (err) {
-            logger.err('Unable to log to the scraped word file',err.message);
+            logger.err('Unable to log to the scraped word file' + err.message);
         }
     });
 }
