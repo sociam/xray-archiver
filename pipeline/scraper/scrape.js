@@ -15,6 +15,8 @@ const config = require('/etc/xray/config.json'); //See example_config.json
 const gplay = require('google-play-scraper');
 //Reading from folder of csv files
 const fs = require('fs');
+const fsEx = require('fs-extra');
+const path = require('path');
 const fs_promise = require('fs-readdir-promise');
 const readline = require('readline');
 
@@ -24,21 +26,49 @@ const client = unix.createSocket('unix_dgram');
 
 const logger = require('./logger.js');
 
-let appsSaveDir = require('path').join(config.datadir, 'apps');
+let appsSaveDir = path.join(config.datadir, 'apps');
 
+function mkdirp(path) {
+    path.split(path.sep).reduce((parentDir, childDir) => {
+        const curDir = path.resolve(parentDir, childDir);
+        if (!fs.existsSync(curDir)) {
+            fs.mkdirSync(curDir);
+        }
 
-if (!require('fs').existsSync(appsSaveDir)) {
-    logger.info('New apps folder needed ' + appsSaveDir);
-    require('shelljs').mkdir('-p', appsSaveDir);
+        return curDir;
+    }, path.isAbsolute ? path.sep : '');
 }
+
+try {
+    let dirStats = fs.statSync(appsSaveDir);
+    if (!dirStats.isDirectory()) {
+        logger.err('The app directory %s exists but is not a directory!', appsSaveDir);
+        process.exit(1);
+    }
+} catch (err) {
+    if (err.code == 'ENOENT') {
+        logger.info('Creating apps folder ' + appsSaveDir);
+        mkdirp(appsSaveDir);
+    } else {
+        logger.err('Unknown error opening appsSaveDir:', err.message);
+        process.exit(1);
+    }
+}
+
+let waitForPipe = () => {
+    if (!fs.existsSync(config.sockpath)) {
+        logger.err('Could not bind to socket... trying again in 1000s');
+        setTimeout(waitForPipe, 1000);
+    } else {
+        main();
+    }
+}; waitForPipe();
 
 //TODO: move region to config or section to iterate over
 let region = 'us';
 let appStore = 'play';
 
-
 function resolveAPKDir(appData) {
-    let path = require('path');
     //console.log('appdir:'+ config.datadir, '\nappId'+ appData.appId, '\nappStore'+ appStore, '\nregion'+ region, '\nversion'+ appData.version);
 
     //log('appdir:'+ config.appdir, '\nappId'+ appData.appId, '\nappStore'+ appStore, '\nregion'+ region, '\nversion'+ appData.version);
@@ -52,28 +82,26 @@ function resolveAPKDir(appData) {
     let appSavePath = path.join(appsSaveDir, appData.appId, appStore, region, appData.version);
     logger.info('App desired save dir ' + appSavePath);
 
-    /* check that the dir created from config exists. */
-    const fsEx = require('fs-extra');
-
     return Promise.all([fsEx.pathExists(appSavePath), Promise.resolve(appSavePath)]);
 }
 
-function spawnGplayDownloader(args) {
-
+function downloadApp(appData, appSavePath) {
+    const args = ['-pd', appData.appId, '-f', appSavePath, '-c', config.credDownload]; /* Command line args for gplay cli */
     const spw = require('child-process-promise').spawn;
     logger.info('Passing args to downloader' + args);
     const apkDownloader = spw('gplaycli', args);
 
     let downloadProcess = apkDownloader.childProcess;
 
-    logger.info('APK downloader created childProcess.pid: ' + downloadProcess.pid);
+    mkdirp(appSavePath);
+    logger.info('DL process %d for %s-%s started.', downloadProcess.pid, appData.appId, appData.version);
 
     downloadProcess.stdout.on('data', data => {
-        logger.info(`The downloader process produce the following stdout: ${data}`);
+        logger.debug('DL process %d stdout:', downloadProcess.pid, data);
     });
 
     downloadProcess.stderr.on('data', data => {
-        logger.warning(`The downloader process produce the following stderr: ${data}`);
+        logger.warning('DL process %d stderr:', downloadProcess.pid, data);
     });
 
     return apkDownloader;
@@ -91,18 +119,14 @@ function extractAppData(appData) {
             appSavePath = appPathInfo[1];
 
         if (exists) {
-            logger.info('App version already exists');
-            //logger.err('Could not save apps ', err.message);
+            logger.info('App version %s-%s already exists', appData.appId, appData.version);
             return Promise.reject();
         } else {
             logger.info('New app version %s-%s', appData.appId, appData.version);
-            require('shelljs').mkdir('-p', appSavePath);
-            let args = ['-pd', appData.appId, '-f', appSavePath, '-c', config.credDownload]; /* Command line args for gplay cli */
-            logger.info('Python downloader playstore starting');
 
             //TODO: append previous and write seperately
             appData.isDownloaded = true;
-            return spawnGplayDownloader(args).catch((err) => {
+            return downloadApp(appData, appSavePath).catch((err) => {
                 logger.warning('Downloading failed with error:', err.message);
                 appData.isDownloaded = false;
             });
@@ -116,16 +140,9 @@ function extractAppData(appData) {
             logger.err('Inserting play app failed', err, region);
             return err;
         }).catch((err) => logger.err('Could not write to db:', err.message));
-    }).then((dbId) => {
-        // TODO: if unix fails keep trying the socket
-        if (!require('fs').existsSync(config.sockpath)) {
-            logger.err('Could not bind to socket... try again later  ');
-            return Promise.reject();
-        }
-
+    }).then(async (dbId) => {
         // TODO: Check that '-' won't mess things up on the DB side... eg if region was something like 'en-gb'
-        // TODO: replace 'play' with actual app store
-        let message = Buffer(dbId + '-' + appData.appId + '-' + 'play' + '-' + region + '-' + appData.version);
+        let message = Buffer(dbId + '-' + appData.appId + '-' + appStore + '-' + region + '-' + appData.version);
 
         //client.on('error', logger.err);
         return client.send(message, 0, message.length, config.sockpath).catch((err) => logger.err('Could not connect to socket:', err.message));
@@ -231,55 +248,56 @@ function write_latest_word(word) {
 //     });
 // }
 
-wipe_scraped_word();
+function main() {
+    wipe_scraped_word();
 
-let wordStashFiles = fs_promise(wordStash);
+    let wordStashFiles = fs_promise(wordStash);
 
-// TODO: Refactor this....
-wordStashFiles.then(files => {
-    let q = Promise.resolve();
+    // TODO: Refactor this....
+    wordStashFiles.then(files => {
+        let q = Promise.resolve();
 
-    files.map(file => {
-        q = q.then(() => {
-            return new Promise((resolve) => {
-                logger.info('Resolving word stash' + wordStash);
-                let filepath = require('path').join(wordStash, file);
+        files.map(file => {
+            q = q.then(() => {
+                return new Promise((resolve) => {
+                    logger.info('Resolving word stash' + wordStash);
+                    let filepath = require('path').join(wordStash, file);
 
-                let rd = reader(filepath);
+                    let rd = reader(filepath);
 
-                let p = Promise.resolve();
+                    let p = Promise.resolve();
 
-                rd.on('line', (word) => {
-                    p = p.then(() => {
-                        logger.info('searching on word:' + word);
-                        write_latest_word(word);
-                        return scrapeWord(word).catch((err) => logger.err('scraping app on word failed:' + err));
-                    }).then(function(appsData) {
-                        logger.info('Search apps total: ' + appsData.length);
-                        let r = Promise.resolve();
+                    rd.on('line', (word) => {
+                        p = p.then(() => {
+                            logger.info('searching on word:' + word);
+                            write_latest_word(word);
+                            return scrapeWord(word).catch((err) => logger.err('scraping app on word failed:' + err));
+                        }).then(function(appsData) {
+                            logger.info('Search apps total: ' + appsData.length);
+                            let r = Promise.resolve();
 
-                        appsData.forEach(app => {
-                            r = r.then(() => {
-                                logger.info('Attempting to download:' + app.appId);
-                                return extractAppData(app);
-                            }, (err) => logger.warning('downloading app failed:' + err));
-                        });
-                        //processAppData(appsData,extractAppData);
+                            appsData.forEach(app => {
+                                r = r.then(() => {
+                                    logger.info('Attempting to download:' + app.appId);
+                                    return extractAppData(app);
+                                }, (err) => logger.warning('downloading app failed:' + err));
+                            });
+                            //processAppData(appsData,extractAppData);
 
-                    }, (err) => logger.err('going through word list failed:' + err));
+                        }, (err) => logger.err('going through word list failed:' + err));
+                    });
+
+                    rd.on('end', () => {
+                        p.then(() => resolve());
+                        p.catch((err) => logger.err('last data word failed:' + err));
+                    });
                 });
-
-                rd.on('end', () => {
-                    p.then(() => resolve());
-                    p.catch((err) => logger.err('last data word failed:' + err));
-                });
-            });
-        }, (err) => logger.err('could no iterate through words in file:' + err));
-    }, (err) => logger.err('iterating through dir word list failed::' + err));
-}).catch(function(err) {
-    logger.err('Err with word stash' + err.message);
-});
-
+            }, (err) => logger.err('could no iterate through words in file:' + err));
+        }, (err) => logger.err('iterating through dir word list failed::' + err));
+    }).catch(function(err) {
+        logger.err('Err with word stash' + err.message);
+    });
+}
 
 
 
