@@ -99,14 +99,16 @@ function extractAppData(appData) {
             require('shelljs').mkdir('-p', appSavePath);
             let args = ['-pd', appData.appId, '-f', appSavePath, '-c', config.credDownload]; /* Command line args for gplay cli */
             logger.info('Python downloader playstore starting');
-            return spawnGplayDownloader(args).catch(
-                (err) => logger.warning('Downloading failed with error:', err.message));
+
+            //TODO: append previous and write seperately
+            appData.isDownloaded = true;
+            return spawnGplayDownloader(args).catch((err) => {
+                logger.warning('Downloading failed with error:', err.message);
+                appData.isDownloaded = false;
+            });
         }
     }).then(() => {
         logger.info('Download process complete for ' + appData.appId);
-
-        //TODO: append previous and write seperately
-        appData.isDownloaded = true;
 
         // TODO: DB Comms... this can be factorised.
         let db = require('./db');
