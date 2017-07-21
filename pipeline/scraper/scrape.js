@@ -113,7 +113,7 @@ function extractAppData(appData) {
         // TODO: DB Comms... this can be factorised.
         let db = require('./db');
         return db.insertPlayApp(appData, region).catch((err) => {
-            logger.err('Inserting play app failed'+ err +  region);
+            logger.err('Inserting play app failed', err, region);
             return err;
         }).catch((err) => logger.err('Could not write to db:', err.message));
     }).then((dbId) => {
@@ -124,11 +124,12 @@ function extractAppData(appData) {
         }
 
         // TODO: Check that '-' won't mess things up on the DB side... eg if region was something like 'en-gb'
-        let message = Buffer(dbId + '-' + appData.appId + '-' + config.appStore + '-' + region + '-' + appData.version);
+        // TODO: replace 'play' with actual app store
+        let message = Buffer(dbId + '-' + appData.appId + '-' + 'play' + '-' + region + '-' + appData.version);
 
         //client.on('error', logger.err);
         return client.send(message, 0, message.length, config.sockpath).catch((err) => logger.err('Could not connect to socket:', err.message));
-    }).catch(function(err) {
+    }).catch(function() {
         return;
     });
 }
