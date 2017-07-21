@@ -129,6 +129,6 @@ module.exports = {
     }
 };
 
-if (!module.parent)  {
+if (!module.parent) {
     query('SELECT * FROM developers');
 }
