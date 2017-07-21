@@ -4,6 +4,7 @@
 Simply logger to correctly error messages to systemd.
 */
 
+const util = require('util');
 const EMERG = 0,
       ALERT = 1,
       CRIT = 2,
@@ -16,7 +17,7 @@ const EMERG = 0,
 var prefixes = ['<0>', '<1>', '<2>', '<3>', '<4>', '<5>', '<6>', '<7>'];
 
 function log(level, args) {
-    process.stdout.write(prefixes[level]+require('util').format.apply(null, args));
+    process.stdout.write(prefixes[level]+util.format.apply(null, args)+'\n');
 }
 
 module.exports = {

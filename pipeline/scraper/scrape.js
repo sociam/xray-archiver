@@ -73,7 +73,7 @@ function spawnGplayDownloader(args) {
     });
 
     downloadProcess.stderr.on('data', data => {
-        logger.warn(`The downloader process produce the following stderr: ${data}`);
+        logger.warning(`The downloader process produce the following stderr: ${data}`);
     });
 
     return apkDownloader;
@@ -109,7 +109,7 @@ function extractAppData(appData) {
         let args = ['-pd', appData.appId, '-f', appSaveDir, '-c', config.credDownload]; /* Command line args for gplay cli */
         logger.info('Python downloader playstore starting');
         return spawnGplayDownloader(args).catch((err) => {
-            logger.warn('Downloading failed with error: ' + err.message);
+            logger.warning('Downloading failed with error: ' + err.message);
             return err;
         });
     }).then( () => {
@@ -193,7 +193,7 @@ function reader(filepath) {
 //             logger.logger('Processing ', index);
 //             processFn(appsData[index++])
 //                 .then(next)
-//                 .catch((err) => { logger.warn('downloading app failure:', err) });
+//                 .catch((err) => { logger.warning('downloading app failure:', err) });
 //         }
 //     }
 //     next();
@@ -271,7 +271,7 @@ wordStashFiles.then(files => {
                             r = r.then(() => {
                                 logger.info('Attempting to download:' + app.appId);
                                 return extractAppData(app);
-                            }, (err) => logger.warn('downloading app failed:' + err));
+                            }, (err) => logger.warning('downloading app failed:' + err));
                         });
                         //processAppData(appsData,extractAppData);
 
