@@ -1,0 +1,16 @@
+[Unit]
+Description=The app analyzer for the XRay project
+
+[Service]
+PermissionsStartOnly=true
+ExecStartPre=/bin/mkdir -p /var/run/xray
+ExecStartPre=/bin/chown -R xray:xray /var/run/xray
+
+ExecStart=/usr/local/bin/analyzer
+User=xray
+Group=xray
+Restart=always
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
