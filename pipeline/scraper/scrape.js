@@ -152,8 +152,8 @@ function extractAppData(appData) {
 
         //client.on('error', logger.err);
         return client.send(message, 0, message.length, config.sockpath).catch((err) => logger.err('Could not connect to socket:', err.message));
-    }).catch(function() {
-        return;
+    }, () => {
+        return Promise.reject();
     });
 }
 
