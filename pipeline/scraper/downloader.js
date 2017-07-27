@@ -62,39 +62,40 @@ function downloadApp(appData, appSavePath) {
 async function main() {
     for (;;) {
         try {
-            var apps = await db.queryAppsToDownload(100);
-        } catch (err) {
+            var apps = await db.queryAppsToDownload(4000);
+        } catch(err) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             continue;
         }
-
+      
         await Promise.each(apps, async(app) => {
 
-            logger.info('Starting download attemtp for:', app.app);
+            logger.info('Starting download attempt for:', app.app);
             db.updatedDlAttempt(app); // Could be move to the call to DL app. but this is where the whole DL process starts.
             try {
                 var appSavePath = await resolveAPKDir(app);
             } catch (err) {
-                logger.warning('Did not have access to resolve dir', err.message);
-                return;
+                await new Promise(resolve => setTimeout(resolve, 6000));
+                return Promise.reject('Did not have access to resolve dir', err.message);
             }
 
             try {
                 await downloadApp(app, appSavePath);
-            } catch (err) {
-                logger.warning('Downloading failed with err:', err.message);
+            } catch(err) {
                 logger.debug('Attempting to remove created dir');
                 await fs.rmdir(appSavePath).catch(logger.warning);
-                return;
+                return Promise.reject('Downloading failed with err:', err.message);
             }
 
-            try {
-                await db.updateDownloadedApp(app);
+            try {	
+                if(fs.existsSync(path.join(appSavePath, app.app + '.apk'))) {
+                    await db.updateDownloadedApp(app);
+                }
             } catch (err) {
                 // TODO: Maybe do something else? Destroying process as we have apks that don't exist in db...
-                logger.err('Err when updated the downloaded app', err);
+                return Promise.reject('Err when updated the downloaded app', err);
             }
-        });
+        }).catch(logger.err);
     }
 }
 
