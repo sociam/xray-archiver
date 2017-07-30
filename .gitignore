@@ -1,3 +1,26 @@
+<<<<<<< HEAD
+# Created by https://www.gitignore.io/api/virtualenv
+
+### VirtualEnv ###
+# Virtualenv
+# http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
+.Python
+[Bb]in
+[Ii]nclude
+[Ll]ib
+[Ll]ib64
+[Ll]ocal
+[Ss]cripts
+pyvenv.cfg
+.venv
+pip-selfcheck.json
+env/
+*node_modules*
+prototypes/www/lib
+static/apps
+*.DS_Store*
+*~
+=======
 # Logs
 logs
 *.log
@@ -57,3 +80,4 @@ typings/
 # dotenv environment variables file
 .env
 
+>>>>>>> master

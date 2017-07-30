@@ -1,0 +1,11 @@
+{
+    "name": "db",
+    "version": "1.0.0",
+    "description": "Database interface for app data scraped and analysed",
+    "main": "db.js",
+    "dependencies": {
+        "pg": "^7.0.2"
+    },
+    "author": "SOCIAM",
+    "license": "BSD"
+}
