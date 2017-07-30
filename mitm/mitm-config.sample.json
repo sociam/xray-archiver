@@ -1,9 +1,0 @@
-{ 
-	"destdir":"../../data",
-	"app":"qrreader",
-	"company":"ab media",
-	"version":"x",
-	"platform":"iOS",
-	"researcher":"emax",
-	"device":"iPhone7,1"
-}

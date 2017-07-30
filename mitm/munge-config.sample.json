@@ -1,6 +1,0 @@
-{ 
-	"transcripts":"../../private-data-repo/transcripts",
-	"rounds":"../../private-data-repo/participant-data",
-	"out":"../mitm_out/munge.out.csv"
-}
-
