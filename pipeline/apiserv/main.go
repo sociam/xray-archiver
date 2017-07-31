@@ -79,17 +79,22 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
 			return
 		}
+
 		split := strings.SplitN(r.URL.Path, "/", 4)
+
 		if len(split) < 3 {
-			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Invalid app ID specified")
+			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Bad app slashes specified")
 			return
 		}
 
 		appID := split[2]
-		if appID == "" {
+		fmt.Println("AppId searchings", appID)
+
+		if appID == "apps" {
 			appsEndpoint(w, r)
 		} else if dbIDRe.MatchString(appID) {
 			//TODO
+
 		} else if !appIDRe.MatchString(appID) {
 			if len(split) == 4 {
 				ver := split[3]
