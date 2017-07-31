@@ -113,13 +113,15 @@ func GetAppVersion(store, region, version string) (AppVersion, error) {
 		"SELECT * FROM app_versions WHERE store = $1 AND region = $2 AND version = $3",
 		store,
 		region,
-		version).Scan(
+		version,
+	).Scan(
 		&appVer.Id,
 		&appVer.App,
 		&appVer.Store,
 		&appVer.Region,
 		&appVer.Ver,
-		&appVer.ScreenFlags)
+		&appVer.ScreenFlags,
+	)
 
 	if err != nil {
 		return AppVersion{}, err

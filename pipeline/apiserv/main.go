@@ -65,7 +65,7 @@ func hello(w http.ResponseWriter, r *http.Request) {
 }
 
 func appVerEndpoint(w http.ResponseWriter, mime, appId, ver string) {
-	writeErr(w, mime, http.StatusNotImplemented, "no_versions", "NAH M8!")
+
 }
 
 var appPrefixRe = regexp.MustCompile("^/api/apps/")
@@ -80,17 +80,17 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		split := strings.SplitN(r.URL.Path, "/", 4)
+		split := strings.SplitN(r.URL.Path, "/", 7)
 
-		if len(split) < 3 {
+		if len(split) < 4 {
 			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Bad app slashes specified")
 			return
 		}
 
-		appID := split[2]
-		fmt.Println("AppId searchings", appID)
+		appID := split[3]
+		fmt.Println("AppId searching:", appID)
 
-		if appID == "apps" {
+		if appID == "" {
 			appsEndpoint(w, r)
 		} else if dbIDRe.MatchString(appID) {
 			//TODO: chain these much better
@@ -203,5 +203,9 @@ func main() {
 	http.HandleFunc("/", hello)
 	http.HandleFunc("/api/apps", appsEndpoint)
 	http.HandleFunc("/api/apps/", appEndpoint)
+	http.HandleFunc("/api/developers", devEndpoint)
+	http.HandleFunc("/api/developers/", devsEndpoint)
+	http.HandleFunc("/api/companies", compEndpoint)
+	http.HandleFunc("/api/companies/", compsEndpoint)
 	panic(http.ListenAndServe(":8080", nil))
 }
