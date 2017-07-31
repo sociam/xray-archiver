@@ -157,7 +157,7 @@ func GetAppVersionByID(id int64) (AppVersion, error) {
 		&appVer.ScreenFlags)
 
 	if err != nil {
-		return App{}, err
+		return appVer{}, err
 	}
 
 	// TODO: Check implementation
@@ -165,7 +165,7 @@ func GetAppVersionByID(id int64) (AppVersion, error) {
 		pq.Array(&appVer.hosts))
 
 	if err != nil {
-		return App{}, err
+		return appVer{}, err
 	}
 
 	// TODO: Check implementation
@@ -173,18 +173,50 @@ func GetAppVersionByID(id int64) (AppVersion, error) {
 		pq.Array(&appVer.perms))
 
 	if err != nil {
-		return App{}, err
+		return appVer{}, err
 	}
 
 	return appVer, nil
 }
 
 func GetDeveloper(id int64) (Developer, error) {
+	var dev Developer
+
+	err := db.QueryRow("SELECT * from developers WHERE id = $1", Id).scan(
+		&dev.Id,
+		pg.Array(&dev.Emails),
+		&dev.Name,
+		&dev.StoreSite,
+		&dev.Site)
+
+	if err != nil {
+		return dev{}, err
+	}
+
+	return dev, nil
 
 }
 
 func GetDevelopers(num, start int) ([]Developer, error) {
+	rows, err := db.Query("SELECT * FROM developers LIMIT $1 OFFSET $2", num, start)
+	if err != nil {
+		return []Developer{}, err
+	}
+	ret := make([]Developer, num)
+	for i := 0; rows.Next(); i++ {
+		rows.Scan(
+			&ret[i].Id,
+			pq.Array(&ret[i].Emails),
+			&ret[i].Name,
+			&ret[i].Site,
+			&ret[i].StoreSite)
+	}
 
+	if rows.Err() != sql.ErrNoRows {
+		return []Developer{}, err
+	}
+
+	return ret, nil
 }
 
 func GetCompany(id string) (Company, error) {
