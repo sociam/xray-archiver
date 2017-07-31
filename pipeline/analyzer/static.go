@@ -67,7 +67,7 @@ func simpleAnalyze(app *util.App) ([]string, error) {
 
 	//TODO: replace with DB calls
 	var companies map[string]Company
-	companyFile, err := os.Open(path.Join(cfg.DataDir, "company_details.json"))
+	companyFile, err := os.Open(path.Join(util.Cfg.DataDir, "company_details.json"))
 	if err != nil {
 		return []string{}, err
 	}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -68,7 +69,8 @@ func appVerEndpoint(w http.ResponseWriter, mime, appId, ver string) {
 }
 
 var appPrefixRe = regexp.MustCompile("^/api/apps/")
-var appIdRe = regexp.MustCompile("^[[:alpha:]][\\w$]*(\\.[[:alpha:]][\\w$]*)*$")
+var dbIDRe = regexp.MustCompile("^\\d+$")
+var appIDRe = regexp.MustCompile("^[[:alpha:]][\\w$]*(\\.[[:alpha:]][\\w$]*)*$")
 
 func appEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
@@ -83,25 +85,28 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		appId := split[2]
-		if !appIdRe.MatchString(appId) {
+		appID := split[2]
+		if dbIDRe.MatchString(appID) {
+			//TODO
+		} else if !appIDRe.MatchString(appID) {
+			if len(split) == 4 {
+				ver := split[3]
+				appVerEndpoint(w, mime, appID, ver)
+				return
+			}
+
+			app, err := db.GetApp(appID)
+
+			if err != nil {
+				fmt.Println("Error querying database: ", err.Error())
+				writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+				return
+			}
+
+			writeData(w, mime, http.StatusOK, app)
+		} else {
 			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Invalid app ID specified")
-			return
 		}
-
-		if len(split) == 4 {
-			ver := split[3]
-			appVerEndpoint(w, mime, appId, ver)
-			return
-		}
-
-		app, err := db.GetApp(appId)
-		if err != nil {
-			fmt.Println("Error querying database: ", err.Error())
-			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
-			return
-		}
-		writeData(w, mime, http.StatusOK, app)
 	}
 }
 
@@ -166,8 +171,10 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
+
 func init() {
-	util.LoadCfg("/etc/xray/config.json", util.ApiServ)
+	util.LoadCfg(*cfgFile, util.ApiServ)
 	db.Open(util.Cfg)
 }
 
