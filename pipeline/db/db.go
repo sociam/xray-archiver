@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+
 	"github.com/lib/pq"
 	"github.com/sociam/xray/pipeline/util"
 
@@ -18,8 +19,7 @@ var db xrayDb
 func Open(cfg util.Config) error {
 	sqlDb, err := sql.Open("postgres",
 		fmt.Sprintf("dbname='%s' user='%s' password='%s' host='%s' port='%d' sslmode='disable'",
-			cfg.Db.Database, cfg.Db.User, cfg.Db.Password, cfg.Db.Host, cfg.Db.Port,
-		))
+			cfg.Db.Database, cfg.Db.User, cfg.Db.Password, cfg.Db.Host, cfg.Db.Port))
 	if err != nil {
 		return err
 	}
@@ -104,4 +104,35 @@ func AddHosts(app *util.App, hosts []string) error {
 	}
 
 	return nil
+}
+
+func GetApp(id string) (App, error) {
+	var app App
+	err := db.QueryRow("SELECT * FROM apps WHERE id = $1", id).Scan(&app.Id, pq.Array(&app.Vers), &app.Icon)
+	if err != nil {
+		return App{}, err
+	}
+
+	return app, nil
+}
+
+func GetAppVersion() {
+
+}
+
+func GetApps(num, start int) ([]App, error) {
+	rows, err := db.Query("SELECT * FROM apps LIMIT $1 OFFSET $2", num, start)
+	if err != nil {
+		return []App{}, err
+	}
+	ret := make([]App, num)
+	for i := 0; rows.Next(); i++ {
+		rows.Scan(&ret[i].Id, pq.Array(&ret[i].Vers), &ret[i].Icon)
+	}
+
+	if rows.Err() != sql.ErrNoRows {
+		return []App{}, err
+	}
+
+	return ret, nil
 }
