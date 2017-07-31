@@ -86,7 +86,9 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 		}
 
 		appID := split[2]
-		if dbIDRe.MatchString(appID) {
+		if appID == "" {
+			appsEndpoint(w, r)
+		} else if dbIDRe.MatchString(appID) {
 			//TODO
 		} else if !appIDRe.MatchString(appID) {
 			if len(split) == 4 {
