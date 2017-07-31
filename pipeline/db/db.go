@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+
 	"github.com/lib/pq"
 	"github.com/sociam/xray/pipeline/util"
 
@@ -121,6 +122,9 @@ func GetAppVersion() {
 
 func GetApps(num, start int) ([]App, error) {
 	rows, err := db.Query("SELECT * FROM apps LIMIT $1 OFFSET $2", num, start)
+	if err != nil {
+		return []App{}, err
+	}
 	ret := make([]App, num)
 	for i := 0; rows.Next(); i++ {
 		rows.Scan(&ret[i].Id, pq.Array(&ret[i].Vers), &ret[i].Icon)
