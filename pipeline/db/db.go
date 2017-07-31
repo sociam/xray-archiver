@@ -239,17 +239,31 @@ func GetCompany(id string) (Company, error) {
 }
 
 func GetCompanies(num, start int) ([]Company, error) {
-	rows, err := db.Query("SELECT * FROM apps LIMIT $1 OFFSET $2", num, start)
+	rows, err := db.Query("SELECT * FROM companies LIMIT $1 OFFSET $2", num, start)
 	if err != nil {
-		return []App{}, err
+		return []Company{}, err
 	}
-	ret := make([]App, num)
+	ret := make([]Company, num)
 	for i := 0; rows.Next(); i++ {
-		rows.Scan(&ret[i].Id, pq.Array(&ret[i].Vers), &ret[i].Icon)
+		rows.Scan(
+			&comp[i].Id,
+			&comp[i].Name,
+			pq.Array(&comp[i].Hosts),
+			&comp[i].Founded,
+			&comp[i].Acquired,
+			pq.Array(&comp[i].Type),
+			&comp[i].TypeTag,
+			&comp[i].Jurisdiction,
+			&comp[i].Parent,
+			&comp[i].Capital,
+			&comp[i].Equity,
+			&comp[i].Size,
+			pq.Array(&comp[i].DataSources),
+			&comp[i].Description)
 	}
 
 	if rows.Err() != sql.ErrNoRows {
-		return []App{}, err
+		return []Company{}, err
 	}
 
 	return ret, nil
