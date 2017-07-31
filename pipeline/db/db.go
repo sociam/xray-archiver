@@ -202,8 +202,9 @@ func GetDevelopers(num, start int) ([]Developer, error) {
 	if err != nil {
 		return []Developer{}, err
 	}
-	ret := make([]Developer, num)
+	ret := make([]Developer, 0, num)
 	for i := 0; rows.Next(); i++ {
+		ret = append(ret, Developer{})
 		rows.Scan(
 			&ret[i].Id,
 			pq.Array(&ret[i].Emails),
@@ -250,8 +251,10 @@ func GetCompanies(num, start int) ([]Company, error) {
 	if err != nil {
 		return []Company{}, err
 	}
-	ret := make([]Company, num)
+	ret := make([]Company, 0, num)
+
 	for i := 0; rows.Next(); i++ {
+		ret = append(ret, Company{})
 		rows.Scan(
 			&ret[i].Id,
 			&ret[i].Name,
@@ -278,10 +281,7 @@ func GetCompanies(num, start int) ([]Company, error) {
 
 func GetApp(id string) (App, error) {
 	var app App
-	err := db.QueryRow("SELECT * FROM apps WHERE id = $1", id).Scan(
-		&app.Id,
-		pq.Array(&app.Vers),
-		&app.Icon)
+	err := db.QueryRow("SELECT * FROM apps WHERE id = $1", id).Scan(&app.Id, pq.Array(&app.Vers), &app.Icon)
 
 	if err != nil {
 		return App{}, err
@@ -292,18 +292,17 @@ func GetApp(id string) (App, error) {
 
 func GetApps(num, start int) ([]App, error) {
 	rows, err := db.Query("SELECT * FROM apps LIMIT $1 OFFSET $2", num, start)
-
-	ret := make([]App, num)
 	if err != nil {
-		return ret, err
+		return []App{}, err
 	}
-
+	ret := make([]App, 0, num)
 	for i := 0; rows.Next(); i++ {
+		ret = append(ret, App{})
 		rows.Scan(&ret[i].Id, pq.Array(&ret[i].Vers), &ret[i].Icon)
 	}
 
 	if rows.Err() != sql.ErrNoRows {
-		return ret, err
+		return []App{}, err
 	}
 
 	return ret, nil
