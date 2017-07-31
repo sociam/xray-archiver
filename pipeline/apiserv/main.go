@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/sociam/xray/pipeline/db"
-	"github.com/sociam/xray/pipeline/util"
 	"log"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/sociam/xray/pipeline/db"
+	"github.com/sociam/xray/pipeline/util"
 )
 
 // convenience struct for marshalling errors
@@ -74,10 +75,12 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" || r.Method == "GET" {
 		if _, ok := supportedMimes[mime]; !ok {
 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+			return
 		}
 		split := strings.SplitN(r.URL.Path, "/", 4)
 		if len(split) < 3 {
 			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Invalid app ID specified")
+			return
 		}
 
 		appId := split[2]
@@ -96,6 +99,7 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println("Error querying database: ", err.Error())
 			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+			return
 		}
 		writeData(w, mime, http.StatusOK, app)
 	}
@@ -107,11 +111,13 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" || r.Method == "GET" {
 		if _, ok := supportedMimes[mime]; !ok {
 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+			return
 		}
 
 		err := r.ParseForm()
 		if err != nil {
 			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
+			return
 		}
 
 		num, start := 10, 0
@@ -127,12 +133,14 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 			}
 			if num < 1 || num > 100 {
 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be between 1 and 100")
+				return
 			}
 		}
 
 		if v, ok := r.Form["start"]; ok && len(v) > 0 {
 			if len(v) > 1 {
 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "start must have a single value")
+				return
 			}
 			start, err = strconv.Atoi(v[0])
 			if err != nil {
@@ -141,6 +149,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 			}
 			if start < 0 {
 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "start value must positive")
+				return
 			}
 		}
 
@@ -148,12 +157,18 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println("Error querying database: ", err.Error())
 			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+			return
 		}
 
 		util.WriteJSON(w, apps)
 	} else {
 		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
 	}
+}
+
+func init() {
+	util.LoadCfg("/etc/xray/config.json", util.ApiServ)
+	db.Open(util.Cfg)
 }
 
 func main() {
