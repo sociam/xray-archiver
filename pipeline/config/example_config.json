@@ -21,18 +21,22 @@
             "user": "explorer",
             "password": ""
         }
-
     },
     "downloader": {
         "db": {
             "user": "downloader",
             "password": ""
         }
-
     },
     "analyzer": {
         "db": {
             "user": "analyzer",
+            "password": ""
+        }
+    },
+    "apiserv": {
+        "db": {
+            "user": "apiserv",
             "password": ""
         }
     }
