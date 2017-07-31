@@ -220,11 +220,39 @@ func GetDevelopers(num, start int) ([]Developer, error) {
 }
 
 func GetCompany(id string) (Company, error) {
-
+	var comp Company
+	err := db.QueryRow("SELECT * from companies WHERE id = $1", id).Scan(
+		&comp.Id,
+		&comp.Name,
+		pq.Array(&comp.Hosts),
+		&comp.Founded,
+		&comp.Acquired,
+		pq.Array(&comp.Type),
+		&comp.TypeTag,
+		&comp.Jurisdiction,
+		&comp.Parent,
+		&comp.Capital,
+		&comp.Equity,
+		&comp.Size,
+		pq.Array(&comp.DataSources),
+		&comp.Description)
 }
 
 func GetCompanies(num, start int) ([]Company, error) {
+	rows, err := db.Query("SELECT * FROM apps LIMIT $1 OFFSET $2", num, start)
+	if err != nil {
+		return []App{}, err
+	}
+	ret := make([]App, num)
+	for i := 0; rows.Next(); i++ {
+		rows.Scan(&ret[i].Id, pq.Array(&ret[i].Vers), &ret[i].Icon)
+	}
 
+	if rows.Err() != sql.ErrNoRows {
+		return []App{}, err
+	}
+
+	return ret, nil
 }
 
 func GetApp(id string) (App, error) {
