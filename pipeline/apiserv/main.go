@@ -93,7 +93,21 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 		if appID == "apps" {
 			appsEndpoint(w, r)
 		} else if dbIDRe.MatchString(appID) {
-			//TODO
+			//TODO: chain these much better
+			///api/apps/<pkgname>
+			// fmt.Println("App search mathc ", appID)
+			// app, err := db.GetApp(appID)
+
+			// if err != nil {
+			// 	writeErr(w, mime, http.StatusBadRequest, "bad_app", "App could not be found")
+			// 	return
+			// }
+
+			// util.WriteJSON(w, app)
+
+			///api/apps/<dbid>
+
+			///api/apps/<appid>/<version string>
 
 		} else if !appIDRe.MatchString(appID) {
 			if len(split) == 4 {
