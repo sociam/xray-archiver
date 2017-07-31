@@ -1,5 +1,11 @@
 package db
 
+import (
+	"time"
+
+	"github.com/sociam/xray/pipeline/util"
+)
+
 type Range struct {
 	Min int64 `json:"min"`
 	Max int64 `json:"max"`
