@@ -13,13 +13,12 @@ import (
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
 var daemon = flag.Bool("daemon", false, "run analyzer as a daemon")
 var useDb = flag.Bool("db", false, "add app information to the db specified in the config file")
-var cfg util.Config
 
 func init() {
 	var err error
 	flag.Parse()
-	util.LoadCfg(*cfgFile)
-	err = db.Open(cfg)
+	util.LoadCfg(*cfgFile, util.Analyzer)
+	err = db.Open(util.Cfg)
 	if err != nil {
 		log.Fatal("Failed to open a connection to the database %s", err.Error())
 	}
@@ -80,13 +79,13 @@ func analyze(app *util.App) error {
 }
 
 func main() {
-	if err := os.MkdirAll(cfg.DataDir, 0755); err != nil {
+	if err := os.MkdirAll(util.Cfg.DataDir, 0755); err != nil {
 		panic(err)
 	}
-	if err := os.MkdirAll(cfg.AppDir, 0755); err != nil {
+	if err := os.MkdirAll(util.Cfg.AppDir, 0755); err != nil {
 		panic(err)
 	}
-	if err := os.MkdirAll(cfg.UnpackDir, 0755); err != nil {
+	if err := os.MkdirAll(util.Cfg.UnpackDir, 0755); err != nil {
 		panic(err)
 	}
 

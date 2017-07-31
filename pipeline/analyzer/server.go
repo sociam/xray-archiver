@@ -11,12 +11,12 @@ import (
 )
 
 func runServer() {
-	util.CheckDir(cfg.UnpackDir, "Unpacked APK directory")
-	util.CheckDir(path.Dir(cfg.SockPath), "Socket directory")
+	util.CheckDir(util.Cfg.UnpackDir, "Unpacked APK directory")
+	util.CheckDir(path.Dir(util.Cfg.SockPath), "Socket directory")
 
-	_ = os.Remove(cfg.SockPath) // probably catch errors here?
+	_ = os.Remove(util.Cfg.SockPath) // probably catch errors here?
 
-	apkSockAddr, err := net.ResolveUnixAddr("unixgram", cfg.SockPath)
+	apkSockAddr, err := net.ResolveUnixAddr("unixgram", util.Cfg.SockPath)
 	if err != nil {
 		//TODO: not this
 		panic(err)
