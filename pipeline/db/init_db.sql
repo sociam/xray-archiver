@@ -56,8 +56,8 @@ create table search_terms(
 );
 
 create table app_perms(
-  id       int references app_versions(id) primary key not null,
-  perms text[]                                         not null
+  id             int references app_versions(id) primary key not null,
+  permissions text[]                                         not null
 );
 
 -- Contains the hostnames that were found in apps via analysis

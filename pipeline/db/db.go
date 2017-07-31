@@ -106,6 +106,30 @@ func AddHosts(app *util.App, hosts []string) error {
 	return nil
 }
 
+func GetAppVersion(store, region, version string) (AppVersion, error) {
+	var appVer AppVersion
+}
+
+func GetAppVersionByID(id int64) (AppVersion, error) {
+
+}
+
+func GetDeveloper(id int64) (Developer, error) {
+
+}
+
+func GetDevelopers(num, start int) ([]Developer, error) {
+
+}
+
+func GetCompany(id string) (Company, error) {
+
+}
+
+func GetCompanies(num, start int) ([]Company, error) {
+
+}
+
 func GetApp(id string) (App, error) {
 	var app App
 	err := db.QueryRow("SELECT * FROM apps WHERE id = $1", id).Scan(&app.Id, pq.Array(&app.Vers), &app.Icon)
@@ -114,10 +138,6 @@ func GetApp(id string) (App, error) {
 	}
 
 	return app, nil
-}
-
-func GetAppVersion() {
-
 }
 
 func GetApps(num, start int) ([]App, error) {
