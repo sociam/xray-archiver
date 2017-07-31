@@ -1,4 +1,5 @@
 {
+    "edihost": "edi.sociam.org",
     "datadir": "/usr/local/var/xray",
     "unpackdir": "/tmp/unpacked_apks",
     "sockpath": "/var/run/xray/apks",

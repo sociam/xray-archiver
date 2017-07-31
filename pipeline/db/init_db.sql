@@ -1,6 +1,7 @@
 create table apps(
   id        text primary key not null,
-  versions int[]
+  versions int[]                     ,
+  icon      text -- jun is going to murder me
 );
 
 create table app_versions(
@@ -12,7 +13,8 @@ create table app_versions(
   screen_flags            int                             ,
   downloaded             bool                     not null,
   analyzed               bool                     not null,
-  last_dl_attempt   timestamp                not null
+  last_dl_attempt   timestamp                     not null,
+  icon                   text
 );
 
 create table developers(
