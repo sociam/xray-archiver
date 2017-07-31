@@ -108,10 +108,75 @@ func AddHosts(app *util.App, hosts []string) error {
 
 func GetAppVersion(store, region, version string) (AppVersion, error) {
 	var appVer AppVersion
+
+	err := db.QueryRow(
+		"SELECT * FROM app_versions WHERE store = $1 AND region = $2 AND version = $3",
+		store,
+		region,
+		version).Scan(
+		&appVer.Id,
+		&appVer.App,
+		&appVer.Store,
+		&appVer.Region,
+		&appVer.Ver,
+		&appVer.ScreenFlags)
+
+	if err != nil {
+		return App{}, err
+	}
+
+	// TODO: Check implementation
+	err = db.QueryRow("SELECT * FROM app_hosts WHERE id = $1", appVer.Id).Scan(
+		pq.Array(&appVer.hosts))
+
+	if err != nil {
+		return App{}, err
+	}
+
+	// TODO: Check implementation
+	err = db.QueryRow("SELECT * FROM app_perms WHERE id = $1", appVer.Id).Scan(
+		pq.Array(&appVer.perms))
+
+	if err != nil {
+		return App{}, err
+	}
+
+	return appVer, nil
 }
 
 func GetAppVersionByID(id int64) (AppVersion, error) {
+	var appVer AppVersion
 
+	err := db.QueryRow(
+		"SELECT * FROM app_versions WHERE id = $1", id).Scan(
+		&appVer.Id,
+		&appVer.App,
+		&appVer.Store,
+		&appVer.Region,
+		&appVer.Ver,
+		&appVer.ScreenFlags)
+
+	if err != nil {
+		return App{}, err
+	}
+
+	// TODO: Check implementation
+	err = db.QueryRow("SELECT * FROM app_hosts WHERE id = $1", appVer.Id).Scan(
+		pq.Array(&appVer.hosts))
+
+	if err != nil {
+		return App{}, err
+	}
+
+	// TODO: Check implementation
+	err = db.QueryRow("SELECT * FROM app_perms WHERE id = $1", appVer.Id).Scan(
+		pq.Array(&appVer.perms))
+
+	if err != nil {
+		return App{}, err
+	}
+
+	return appVer, nil
 }
 
 func GetDeveloper(id int64) (Developer, error) {
@@ -132,7 +197,11 @@ func GetCompanies(num, start int) ([]Company, error) {
 
 func GetApp(id string) (App, error) {
 	var app App
-	err := db.QueryRow("SELECT * FROM apps WHERE id = $1", id).Scan(&app.Id, pq.Array(&app.Vers), &app.Icon)
+	err := db.QueryRow("SELECT * FROM apps WHERE id = $1", id).Scan(
+		&app.Id,
+		pq.Array(&app.Vers),
+		&app.Icon)
+
 	if err != nil {
 		return App{}, err
 	}
