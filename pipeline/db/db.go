@@ -122,7 +122,7 @@ func GetAppVersion(store, region, version string) (AppVersion, error) {
 		&appVer.ScreenFlags)
 
 	if err != nil {
-		return appVer, err
+		return AppVersion{}, err
 	}
 
 	// TODO: Check implementation
@@ -130,7 +130,7 @@ func GetAppVersion(store, region, version string) (AppVersion, error) {
 		pq.Array(&appVer.Hosts))
 
 	if err != nil {
-		return appVer, err
+		return AppVersion{}, err
 	}
 
 	// TODO: Check implementation
@@ -138,7 +138,7 @@ func GetAppVersion(store, region, version string) (AppVersion, error) {
 		pq.Array(&appVer.Perms))
 
 	if err != nil {
-		return appVer, err
+		return AppVersion{}, err
 	}
 
 	return appVer, nil
@@ -165,7 +165,7 @@ func GetAppVersionByID(id int64) (AppVersion, error) {
 		pq.Array(&appVer.Hosts))
 
 	if err != nil {
-		return appVer, err
+		return AppVersion{}, err
 	}
 
 	// TODO: Check implementation
@@ -173,7 +173,7 @@ func GetAppVersionByID(id int64) (AppVersion, error) {
 		pq.Array(&appVer.Perms))
 
 	if err != nil {
-		return appVer, err
+		return AppVersion{}, err
 	}
 
 	return appVer, nil
@@ -190,7 +190,7 @@ func GetDeveloper(id int64) (Developer, error) {
 		&dev.Site)
 
 	if err != nil {
-		return dev, err
+		return Developer{}, err
 	}
 
 	return dev, nil
@@ -239,7 +239,7 @@ func GetCompany(id string) (Company, error) {
 		&comp.Description)
 
 	if err != nil {
-		return comp, err
+		return Company{}, err
 	}
 
 	return comp, nil
@@ -284,7 +284,7 @@ func GetApp(id string) (App, error) {
 		&app.Icon)
 
 	if err != nil {
-		return app, err
+		return App{}, err
 	}
 
 	return app, nil
