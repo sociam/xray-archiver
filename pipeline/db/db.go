@@ -181,7 +181,6 @@ func GetAppVersionByID(id int64) (AppVersion, error) {
 
 func GetDeveloper(id int64) (Developer, error) {
 	var dev Developer
-	var devEmails []string
 
 	err := db.QueryRow("SELECT * from developers WHERE id = $1", id).Scan(
 		&dev.Id,
@@ -222,6 +221,7 @@ func GetDevelopers(num, start int) ([]Developer, error) {
 
 func GetCompany(id string) (Company, error) {
 	var comp Company
+
 	err := db.QueryRow("SELECT * from companies WHERE id = $1", id).Scan(
 		&comp.Id,
 		&comp.Name,
@@ -237,6 +237,12 @@ func GetCompany(id string) (Company, error) {
 		&comp.Size,
 		pq.Array(&comp.DataSources),
 		&comp.Description)
+
+	if err != nil {
+		return comp, err
+	}
+
+	return comp, nil
 }
 
 func GetCompanies(num, start int) ([]Company, error) {
