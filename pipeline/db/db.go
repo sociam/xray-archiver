@@ -163,9 +163,9 @@ func GetAppVersionByID(id int64) (AppVersion, error) {
 	}
 
 	// TODO: Check implementation
+
 	err = db.QueryRow("SELECT * FROM app_hosts WHERE id = $1", appVer.ID).Scan(
 		pq.Array(&appVer.Hosts))
-
 	if err != nil {
 		return AppVersion{}, err
 	}
