@@ -226,26 +226,89 @@ func compEndpoint(w http.ResponseWriter, r *http.Request) {
 		compID := split[3]
 		fmt.Println("CompID searching:", compID)
 		if compID == "" {
-			appsEndpoint(w, r)
+			compsEndpoint(w, r)
 		} else if len(split) == 4 && dbIDRe.MatchString(compID) {
 			// Is a DB ID
 			///api/companis/<CompID>
 
-			dbID, err := strconv.Atoi(compID)
-			if err != nil {
-				writeErr(w, mime, http.StatusBadRequest, "big_int", "dbID is too big")
-			}
+			// dbID, err := strconv.Atoi(compID)
+			// if err != nil {
+			// 	writeErr(w, mime, http.StatusBadRequest, "big_int", "dbID is too big")
+			// }
 
 			appVer, err := db.GetCompany(string(compID))
 			if err != nil {
-				writeErr(w, mime, http.StatusBadRequest, "bad_app", "App could not be found")
+				writeErr(w, mime, http.StatusBadRequest, "bad_company", "Company could not be found")
 				return
 			}
 
 			// util.WriteJSON(w, app)
 		} else {
-			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Invalid app ID specified")
+			writeErr(w, mime, http.StatusBadRequest, "bad_company", "Invalid Company ID specified")
 		}
+	}
+}
+
+
+// TODO: implement properly.
+func compsEndpoint(w http.ResponseWriter, r *http.Request) {
+	//TODO: handle OPTIONS and HEAD
+	mime := r.Header.Get("Accept")
+	if r.Method == "POST" || r.Method == "GET" {
+		if _, ok := supportedMimes[mime]; !ok {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+			return
+		}
+
+		err := r.ParseForm()
+		if err != nil {
+			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
+			return
+		}
+
+		num, start := 10, 0
+		if v, ok := r.Form["num"]; ok && len(v) > 0 {
+			if len(v) > 1 {
+				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num must have a single value")
+				return
+			}
+			num, err = strconv.Atoi(v[0])
+			if err != nil {
+				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be a number")
+				return
+			}
+			if num < 1 || num > 100 {
+				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be between 1 and 100")
+				return
+			}
+		}
+
+		if v, ok := r.Form["start"]; ok && len(v) > 0 {
+			if len(v) > 1 {
+				writeErr(w, mime, http.StatusBadRequest, "bad_form", "start must have a single value")
+				return
+			}
+			start, err = strconv.Atoi(v[0])
+			if err != nil {
+				writeErr(w, mime, http.StatusBadRequest, "bad_form", "start value must be a number")
+				return
+			}
+			if start < 0 {
+				writeErr(w, mime, http.StatusBadRequest, "bad_form", "start value must positive")
+				return
+			}
+		}
+
+		apps, err := db.GetApps(num, start)
+		if err != nil {
+			fmt.Println("Error querying database: ", err.Error())
+			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+			return
+		}
+
+		util.WriteJSON(w, apps)
+	} else {
+		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
 	}
 }
 
