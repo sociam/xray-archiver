@@ -12,13 +12,13 @@ type Range struct {
 }
 
 type App struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Vers []int  `json:"vers"`
 	Icon string `json:"icon"`
 }
 
 type AppVersion struct {
-	Id          int                 `json:"id"`
+	ID          int                 `json:"id"`
 	App         string              `json:"app"`
 	Store       string              `json:"string"`
 	Region      string              `json:"region"`
@@ -55,7 +55,7 @@ type PlaystoreInfo struct {
 }
 
 type Developer struct {
-	Id        int64    `json:"id"`
+	ID        int64    `json:"id"`
 	Emails    []string `json:"emails"`
 	Name      string   `json:"name"`
 	StoreSite string   `json:"storeSite"`
@@ -63,7 +63,7 @@ type Developer struct {
 }
 
 type Company struct {
-	Id           string   `json:"id"`
+	ID           string   `json:"id"`
 	Name         string   `json:"name"`
 	Hosts        []string `json:"nosts"`
 	Founded      string   `json:"founded"`

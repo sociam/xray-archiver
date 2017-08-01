@@ -13,7 +13,7 @@ import (
 	"github.com/sociam/xray/pipeline/util"
 )
 
-// convenience struct for marshalling errors
+// Err - convenience struct for marshalling errors
 type Err struct {
 	Code    string `json:"err"`
 	Message string `json:"err_msg"`
@@ -64,10 +64,6 @@ func hello(w http.ResponseWriter, r *http.Request) {
 	writeErr(w, r.Header.Get("Accept"), http.StatusNotFound, "not_found", "Nah mate!")
 }
 
-func appVerEndpoint(w http.ResponseWriter, mime, appId, ver string) {
-
-}
-
 var appPrefixRe = regexp.MustCompile("^/api/apps/")
 var dbIDRe = regexp.MustCompile("^\\d+$")
 var appIDRe = regexp.MustCompile("^[[:alpha:]][\\w$]*(\\.[[:alpha:]][\\w$]*)*$")
@@ -89,42 +85,60 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		appID := split[3]
 		fmt.Println("AppId searching:", appID)
-
 		if appID == "" {
 			appsEndpoint(w, r)
-		} else if dbIDRe.MatchString(appID) {
-			//TODO: chain these much better
-			///api/apps/<pkgname>
-			// fmt.Println("App search mathc ", appID)
-			// app, err := db.GetApp(appID)
+		} else if len(split) == 4 && dbIDRe.MatchString(appID) {
+			// Is a DB ID
+			///api/apps/<dbid>
 
-			// if err != nil {
-			// 	writeErr(w, mime, http.StatusBadRequest, "bad_app", "App could not be found")
-			// 	return
-			// }
+			dbID, err := strconv.Atoi(appID)
+			if err != nil {
+				writeErr(w, mime, http.StatusBadReuqest, "big_int", "dbID is too big")
+			}
+
+			appVer, err := db.GetAppVersionById(dbID)
+			if err != nil {
+				writeErr(w, mime, http.StatusBadRequest, "bad_app", "App could not be found")
+				return
+			}
 
 			// util.WriteJSON(w, app)
 
-			///api/apps/<dbid>
+		} else if appIDRe.MatchString(appID) {
+			// Is an app ID
+			switch len(split) {
+			case 4:
+				app, err := db.GetApp(appID)
+				if err != nil {
+					fmt.Println("Error querying database: ", err.Error())
+					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+					return
+				}
 
-			///api/apps/<appid>/<version string>
+				writeData(w, mime, http.StatusOK, app)
+			case 5:
+				///api/apps/<appid>/<version string>
 
-		} else if !appIDRe.MatchString(appID) {
-			if len(split) == 4 {
-				ver := split[3]
-				appVerEndpoint(w, mime, appID, ver)
-				return
+				appVer, err := db.GetAppVersion(store, region, ver)
+				if err != nil {
+					fmt.Println("Error querying database: ", err.Error())
+					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+				}
+			case 7:
+				///api/apps/<appid>/<store>/<region>/<version string>
+
+				// There are parts after the app ID
+				store, region, ver := split[4], split[5], split[6]
+
+				appVer, err := db.GetAppVersion(store, region, ver)
+				if err != nil {
+					fmt.Println("Error querying database: ", err.Error())
+					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+				}
+			default:
+				writeErr(w, mime, "bad_req", "Number of parts is not 1, 2, or 4")
 			}
 
-			app, err := db.GetApp(appID)
-
-			if err != nil {
-				fmt.Println("Error querying database: ", err.Error())
-				writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
-				return
-			}
-
-			writeData(w, mime, http.StatusOK, app)
 		} else {
 			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Invalid app ID specified")
 		}

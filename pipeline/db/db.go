@@ -185,7 +185,7 @@ func GetDeveloper(id int64) (Developer, error) {
 	var dev Developer
 
 	err := db.QueryRow("SELECT * from developers WHERE id = $1", id).Scan(
-		&dev.Id,
+		&dev.ID,
 		pq.Array(&dev.Emails),
 		&dev.Name,
 		&dev.StoreSite,
@@ -208,7 +208,7 @@ func GetDevelopers(num, start int) ([]Developer, error) {
 	for i := 0; rows.Next(); i++ {
 		ret = append(ret, Developer{})
 		rows.Scan(
-			&ret[i].Id,
+			&ret[i].ID,
 			pq.Array(&ret[i].Emails),
 			&ret[i].Name,
 			&ret[i].Site,
@@ -226,7 +226,7 @@ func GetCompany(id string) (Company, error) {
 	var comp Company
 
 	err := db.QueryRow("SELECT * from companies WHERE id = $1", id).Scan(
-		&comp.Id,
+		&comp.ID,
 		&comp.Name,
 		pq.Array(&comp.Hosts),
 		&comp.Founded,
@@ -258,7 +258,7 @@ func GetCompanies(num, start int) ([]Company, error) {
 	for i := 0; rows.Next(); i++ {
 		ret = append(ret, Company{})
 		rows.Scan(
-			&ret[i].Id,
+			&ret[i].ID,
 			&ret[i].Name,
 			pq.Array(&ret[i].Hosts),
 			&ret[i].Founded,
@@ -283,7 +283,7 @@ func GetCompanies(num, start int) ([]Company, error) {
 
 func GetApp(id string) (App, error) {
 	var app App
-	err := db.QueryRow("SELECT * FROM apps WHERE id = $1", id).Scan(&app.Id, pq.Array(&app.Vers), &app.Icon)
+	err := db.QueryRow("SELECT * FROM apps WHERE id = $1", id).Scan(&app.ID, pq.Array(&app.Vers), &app.Icon)
 
 	if err != nil {
 		return App{}, err
@@ -300,7 +300,7 @@ func GetApps(num, start int) ([]App, error) {
 	ret := make([]App, 0, num)
 	for i := 0; rows.Next(); i++ {
 		ret = append(ret, App{})
-		rows.Scan(&ret[i].Id, pq.Array(&ret[i].Vers), &ret[i].Icon)
+		rows.Scan(&ret[i].ID, pq.Array(&ret[i].Vers), &ret[i].Icon)
 	}
 
 	if rows.Err() != sql.ErrNoRows {
