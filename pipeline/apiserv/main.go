@@ -207,6 +207,10 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// What about? ^[a-z0-9_-]*$
+//var compIDRe = regexp.MustCompile("^\\l+$")
+var compIDRe = regexp.MustCompile("^[a-z0-9_-]*$")
+
 
 func compEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
@@ -225,22 +229,19 @@ func compEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		compID := split[3]
 		fmt.Println("CompID searching:", compID)
-		if compID == "" {
+
+		if len(split) > 4 {
 			compsEndpoint(w, r)
-		} else if len(split) == 4 && dbIDRe.MatchString(compID) {
-			// Is a DB ID
-			///api/companis/<CompID>
 
-			// dbID, err := strconv.Atoi(compID)
-			// if err != nil {
-			// 	writeErr(w, mime, http.StatusBadRequest, "big_int", "dbID is too big")
-			// }
+		} else if len(split) == 4 && compIDRe.MatchString(compID) {
+			company, err := db.GetCompany(string(compID))
 
-			appVer, err := db.GetCompany(string(compID))
 			if err != nil {
 				writeErr(w, mime, http.StatusBadRequest, "bad_company", "Company could not be found")
 				return
 			}
+
+			writeData(w, mime, http.StatusOK, company)
 
 			// util.WriteJSON(w, app)
 		} else {
