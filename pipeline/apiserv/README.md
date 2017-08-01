@@ -14,8 +14,6 @@ $GOPATH/bin/apiserv
 
 ```
 
-
-
 * **URL**
 
   <_The URL Structure (path only, no root url)_>

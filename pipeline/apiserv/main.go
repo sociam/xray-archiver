@@ -207,6 +207,48 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+
+func compEndpoint(w http.ResponseWriter, r *http.Request) {
+	mime := r.Header.Get("Accept")
+	if r.Method == "POST" || r.Method == "GET" {
+		if _, ok := supportedMimes[mime]; !ok {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+			return
+		}
+
+		split := strings.SplitN(r.URL.Path, "/", 7)
+
+		if len(split) < 4 {
+			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Bad app slashes specified")
+			return
+		}
+
+		compID := split[3]
+		fmt.Println("CompID searching:", compID)
+		if compID == "" {
+			appsEndpoint(w, r)
+		} else if len(split) == 4 && dbIDRe.MatchString(compID) {
+			// Is a DB ID
+			///api/companis/<CompID>
+
+			dbID, err := strconv.Atoi(compID)
+			if err != nil {
+				writeErr(w, mime, http.StatusBadRequest, "big_int", "dbID is too big")
+			}
+
+			appVer, err := db.GetCompany(string(compID))
+			if err != nil {
+				writeErr(w, mime, http.StatusBadRequest, "bad_app", "App could not be found")
+				return
+			}
+
+			// util.WriteJSON(w, app)
+		} else {
+			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Invalid app ID specified")
+		}
+	}
+}
+
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
 
 func init() {
