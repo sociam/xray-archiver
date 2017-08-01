@@ -3,7 +3,7 @@ package db
 import (
 	"time"
 
-	"github.com/sociam/xray/pipeline/util"
+	"github.com/sociam/xray-archiver/pipeline/util"
 )
 
 type Range struct {

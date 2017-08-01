@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sociam/xray/pipeline/db"
-	"github.com/sociam/xray/pipeline/util"
+	"github.com/sociam/xray-archiver/pipeline/db"
+	"github.com/sociam/xray-archiver/pipeline/util"
 )
 
 // Err - convenience struct for marshalling errors
@@ -93,7 +93,7 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 
 			dbID, err := strconv.Atoi(appID)
 			if err != nil {
-				writeErr(w, mime, http.StatusBadReuqest, "big_int", "dbID is too big")
+				writeErr(w, mime, http.StatusBadRequest, "big_int", "dbID is too big")
 			}
 
 			appVer, err := db.GetAppVersionById(dbID)

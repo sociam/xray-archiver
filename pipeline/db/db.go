@@ -4,7 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/lib/pq"
-	"github.com/sociam/xray/pipeline/util"
+	"github.com/sociam/xray-archiver/pipeline/util"
 
 	"fmt"
 )
@@ -115,7 +115,7 @@ func GetAppVersion(store, region, version string) (AppVersion, error) {
 		region,
 		version,
 	).Scan(
-		&appVer.Id,
+		&appVer.ID,
 		&appVer.App,
 		&appVer.Store,
 		&appVer.Region,
@@ -128,7 +128,7 @@ func GetAppVersion(store, region, version string) (AppVersion, error) {
 	}
 
 	// TODO: Check implementation
-	err = db.QueryRow("SELECT * FROM app_hosts WHERE id = $1", appVer.Id).Scan(
+	err = db.QueryRow("SELECT * FROM app_hosts WHERE id = $1", appVer.ID).Scan(
 		pq.Array(&appVer.Hosts))
 
 	if err != nil {
@@ -136,7 +136,7 @@ func GetAppVersion(store, region, version string) (AppVersion, error) {
 	}
 
 	// TODO: Check implementation
-	err = db.QueryRow("SELECT * FROM app_perms WHERE id = $1", appVer.Id).Scan(
+	err = db.QueryRow("SELECT * FROM app_perms WHERE id = $1", appVer.ID).Scan(
 		pq.Array(&appVer.Perms))
 
 	if err != nil {
@@ -151,7 +151,7 @@ func GetAppVersionByID(id int64) (AppVersion, error) {
 
 	err := db.QueryRow(
 		"SELECT * FROM app_versions WHERE id = $1", id).Scan(
-		&appVer.Id,
+		&appVer.ID,
 		&appVer.App,
 		&appVer.Store,
 		&appVer.Region,
@@ -163,7 +163,7 @@ func GetAppVersionByID(id int64) (AppVersion, error) {
 	}
 
 	// TODO: Check implementation
-	err = db.QueryRow("SELECT * FROM app_hosts WHERE id = $1", appVer.Id).Scan(
+	err = db.QueryRow("SELECT * FROM app_hosts WHERE id = $1", appVer.ID).Scan(
 		pq.Array(&appVer.Hosts))
 
 	if err != nil {
@@ -171,7 +171,7 @@ func GetAppVersionByID(id int64) (AppVersion, error) {
 	}
 
 	// TODO: Check implementation
-	err = db.QueryRow("SELECT * FROM app_perms WHERE id = $1", appVer.Id).Scan(
+	err = db.QueryRow("SELECT * FROM app_perms WHERE id = $1", appVer.ID).Scan(
 		pq.Array(&appVer.Perms))
 
 	if err != nil {
