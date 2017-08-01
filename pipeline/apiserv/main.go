@@ -96,7 +96,7 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 				writeErr(w, mime, http.StatusBadRequest, "big_int", "dbID is too big")
 			}
 
-			appVer, err := db.GetAppVersionById(dbID)
+			appVer, err := db.GetAppVersionByID(int64(dbID))
 			if err != nil {
 				writeErr(w, mime, http.StatusBadRequest, "bad_app", "App could not be found")
 				return
@@ -118,6 +118,7 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 				writeData(w, mime, http.StatusOK, app)
 			case 5:
 				///api/apps/<appid>/<version string>
+				store, region, ver := split[4], split[5], split[6]
 
 				appVer, err := db.GetAppVersion(store, region, ver)
 				if err != nil {
@@ -136,7 +137,7 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
 				}
 			default:
-				writeErr(w, mime, "bad_req", "Number of parts is not 1, 2, or 4")
+				writeErr(w, mime, http.StatusBadRequest, "bad_req", "Number of parts is not 1, 2, or 4")
 			}
 
 		} else {
