@@ -300,7 +300,7 @@ func compsEndpoint(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		apps, err := db.GetApps(num, start)
+		apps, err := db.GetCompanies(num, start)
 		if err != nil {
 			fmt.Println("Error querying database: ", err.Error())
 			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")

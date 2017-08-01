@@ -137,8 +137,13 @@ GET /api/apps/
 
  /api/apps/<appid>/<version string>
 
+/api/apps/<amount>/<startPos>
 
+##companies
 
+# url format
+/api/companies/<companyId>
+/api/companies/<amount>/<startPos>
 
 WISHFUlapi 
 
