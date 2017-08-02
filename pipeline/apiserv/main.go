@@ -221,7 +221,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
 			return
 		}
-		
+
 		util.WriteJSON(w, apps)
 
 	} else {
@@ -461,7 +461,7 @@ func latestsEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func searchAppEndpoint(w http.ResponseWriter, r *http.Request) {
+func searchAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 	if r.Method == "POST" || r.Method == "GET" {
 		if _, ok := supportedMimes[mime]; !ok {
@@ -478,7 +478,6 @@ func searchAppEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		searchTerm := split[4]
 		fmt.Println("Fetching matches for:", searchTerm)
-
 
 		results, err := db.SearchApps(string(searchTerm))
 
@@ -514,16 +513,19 @@ func init() {
 
 func main() {
 	http.HandleFunc("/", hello)
-	http.HandleFunc("/api/apps", appEndpoint)
+	http.HandleFunc("/api/apps", appsEndpoint)
 	http.HandleFunc("/api/apps/", appEndpoint)
 	http.HandleFunc("/api/developers", devsEndpoint)
 	http.HandleFunc("/api/developers/", devEndpoint)
 	http.HandleFunc("/api/companies", compsEndpoint)
 	http.HandleFunc("/api/companies/", compEndpoint)
 	http.HandleFunc("/api/latest", latestsEndpoint)
-	http.HandleFunc("/api/search/apps/", searchAppEndpoint)
+	http.HandleFunc("/api/search/apps/", searchAppsEndpoint)
+	http.HandleFunc("/api/search/apps", searchAppsEndpoint)
 	http.HandleFunc("/api/search/companies/", searchCompEndpoint)
+	http.HandleFunc("/api/search/companies", searchCompEndpoint)
 	http.HandleFunc("/api/search/developers/", searchDevEndpoint)
+	http.HandleFunc("/api/search/developers", searchDevEndpoint)
 	//http.HandleFunc("/api/latest/", latestEndpoint)
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }

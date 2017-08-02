@@ -248,8 +248,10 @@ func GetCompany(id string) (Company, error) {
 	return comp, nil
 }
 
-func SearchApps(searchTerm string) ([]PlaystoreInfo, error){
-	rows, err := db.Query("SELECT * from playstore_apps WHERE title like '%$2%' limit 30", searchTerm);
+func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
+	searchTerm = "%" + searchTerm + "%"
+
+	rows, err := db.Query("SELECT * from playstore_apps WHERE title like $1", searchTerm)
 
 	if err != nil {
 		return []PlaystoreInfo{}, err
