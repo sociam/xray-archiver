@@ -68,9 +68,21 @@ var appPrefixRe = regexp.MustCompile("^/api/apps/")
 var dbIDRe = regexp.MustCompile("^\\d+$")
 var appIDRe = regexp.MustCompile("^[[:alpha:]][\\w$]*(\\.[[:alpha:]][\\w$]*)*$")
 
+func isFormatRequestSupported(w http.ResponseWriter, mime string, r *http.Request) bool {
+
+	if _, ok := supportedMimes[mime]; !ok {
+		writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+		return ok
+	}
+
+	return true
+}
+
 func appEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
+
 	if r.Method == "POST" || r.Method == "GET" {
+
 		if _, ok := supportedMimes[mime]; !ok {
 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
 			return
@@ -84,7 +96,7 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 		}
 
 		appID := split[3]
-		fmt.Println("AppId searching:", appID)
+
 		if appID == "" {
 			appsEndpoint(w, r)
 		} else if len(split) == 4 && dbIDRe.MatchString(appID) {
@@ -132,6 +144,7 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 				///api/apps/<appid>/<store>/<region>/<version string>
 
 				// There are parts after the app ID
+				//TODO: do things not need to be done different here?
 				store, region, ver := split[4], split[5], split[6]
 
 				appVer, err := db.GetAppVersion(store, region, ver)
@@ -140,7 +153,7 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
 				}
 
-				outil.WriteJSON(w, appVer)
+				util.WriteJSON(w, appVer)
 
 			default:
 				writeErr(w, mime, http.StatusBadRequest, "bad_req", "Number of parts is not 1, 2, or 4")
@@ -208,6 +221,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 		}
 
 		util.WriteJSON(w, apps)
+
 	} else {
 		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
 	}
@@ -216,7 +230,6 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 // What about? ^[a-z0-9_-]*$
 //var compIDRe = regexp.MustCompile("^\\l+$")
 var compIDRe = regexp.MustCompile("^[a-z0-9_-]*$")
-
 
 func compEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
@@ -249,15 +262,14 @@ func compEndpoint(w http.ResponseWriter, r *http.Request) {
 
 			writeData(w, mime, http.StatusOK, company)
 
-			// util.WriteJSON(w, app)
+			util.WriteJSON(w, company)
+
 		} else {
 			writeErr(w, mime, http.StatusBadRequest, "bad_company", "Invalid Company ID specified")
 		}
 	}
 }
 
-
-// TODO: implement properly.
 func compsEndpoint(w http.ResponseWriter, r *http.Request) {
 	//TODO: handle OPTIONS and HEAD
 	mime := r.Header.Get("Accept")
@@ -306,22 +318,20 @@ func compsEndpoint(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		apps, err := db.GetCompanies(num, start)
+		companies, err := db.GetCompanies(num, start)
 		if err != nil {
 			fmt.Println("Error querying database: ", err.Error())
 			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
 			return
 		}
 
-		util.WriteJSON(w, apps)
+		util.WriteJSON(w, companies)
 	} else {
 		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
 	}
 }
 
 func devsEndpoint(w http.ResponseWriter, r *http.Request) {
-
-	//TODO: handle OPTIONS and HEAD
 	mime := r.Header.Get("Accept")
 	if r.Method == "POST" || r.Method == "GET" {
 		if _, ok := supportedMimes[mime]; !ok {
@@ -368,7 +378,6 @@ func devsEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 func devEndpoint(w http.ResponseWriter, r *http.Request) {
-
 	mime := r.Header.Get("Accept")
 	if r.Method == "POST" || r.Method == "GET" {
 		if _, ok := supportedMimes[mime]; !ok {
@@ -405,6 +414,51 @@ func devEndpoint(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func latestsEndpoint(w http.ResponseWriter, r *http.Request) {
+	mime := r.Header.Get("Accept")
+	if r.Method == "POST" || r.Method == "GET" {
+		if _, ok := supportedMimes[mime]; !ok {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+			return
+		}
+
+		err := r.ParseForm()
+		if err != nil {
+			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
+			return
+		}
+
+		num, start := 10, 0
+		if v, ok := r.Form["num"]; ok && len(v) > 0 {
+			if len(v) > 1 {
+				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num must have a single value")
+				return
+			}
+			num, err = strconv.Atoi(v[0])
+			if err != nil {
+				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be a number")
+				return
+			}
+			if num < 1 || num > 100 {
+				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be between 1 and 100")
+				return
+			}
+		}
+
+		latestApps, err := db.GetDevelopers(num, start)
+		if err != nil {
+			fmt.Println("Error querying database: ", err.Error())
+			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+			return
+		}
+
+		util.WriteJSON(w, latestApps)
+
+	} else {
+		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
+	}
+}
+
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
 
 func init() {
@@ -414,11 +468,13 @@ func init() {
 
 func main() {
 	http.HandleFunc("/", hello)
-	http.HandleFunc("/api/app", appEndpoint)
-	http.HandleFunc("/api/apps/", appsEndpoint)
-	http.HandleFunc("/api/developer", devEndpoint)
-	http.HandleFunc("/api/developers/", devsEndpoint)
-	http.HandleFunc("/api/companie", compEndpoint)
-	http.HandleFunc("/api/companies/", compsEndpoint)
+	http.HandleFunc("/api/apps", appEndpoint)
+	http.HandleFunc("/api/apps/", appEndpoint)
+	http.HandleFunc("/api/developers", devsEndpoint)
+	http.HandleFunc("/api/developers/", devEndpoint)
+	http.HandleFunc("/api/companies", compsEndpoint)
+	http.HandleFunc("/api/companies/", compEndpoint)
+	http.HandleFunc("/api/latest", latestsEndpoint)
+	//http.HandleFunc("/api/latest/", latestEndpoint)
 	panic(http.ListenAndServe(":8080", nil))
 }
