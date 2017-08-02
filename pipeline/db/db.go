@@ -248,6 +248,50 @@ func GetCompany(id string) (Company, error) {
 	return comp, nil
 }
 
+func SearchApps(searchTerm string) ([]PlaystoreInfo, error){
+	rows, err := db.Query("SELECT * from playstore_apps WHERE title like '%$2%' limit 30", searchTerm);
+
+	if err != nil {
+		return []PlaystoreInfo{}, err
+	}
+
+	var ret []PlaystoreInfo
+
+	var id = ""
+
+	for i := 0; rows.Next(); i++ {
+		ret = append(ret, PlaystoreInfo{})
+		rows.Scan(
+			&id,
+			&ret[i].Title,
+			&ret[i].Summary,
+			&ret[i].Description,
+			&ret[i].StoreURL,
+			&ret[i].Price,
+			&ret[i].Free,
+			&ret[i].Rating,
+			&ret[i].NumReviews,
+			&ret[i].Genre,
+			&ret[i].FamilyGenre,
+			&ret[i].Installs,
+			&ret[i].Developer,
+			&ret[i].Updated,
+			&ret[i].AndroidVer,
+			&ret[i].ContentRating,
+			pq.Array(&ret[i].Screenshots),
+			&ret[i].Video,
+			pq.Array(&ret[i].RecentChanges),
+			&ret[i].CrawlDate,
+			pq.Array(&ret[i].Permissions))
+	}
+
+	if rows.Err() != sql.ErrNoRows {
+		return []PlaystoreInfo{}, err
+	}
+
+	return ret, nil
+}
+
 func GetCompanies(num, start int) ([]Company, error) {
 	rows, err := db.Query("SELECT * FROM companies LIMIT $1 OFFSET $2", num, start)
 	if err != nil {
