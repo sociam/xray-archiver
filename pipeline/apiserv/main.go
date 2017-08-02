@@ -463,7 +463,7 @@ func latestsEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func searchAppEndpoint(w http.ResponseWriter, r *http.Request) {
+func searchAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 	if r.Method == "POST" || r.Method == "GET" {
 		if _, ok := supportedMimes[mime]; !ok {
@@ -490,6 +490,7 @@ func searchAppEndpoint(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		writeData(w, mime, http.StatusOK, results)
 
 		util.WriteJSON(w, results)
@@ -522,9 +523,12 @@ func main() {
 	http.HandleFunc("/api/companies", compsEndpoint)
 	http.HandleFunc("/api/companies/", compEndpoint)
 	http.HandleFunc("/api/latest", latestsEndpoint)
-	http.HandleFunc("/api/search/apps/", searchAppEndpoint)
+	http.HandleFunc("/api/search/apps/", searchAppsEndpoint)
+	http.HandleFunc("/api/search/apps", searchAppsEndpoint)
 	http.HandleFunc("/api/search/companies/", searchCompEndpoint)
+	http.HandleFunc("/api/search/companies", searchCompEndpoint)
 	http.HandleFunc("/api/search/developers/", searchDevEndpoint)
+	http.HandleFunc("/api/search/developers", searchDevEndpoint)
 	//http.HandleFunc("/api/latest/", latestEndpoint)
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
