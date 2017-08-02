@@ -182,35 +182,41 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		num, start := 10, 0
-		if v, ok := r.Form["num"]; ok && len(v) > 0 {
-			if len(v) > 1 {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num must have a single value")
-				return
-			}
-			num, err = strconv.Atoi(v[0])
-			if err != nil {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be a number")
-				return
-			}
-			if num < 1 || num > 100 {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be between 1 and 100")
-				return
-			}
-		}
+		num, start := 10, 0 //Default selection range
+		for name, val := range r.Form {
+			switch name {
 
-		if v, ok := r.Form["start"]; ok && len(v) > 0 {
-			if len(v) > 1 {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "start must have a single value")
-				return
-			}
-			start, err = strconv.Atoi(v[0])
-			if err != nil {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "start value must be a number")
-				return
-			}
-			if start < 0 {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "start value must positive")
+			case "num":
+				if len(val) > 1 {
+					writeErr(w, mime, http.StatusBadRequest, "bad_form", "num must have a single value")
+					return
+				}
+				num, err = strconv.Atoi(val[0])
+				if err != nil {
+					writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be a number")
+					return
+				}
+				if num < 1 || num > 100 {
+					writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be between 1 and 100")
+					return
+				}
+
+			case "start":
+				if len(val) > 1 {
+					writeErr(w, mime, http.StatusBadRequest, "bad_form", "start must have a single value")
+					return
+				}
+				start, err = strconv.Atoi(val[0])
+				if err != nil {
+					writeErr(w, mime, http.StatusBadRequest, "bad_form", "start value must be a number")
+					return
+				}
+				if start < 0 {
+					writeErr(w, mime, http.StatusBadRequest, "bad_form", "start value must positive")
+					return
+				}
+			default:
+				writeErr(w, mime, http.StatusBadRequest, "bad_form", "passed values did not match params", name)
 				return
 			}
 		}
