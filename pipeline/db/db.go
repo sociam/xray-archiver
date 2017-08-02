@@ -288,8 +288,9 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 			pq.Array(&ret[i].Permissions))
 	}
 
-	if rows.Err() != sql.ErrNoRows {
-		return []PlaystoreInfo{}, err
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+		fmt.Print("Databse err", rows.Err())
+		return []App{}, rows.Err()
 	}
 
 	return ret, nil
@@ -368,14 +369,17 @@ func GetLatestApps(num, start int) ([]App, error) {
 	if err != nil {
 		return []App{}, err
 	}
+
 	ret := make([]App, 0, num)
+
 	for i := 0; rows.Next(); i++ {
 		ret = append(ret, App{})
 		rows.Scan(&ret[i].ID, pq.Array(&ret[i].Vers), &ret[i].Icon)
 	}
 
-	if rows.Err() != sql.ErrNoRows {
-		return []App{}, err
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+		fmt.Print("Databse err", rows.Err())
+		return []App{}, rows.Err()
 	}
 
 	return ret, nil
