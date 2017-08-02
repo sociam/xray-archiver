@@ -114,13 +114,9 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-<<<<<<< HEAD
-			util.WriteJSON(w, appVer)
-=======
 			writeData(w, mime, http.StatusOK, appVer)
 
 			// util.WriteJSON(w, app)
->>>>>>> fixed err with app/apps appVer endpoints.
 
 		} else if appIDRe.MatchString(appID) {
 			// Is an app ID
@@ -144,11 +140,7 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
 				}
 
-<<<<<<< HEAD
-				util.WriteJSON(w, appVer)
-=======
 				writeData(w, mime, http.StatusOK, appVer)
->>>>>>> fixed err with app/apps appVer endpoints.
 
 			case 7:
 				///api/apps/<appid>/<store>/<region>/<version string>
@@ -163,11 +155,7 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
 				}
 
-<<<<<<< HEAD
-				util.WriteJSON(w, appVer)
-=======
 				writeData(w, mime, http.StatusOK, appVer)
->>>>>>> fixed err with app/apps appVer endpoints.
 
 			default:
 				writeErr(w, mime, http.StatusBadRequest, "bad_req", "Number of parts is not 1, 2, or 4")
@@ -474,6 +462,7 @@ func latestsEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
+var port = flag.Uint("port", 8080, "Port to serve on.")
 
 func init() {
 	util.LoadCfg(*cfgFile, util.ApiServ)
@@ -484,18 +473,11 @@ func main() {
 	http.HandleFunc("/", hello)
 	http.HandleFunc("/api/apps", appEndpoint)
 	http.HandleFunc("/api/apps/", appEndpoint)
-<<<<<<< HEAD
 	http.HandleFunc("/api/developers", devsEndpoint)
 	http.HandleFunc("/api/developers/", devEndpoint)
 	http.HandleFunc("/api/companies", compsEndpoint)
 	http.HandleFunc("/api/companies/", compEndpoint)
 	http.HandleFunc("/api/latest", latestsEndpoint)
 	//http.HandleFunc("/api/latest/", latestEndpoint)
-=======
-	//http.HandleFunc("/api/developers", devEndpoint)
-	//http.HandleFunc("/api/developers/", devsEndpoint)
-	http.HandleFunc("/api/companies", compEndpoint)
-	http.HandleFunc("/api/companies/", compsEndpoint)
->>>>>>> fixed err with app/apps appVer endpoints.
-	panic(http.ListenAndServe(":8080", nil))
+	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
