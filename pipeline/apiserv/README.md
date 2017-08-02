@@ -14,126 +14,121 @@ $GOPATH/bin/apiserv
 
 ```
 
-* **URL**
 
-  <_The URL Structure (path only, no root url)_>
+##Show App Version
 
-* **Method:**
-  
-  <_The request type_>
-
-  `GET` | `POST` | `DELETE` | `PUT`
-  
-*  **URL Params**
-
-   <_If URL params exist, specify them in accordance with name mentioned in URL section. Separate into optional and required. Document data constraints._> 
-
-   **Required:**
- 
-   `id=[integer]`
-
-   **Optional:**
- 
-   `photo_id=[alphanumeric]`
-
-* **Data Params**
-
-  <_If making a post request, what should the body payload look like? URL Params rules apply here too._>
-
-* **Success Response:**
-  
-  <_What should the status code be on success and is there any returned data? This is useful when people need to to know what their callbacks should expect!_>
-
-  * **Code:** 200 <br />
-    **Content:** `{ id : 12 }`
- 
-* **Error Response:**
-
-  <_Most endpoints will have many ways they can fail. From unauthorized access, to wrongful parameters etc. All of those should be liste d here. It might seem repetitive, but it helps prevent assumptions from being made where they should be._>
-
-  * **Code:** 401 UNAUTHORIZED <br />
-    **Content:** `{ error : "Log in" }`
-
-  OR
-
-  * **Code:** 422 UNPROCESSABLE ENTRY <br />
-    **Content:** `{ error : "Email Invalid" }`
-
-* **Sample Call:**
-
-  <_Just a sample call to your endpoint in a runnable format ($.ajax call or a curl request) - this makes life easier and more predictable._> 
-
-* **Notes:**
-
-  <_This is where all uncertainties, commentary, discussion etc. can go. I recommend timestamping and identifying oneself when leaving comments here._> 
-
-
-
-##Retrieve Apps
-
-* **URL**
-
-/api/apps/
-
-* **Method:**
-  `GET`
-  
-*  **URL Params**
-  None
-
-* **Data Params**
-  None
-
-* **Success Response:**
-  * **Code:** 200 <br />
-    **Content:** `{ appid : "com.example"}`
- 
-* **Error Response:**
-  * **Code:** 401  <br />
-    **Content:** `{ error : "" }`
-
-
-
-
-
-mime types
-
-
-##Retrieve app versions
+Returns the latest version information of a single app
 
 * **Method URL**
 
 ```http
-GET /api/apps/
+GET /api/apps/:appId/:version
 ```  
 *  **URL Params**
-  None
+
+   **Required:**
+ 
+   `appId=[integer]`
+
+    **Optional:**
+ 
+   `version=[string]`
 
 * **Data Params**
   None
 
 * **Success Response:**
   * **Code:** 200 <br />
-    **Content:** `{ appid : "com.example"}`
+    **Content:** `{ appid : {{types.AppVersion}}}`
  
 * **Error Response:**
-  * **Code:** 401  <br />
-    **Content:** `{ error : "" }`
+  TODO: but but its labourful
+
+* **Sample Call:**
+
+curl /api/apps/500282 -H 'Accept: application/json'
+
+curl /api/apps/500282/playen_US12312 -H 'Accept: application/json'
+
+curl /api/apps/500282/play/en_US/12312 -H 'Accept: application/json'
+
+
+##Show App Selection
+
+Returns the a selection of app meta data given a start pos and a count
+
+* **Method URL**
+
+```http
+GET /api/apps/:amount/:startPos
+```  
+*  **URL Params**
+
+   **Required:**
+ 
+   `amount=[integer]`
+
+   `startPos=[integer]`
+
+* **Data Params**
+  None
+
+* **Success Response:**
+  * **Code:** 200 <br />
+    **Content:** `{ appid : {{types.AppVersion}}}`
+ 
+* **Error Response:**
+  TODO: but but its labourful
+
+* **Sample Call:**
+
+curl /api/apps/10/2 -H 'Accept: application/json'
+
+
+
+
+TODO: need to select by package name and get back more than version metadata...
+use previous to find this
+
+
+##Show App 
+
+Returns a app and all metadata
+
+* **Method URL**
+
+```http
+GET /api/apps/:packagename
+```  
+*  **URL Params**
+
+   **Required:**
+ 
+   `packagename=[string]`
+
+* **Data Params**
+  None
+
+* **Success Response:**
+  * **Code:** 200 <br />
+    **Content:** `{ appid : {{types.storeInfo}}}`
+ 
+* **Error Response:**
+  TODO: but but its labourful
+
+* **Sample Call:**
+
+curl /api/apps/com.google.app -H 'Accept: application/json'
+
+
+
+
+
+
 
 
 /api/apps/<appid>/<version>
 
-
-
- /api/apps -> list of just the latest versions?
-
-
- app?dbid=blah
-
- /api/apps/<dbid>
-
-
- /api/apps/<pkgname>
 
  /api/apps/<appid>/<version string>
 
