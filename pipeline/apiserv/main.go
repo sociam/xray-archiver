@@ -116,7 +116,7 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 
 			writeData(w, mime, http.StatusOK, appVer)
 
-			// util.WriteJSON(w, app)
+			//util.WriteJSON(w, app)
 
 		} else if appIDRe.MatchString(appID) {
 			// Is an app ID
@@ -175,7 +175,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
 			return
 		}
-
+		fmt.Println("Gathering app with heads", r)
 		err := r.ParseForm()
 		if err != nil {
 			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
@@ -215,13 +215,15 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		fmt.Println("Selecting app range", start, num)
+
 		apps, err := db.GetApps(num, start)
 		if err != nil {
 			fmt.Println("Error querying database: ", err.Error())
 			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
 			return
 		}
-		
+
 		util.WriteJSON(w, apps)
 
 	} else {
@@ -479,7 +481,6 @@ func searchAppEndpoint(w http.ResponseWriter, r *http.Request) {
 		searchTerm := split[4]
 		fmt.Println("Fetching matches for:", searchTerm)
 
-
 		results, err := db.SearchApps(string(searchTerm))
 
 		fmt.Println("This many apps found: " + fmt.Sprint(len(results)))
@@ -514,7 +515,7 @@ func init() {
 
 func main() {
 	http.HandleFunc("/", hello)
-	http.HandleFunc("/api/apps", appEndpoint)
+	http.HandleFunc("/api/apps", appsEndpoint)
 	http.HandleFunc("/api/apps/", appEndpoint)
 	http.HandleFunc("/api/developers", devsEndpoint)
 	http.HandleFunc("/api/developers/", devEndpoint)

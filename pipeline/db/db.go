@@ -248,8 +248,8 @@ func GetCompany(id string) (Company, error) {
 	return comp, nil
 }
 
-func SearchApps(searchTerm string) ([]PlaystoreInfo, error){
-	rows, err := db.Query("SELECT * from playstore_apps WHERE title like '%$2%' limit 30", searchTerm);
+func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
+	rows, err := db.Query("SELECT * from playstore_apps WHERE title like '%$2%' limit 30", searchTerm)
 
 	if err != nil {
 		return []PlaystoreInfo{}, err
@@ -339,17 +339,22 @@ func GetApp(id string) (App, error) {
 
 func GetApps(num, start int) ([]App, error) {
 	rows, err := db.Query("SELECT * FROM apps LIMIT $1 OFFSET $2", num, start)
+
 	if err != nil {
 		return []App{}, err
 	}
 	ret := make([]App, 0, num)
 	for i := 0; rows.Next(); i++ {
 		ret = append(ret, App{})
-		rows.Scan(&ret[i].ID, pq.Array(&ret[i].Vers), &ret[i].Icon)
+		rows.Scan(
+			&ret[i].ID,
+			pq.Array(&ret[i].Vers),
+			&ret[i].Icon)
 	}
 
-	if rows.Err() != sql.ErrNoRows {
-		return []App{}, err
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+		fmt.Print("Databse err", rows.Err())
+		return []App{}, rows.Err()
 	}
 
 	return ret, nil
