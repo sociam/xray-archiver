@@ -12,18 +12,18 @@ type Range struct {
 }
 
 type App struct {
-	ID   string `json:"id"`
-	Vers []int  `json:"vers"`
-	Icon string `json:"icon"`
+	ID   string  `json:"id"`
+	Vers []int64 `json:"vers"`
+	Icon string  `json:"icon"`
 }
 
 type AppVersion struct {
-	ID          int                 `json:"id"`
+	ID          int64               `json:"id"`
 	App         string              `json:"app"`
 	Store       string              `json:"string"`
 	Region      string              `json:"region"`
 	Ver         string              `json:"ver"`
-	ScreenFlags int                 `json:"screenFlags"`
+	ScreenFlags int64               `json:"screenFlags"`
 	Hosts       map[string][]string `json:"hosts"`
 	Perms       []util.Permission   `json:"permissions"`
 	StoreInfo   storeInfo           `json:"storeinfo"`
