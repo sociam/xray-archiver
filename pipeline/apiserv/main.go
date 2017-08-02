@@ -488,6 +488,7 @@ func searchAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		writeData(w, mime, http.StatusOK, results)
 
 		util.WriteJSON(w, results)
