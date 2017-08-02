@@ -309,3 +309,22 @@ func GetApps(num, start int) ([]App, error) {
 
 	return ret, nil
 }
+
+func GetLatestApps(num, start int) ([]App, error) {
+	//TOOD: db join for only only latest to get through
+	rows, err := db.Query("SELECT * FROM apps LIMIT $1 OFFSET $2", num, start)
+	if err != nil {
+		return []App{}, err
+	}
+	ret := make([]App, 0, num)
+	for i := 0; rows.Next(); i++ {
+		ret = append(ret, App{})
+		rows.Scan(&ret[i].ID, pq.Array(&ret[i].Vers), &ret[i].Icon)
+	}
+
+	if rows.Err() != sql.ErrNoRows {
+		return []App{}, err
+	}
+
+	return ret, nil
+}
