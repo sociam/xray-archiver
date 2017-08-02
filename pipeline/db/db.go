@@ -290,7 +290,7 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
 		fmt.Print("Databse err", rows.Err())
-		return []App{}, rows.Err()
+		return []PlaystoreInfo{}, rows.Err()
 	}
 
 	return ret, nil
