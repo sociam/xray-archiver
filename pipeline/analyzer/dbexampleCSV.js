@@ -5,15 +5,15 @@ db_cfg.max = 10;
 db_cfg.idleTimeoutMillis = 30000;
 const pool = new pg.Pool(db_cfg);
 pool.on('error', function (err, client) {
-	console.error('idle client error', err.message, err.stack);
+    console.error('idle client error', err.message, err.stack);
 });
 function connect() {
-	return pool.connect();
-};
+    return pool.connect();
+}
 function query(text, values) {
-	console.log('query:', text, values);
-	return pool.query(text, values);
-};
+    console.log('query:', text, values);
+    return pool.query(text, values);
+}
 
 //const text = 'INSERT INTO companies(id,company_ch,name,company_old,hosts,founded,acquired,type,typetag,jurisdiction,jurisdiction_code,parent,capital,equity,min_size,max_size,data_sources,description) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18),'
 //const values = ['google', 'Google',	google.com google.com googleapis.com 1e100.com appspot.com ggpht.com googlevideo.com gstatic.com googleusercontent.com dmtry.com gvt1.com i.ytimg.com google.co.uk google.co.uk google.co.in blogspot.com	2002		analytics profiling advertising login	app	us					whois	Google is a multinational corporation that is specialized in internet-related services and products. The company’s product portfolio includes Google Search, which provides users with access to information online	
