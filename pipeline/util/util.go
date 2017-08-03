@@ -11,6 +11,7 @@ import (
 	"path"
 )
 
+// Unit for maps in data.go
 type Unit struct{}
 
 var unit Unit
@@ -54,6 +55,9 @@ func (app *App) ApkPath() string {
 		app.Ver, app.ID+".apk")
 }
 
+// OutDir specifies where Apps should be unpacked to. it also creates
+// the directory structure for that path and returns the path as a
+// string.
 func (app *App) OutDir() string {
 	if app.UnpackDir == "" {
 		if app.Path != "" {
@@ -73,6 +77,8 @@ func (app *App) OutDir() string {
 	return app.UnpackDir
 }
 
+// Unpack passes an app to apktool to disassemble an APK. the contents are
+// stored in the path specified by OutDir.
 func (app *App) Unpack() error {
 	apkPath, outDir := app.ApkPath(), app.OutDir()
 	if _, err := os.Stat(apkPath); err != nil {
@@ -91,10 +97,12 @@ func (app *App) Unpack() error {
 	return nil
 }
 
+// Cleanup removes all directories specifed in an app object's OutDir.
 func (app *App) Cleanup() error {
 	return os.RemoveAll(app.OutDir())
 }
 
+// CheckDir verifies that a Dir is a Dir and exists.
 func CheckDir(dir, name string) {
 	fif, err := os.Stat(dir)
 	if err != nil {
@@ -113,6 +121,8 @@ func CheckDir(dir, name string) {
 	}
 }
 
+// UniqAppend takes the contents of one array and adds any content
+// not present in another array.
 func UniqAppend(a []string, b []string) []string {
 	ret := make([]string, 0, len(a)+len(b))
 	for _, e := range a {
@@ -153,6 +163,7 @@ func uniqAppend(a []interface{}, b []interface{}) []interface{} {
 }
 */
 
+// Combine puts together two maps of string keys and unit values.
 func Combine(a, b map[string]Unit) map[string]Unit {
 	ret := a
 	for e := range b {
@@ -161,6 +172,7 @@ func Combine(a, b map[string]Unit) map[string]Unit {
 	return ret
 }
 
+// StrMap creates a map of strings and units.
 func StrMap(args ...string) map[string]Unit {
 	ret := make(map[string]Unit)
 	for _, e := range args {
@@ -170,6 +182,7 @@ func StrMap(args ...string) map[string]Unit {
 	return ret
 }
 
+// WriteJSON writes and encodes json dat.
 func WriteJSON(w io.Writer, data interface{}) error {
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
@@ -177,6 +190,7 @@ func WriteJSON(w io.Writer, data interface{}) error {
 	return enc.Encode(data)
 }
 
+// WriteDEAN Writes and Encodes a 'Nah Mate'.
 func WriteDEAN(w io.Writer, data interface{}) error {
 	w.Write([]byte("Nah\n"))
 	WriteJSON(w, data)
