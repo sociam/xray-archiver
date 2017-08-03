@@ -15,6 +15,7 @@ type Unit struct{}
 
 var unit Unit
 
+// App Struct for holding of information extracted from the APK
 type App struct {
 	DBID                   int64
 	ID, Store, Region, Ver string
@@ -24,19 +25,26 @@ type App struct {
 	Packages               []string
 }
 
+// Permission Struct represents the permission information found
+// in an APK
 type Permission struct {
 	ID        string `xml:"name,attr"`
 	MaxSdkVer string `xml:"maxSdkVersion,attr"`
 }
 
+// NewApp Constructs a new app. initialising values based on
+// the parameters passed.
 func NewApp(dbID int64, id, store, region, ver string) *App {
 	return &App{DBID: dbID, ID: id, Store: store, Region: region, Ver: ver}
 }
 
+// AppByPath returns an App object with the Path value initialised.
 func AppByPath(path string) *App {
 	return &App{Path: path}
 }
 
+// ApkPath creates a string that represents the location of the APK
+// on disk. Used to populate the Path string of an App object.
 func (app *App) ApkPath() string {
 	if app.Path != "" {
 		return app.Path
