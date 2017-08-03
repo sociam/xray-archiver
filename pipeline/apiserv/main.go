@@ -68,16 +68,6 @@ var appPrefixRe = regexp.MustCompile("^/api/apps/")
 var dbIDRe = regexp.MustCompile("^\\d+$")
 var appIDRe = regexp.MustCompile("^[[:alpha:]][\\w$]*(\\.[[:alpha:]][\\w$]*)*$")
 
-func isFormatRequestSupported(w http.ResponseWriter, mime string, r *http.Request) bool {
-
-	if _, ok := supportedMimes[mime]; !ok {
-		writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
-		return ok
-	}
-
-	return true
-}
-
 func appEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 
@@ -501,16 +491,7 @@ func searchAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 
 		util.WriteJSON(w, results)
-
 	}
-}
-
-func searchCompEndpoint(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func searchDevEndpoint(w http.ResponseWriter, r *http.Request) {
-
 }
 
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
@@ -525,6 +506,8 @@ func main() {
 	http.HandleFunc("/", hello)
 	http.HandleFunc("/api/apps", appsEndpoint)
 	http.HandleFunc("/api/apps/", appEndpoint)
+
+	//@deprecated
 	http.HandleFunc("/api/developers", devsEndpoint)
 	http.HandleFunc("/api/developers/", devEndpoint)
 	http.HandleFunc("/api/companies", compsEndpoint)
@@ -532,10 +515,9 @@ func main() {
 	http.HandleFunc("/api/latest", latestsEndpoint)
 	http.HandleFunc("/api/search/apps/", searchAppsEndpoint)
 	http.HandleFunc("/api/search/apps", searchAppsEndpoint)
-	http.HandleFunc("/api/search/companies/", searchCompEndpoint)
-	http.HandleFunc("/api/search/companies", searchCompEndpoint)
-	http.HandleFunc("/api/search/developers/", searchDevEndpoint)
-	http.HandleFunc("/api/search/developers", searchDevEndpoint)
+
+	//TODO:
 	//http.HandleFunc("/api/latest/", latestEndpoint)
+
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
