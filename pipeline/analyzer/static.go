@@ -12,8 +12,8 @@ import (
 	"strings"
 )
 
-type StaticAnalyzer struct{}
-
+// AndroidManifest is a struct representing the interesting parts of the
+// AndroidManifest.xml in APKs
 type AndroidManifest struct {
 	Package    string            `xml:"package,attr"`
 	Perms      []util.Permission `xml:"uses-permission"`
@@ -45,7 +45,7 @@ func (manifest *AndroidManifest) getPerms() []util.Permission {
 	return append(manifest.Perms, manifest.Sdk23Perms...)
 }
 
-type Company struct {
+type company struct {
 	ID           string   `json:"id"`
 	Name         string   `json:"company"`
 	Domains      []string `json:"domains"`
@@ -66,7 +66,7 @@ func simpleAnalyze(app *util.App) ([]string, error) {
 	//TODO: fix error handling
 
 	//TODO: replace with DB calls
-	var companies map[string]Company
+	var companies map[string]company
 	companyFile, err := os.Open(path.Join(util.Cfg.DataDir, "company_details.json"))
 	if err != nil {
 		return []string{}, err

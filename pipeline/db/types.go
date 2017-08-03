@@ -6,17 +6,20 @@ import (
 	"github.com/sociam/xray-archiver/pipeline/util"
 )
 
+// Range represents a range
 type Range struct {
 	Min int64 `json:"min"`
 	Max int64 `json:"max"`
 }
 
+// App represents an app from the database
 type App struct {
 	ID   string  `json:"id"`
 	Vers []int64 `json:"vers"`
-	Icon string  `json:"icon"`
 }
 
+// AppVersion represents all the information about an app version contained in
+// the database
 type AppVersion struct {
 	ID          int64               `json:"id"`
 	App         string              `json:"app"`
@@ -26,12 +29,15 @@ type AppVersion struct {
 	ScreenFlags int64               `json:"screenFlags"`
 	Hosts       map[string][]string `json:"hosts"`
 	Perms       []util.Permission   `json:"permissions"`
-	StoreInfo   storeInfo           `json:"storeinfo"`
+	StoreInfo   StoreInfo           `json:"storeinfo"`
 	Icon        string              `json:"icon"`
 }
 
-type storeInfo interface{}
+// StoreInfo represents the information contained about an app in its respective
+// store
+type StoreInfo interface{}
 
+// PlaystoreInfo represents the data contained in the google play store
 type PlaystoreInfo struct {
 	Title         string    `json:"title"`
 	Summary       string    `json:"summary"`
@@ -55,6 +61,7 @@ type PlaystoreInfo struct {
 	Permissions   []string  `json:"permissions"`
 }
 
+// Developer represents a developer from the database
 type Developer struct {
 	ID        int64    `json:"id"`
 	Emails    []string `json:"emails"`
@@ -63,6 +70,7 @@ type Developer struct {
 	Site      string   `json:"site"`
 }
 
+// Company represents a company from the database
 type Company struct {
 	ID           string   `json:"id"`
 	Name         string   `json:"name"`
@@ -80,6 +88,7 @@ type Company struct {
 	Description  []string `json:"description"`
 }
 
+// UtilApp creates a *util.App from an AppVersion
 func (a AppVersion) UtilApp() *util.App {
 	return util.NewApp(a.ID, a.App, a.Store, a.Region, a.Ver)
 }
