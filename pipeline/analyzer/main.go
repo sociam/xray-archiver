@@ -73,7 +73,7 @@ func analyze(app *util.App) error {
 
 	err = db.SetAnalyzed(app.DBID)
 	if err != nil {
-		fmt.Println("Error setting analyzed for app %d! This will result in looping!", app.DBID)
+		fmt.Printf("Error setting analyzed for app %d! This will result in looping!\n", app.DBID)
 	}
 
 	app.Cleanup()
@@ -114,7 +114,7 @@ func init() {
 	util.LoadCfg(*cfgFile, util.Analyzer)
 	err = db.Open(util.Cfg, *useDb)
 	if err != nil {
-		log.Fatal("Failed to open a connection to the database %s", err.Error())
+		log.Fatalf("Failed to open a connection to the database %s", err.Error())
 	}
 }
 
