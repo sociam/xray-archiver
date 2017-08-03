@@ -23,7 +23,6 @@
     "jslint": "^0.11.0",
     "pg": "^6.4.0",
     "python-shell": "^0.4.0",
-    "shelljs": "^0.7.8",
-    "unix-dgram": "^2.0.1"
+    "shelljs": "^0.7.8"
   }
 }
