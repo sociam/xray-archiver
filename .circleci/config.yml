@@ -34,8 +34,8 @@ jobs:
           key: v1-dependencies-{{ checksum "pipeline/package.json" }}
 
 
-      #- run: cd pipeline && eslint **/*.js
-      - run: cd pipeline && yarn test
+      - run: cd pipeline && node_modules/bin/eslint.js **/*.js
+      #- run: cd pipeline && yarn test
 
   golang:
     docker:
