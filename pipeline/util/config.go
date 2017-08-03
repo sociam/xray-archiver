@@ -9,7 +9,7 @@ import (
 	"path"
 )
 
-type DbCfg struct {
+type DBCfg struct {
 	Database string `json:"database"`
 	User     string `json:"-"`
 	Password string `json:"-"`
@@ -17,35 +17,34 @@ type DbCfg struct {
 	Port     int    `json:"port"`
 }
 
-type DbCreds struct {
+type DBCreds struct {
 	User     string `json:"user"`
 	Password string `json:"password"`
 }
 
 type AnalyzerCfg struct {
-	Db DbCreds `json:"db"`
+	DB DBCreds `json:"db"`
 }
 
-type ApiServCfg struct {
-	Db DbCreds `json:"db"`
+type APIServCfg struct {
+	DB DBCreds `json:"db"`
 }
 
 type Config struct {
-	EdiHostname string      `json:"edihost"`
+	EDIHostname string      `json:"edihost"`
 	DataDir     string      `json:"datadir"`
 	AppDir      string      `json:"-"`
 	UnpackDir   string      `json:"unpackdir"`
-	SockPath    string      `json:"sockpath"`
 	Analyzer    AnalyzerCfg `json:"analyzer"`
-	ApiServ     ApiServCfg  `json:"apiserv"`
-	Db          DbCfg       `json:"db"`
+	APIServ     APIServCfg  `json:"apiserv"`
+	DB          DBCfg       `json:"db"`
 }
 
 var Cfg Config
 
 const (
 	Analyzer = iota
-	ApiServ
+	APIServ
 )
 
 func LoadCfg(cfgFile string, requester int) error {
@@ -59,8 +58,8 @@ func LoadCfg(cfgFile string, requester int) error {
 		return errors.New("Error reading JSON: " + err.Error())
 	}
 
-	if Cfg.EdiHostname == "" {
-		Cfg.EdiHostname = "edi.sociam.org"
+	if Cfg.EDIHostname == "" {
+		Cfg.EDIHostname = "edi.sociam.org"
 	}
 	if Cfg.DataDir == "" {
 		Cfg.DataDir = "/usr/local/var/xray"
@@ -69,27 +68,22 @@ func LoadCfg(cfgFile string, requester int) error {
 	if Cfg.UnpackDir == "" {
 		Cfg.UnpackDir, err = ioutil.TempDir("", "xray-analyzer")
 	}
-	if Cfg.SockPath == "" {
-		Cfg.SockPath = "/var/run/apkScraper"
-	}
 
 	Cfg.AppDir = path.Clean(Cfg.AppDir)
 	Cfg.UnpackDir = path.Clean(Cfg.UnpackDir)
-	Cfg.SockPath = path.Clean(Cfg.SockPath)
 
 	switch requester {
 	case Analyzer:
-		Cfg.Db.User = Cfg.Analyzer.Db.User
-		Cfg.Db.Password = Cfg.Analyzer.Db.Password
-	case ApiServ:
-		Cfg.Db.User = Cfg.ApiServ.Db.User
-		Cfg.Db.Password = Cfg.ApiServ.Db.Password
+		Cfg.DB.User = Cfg.Analyzer.DB.User
+		Cfg.DB.Password = Cfg.Analyzer.DB.Password
+	case APIServ:
+		Cfg.DB.User = Cfg.APIServ.DB.User
+		Cfg.DB.Password = Cfg.APIServ.DB.Password
 	}
 
 	fmt.Println("Config:")
 	fmt.Println("\tApp directory:", Cfg.AppDir)
 	fmt.Println("\tUnpacked app directory:", Cfg.UnpackDir)
-	fmt.Println("\tMessage socket path:", Cfg.SockPath)
 
 	return nil
 }

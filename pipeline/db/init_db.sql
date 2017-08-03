@@ -54,6 +54,11 @@ create table search_terms(
   last_searched          date                                          not null
 );
 
+create table app_packages (
+  id            int  references app_versions(id) primary key not null,
+  packages   text[]                                          not null
+);
+
 create table app_perms(
   id             int references app_versions(id) primary key not null,
   permissions text[]                                         not null

@@ -27,6 +27,7 @@ type AppVersion struct {
 	Hosts       map[string][]string `json:"hosts"`
 	Perms       []util.Permission   `json:"permissions"`
 	StoreInfo   storeInfo           `json:"storeinfo"`
+	Icon        string              `json:"icon"`
 }
 
 type storeInfo interface{}
@@ -77,4 +78,8 @@ type Company struct {
 	Size         Range    `json:"size"`
 	DataSources  []string `json:"dataSources"`
 	Description  []string `json:"description"`
+}
+
+func (a AppVersion) UtilApp() *util.App {
+	return util.NewApp(a.ID, a.App, a.Store, a.Region, a.Ver)
 }
