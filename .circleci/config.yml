@@ -26,8 +26,7 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      - run: cd pipeline
-      - run: yarn install
+      - run: cd pipeline && yarn install
 
       - save_cache:
           paths:
@@ -35,13 +34,11 @@ jobs:
           key: v1-dependencies-{{ checksum "pipeline/package.json" }}
 
       # run tests!
-      - run: cd db
-      - run: eslint **/*.js
-      - run: yarn test
+      - run: cd pipeline/db && eslint **/*.js
+      - run: cd pipeline/db && yarn test
 
-      - run: cd archiver
-      - run: eslint **/*.js
-      - run: yarn test
+      - run: cd pipeline/archiver && eslint **/*.js
+      - run: cd pipeline/archiver && yarn test
 
   apiserv:
     docker:
@@ -58,9 +55,8 @@ jobs:
     steps:
       - checkout
 
-      - run: cd pipeline/apiserv
-      - run: go get -v -t -d ./...
-      - run: go test -v ./...
+      - run: cd pipeline/apiserv && go get -v -t -d ./...
+      - run: cd pipeline/apiserv && go test -v ./...
 
   analyzer:
     docker:
@@ -77,6 +73,5 @@ jobs:
     steps:
       - checkout
 
-      - run: cd pipeline/analyzer
-      - run: go get -v -t -d ./...
-      - run: go test -v ./...
+      - run: cd pipeline/analyzer && go get -v -t -d ./...
+      - run: cd pipeline/analyzer && go test -v ./...
