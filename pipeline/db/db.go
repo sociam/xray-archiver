@@ -60,15 +60,17 @@ func AddPerms(app *util.App, perms []util.Permission) error {
 		if err != sql.ErrNoRows {
 			return err
 		}
-		_, err := db.Query("INSERT INTO app_perms VALUES ($1, $2)",
+		rows, err := db.Query("INSERT INTO app_perms VALUES ($1, $2)",
 			app.DbId, pq.Array(&sPerms))
+		rows.Close()
 		if err != nil {
 			return err
 		}
 	} else {
 		bothPerms := util.UniqAppend(sPerms, dbPerms)
-		_, err := db.Query("UPDATE app_perms SET perms = $1 WHERE id = $2",
+		rows, err := db.Query("UPDATE app_perms SET perms = $1 WHERE id = $2",
 			pq.Array(&bothPerms), app.DbId)
+		rows.Close()
 		if err != nil {
 			return err
 		}
@@ -89,15 +91,17 @@ func AddHosts(app *util.App, hosts []string) error {
 		if err != sql.ErrNoRows {
 			return err
 		}
-		_, err := db.Query("INSERT INTO app_hosts VALUES ($1, $2)",
+		rows, err := db.Query("INSERT INTO app_hosts VALUES ($1, $2)",
 			app.DbId, pq.Array(&hosts))
+		rows.Close()
 		if err != nil {
 			return err
 		}
 	} else {
 		bothHosts := util.UniqAppend(hosts, dbHosts)
-		_, err := db.Query("UPDATE app_host SET hosts = $1 WHERE id = $2",
+		rows, err := db.Query("UPDATE app_host SET hosts = $1 WHERE id = $2",
 			pq.Array(&bothHosts), app.DbId)
+		rows.Close()
 		if err != nil {
 			return err
 		}
@@ -201,6 +205,7 @@ func GetDeveloper(id int64) (Developer, error) {
 
 func GetDevelopers(num, start int) ([]Developer, error) {
 	rows, err := db.Query("SELECT * FROM developers LIMIT $1 OFFSET $2", num, start)
+	defer rows.Close()
 	if err != nil {
 		return []Developer{}, err
 	}
@@ -252,6 +257,7 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 	searchTerm = "%" + searchTerm + "%"
 
 	rows, err := db.Query("SELECT * from playstore_apps WHERE title like $1 ORDER BY rating USING> LIMIT 120", searchTerm)
+	defer rows.Close()
 	if err != nil {
 		return []PlaystoreInfo{}, err
 	}
@@ -302,6 +308,7 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 
 func GetCompanies(num, start int) ([]Company, error) {
 	rows, err := db.Query("SELECT * FROM companies LIMIT $1 OFFSET $2", num, start)
+	defer rows.Close()
 	if err != nil {
 		return []Company{}, err
 	}
@@ -346,7 +353,7 @@ func GetApp(id string) (App, error) {
 
 func GetApps(num, start int) ([]App, error) {
 	rows, err := db.Query("SELECT * FROM apps LIMIT $1 OFFSET $2", num, start)
-
+	defer rows.Close()
 	if err != nil {
 		return []App{}, err
 	}
@@ -374,6 +381,7 @@ func GetApps(num, start int) ([]App, error) {
 func GetLatestApps(num, start int) ([]App, error) {
 	//TOOD: db join for only only latest to get through
 	rows, err := db.Query("SELECT * FROM apps LIMIT $1 OFFSET $2", num, start)
+	defer rows.Close()
 	if err != nil {
 		return []App{}, err
 	}
