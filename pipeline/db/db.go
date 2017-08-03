@@ -412,6 +412,7 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 	searchTerm = "%" + searchTerm + "%"
 
 	rows, err := db.Query("SELECT * from playstore_apps WHERE title like $1 ORDER BY rating USING> LIMIT 120", searchTerm)
+
 	defer rows.Close()
 	if err != nil {
 		return []PlaystoreInfo{}, err
@@ -420,6 +421,8 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 	var ret []PlaystoreInfo
 
 	var id string
+	var famGenre sql.NullString
+	var nullableVideo sql.NullString
 
 	for i := 0; rows.Next(); i++ {
 		var inf PlaystoreInfo
@@ -434,7 +437,7 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 			&inf.Rating,
 			&inf.NumReviews,
 			&inf.Genre,
-			&inf.FamilyGenre,
+			&famGenre,
 			&inf.Installs.Min,
 			&inf.Installs.Max,
 			&inf.Developer,
@@ -442,10 +445,22 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 			&inf.AndroidVer,
 			&inf.ContentRating,
 			pq.Array(&inf.Screenshots),
-			&inf.Video,
+			&nullableVideo,
 			pq.Array(&inf.RecentChanges),
 			&inf.CrawlDate,
 			pq.Array(&inf.Permissions))
+
+		// Create Function
+		if famGenre.Valid {
+			inf.FamilyGenre = famGenre.String
+		} else {
+			inf.FamilyGenre = ""
+		}
+		if nullableVideo.Valid {
+			inf.Video = nullableVideo.String
+		} else {
+			inf.Video = ""
+		}
 		if err != nil {
 			fmt.Println(err)
 		} else {
