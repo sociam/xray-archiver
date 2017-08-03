@@ -132,9 +132,10 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 				writeData(w, mime, http.StatusOK, app)
 			case 5:
 				///api/apps/<appid>/<version string>
-				store, region, ver := split[4], split[5], split[6]
+				ver := split[4]
+				// Search for a version string in the user's default app store or in play/us
 
-				appVer, err := db.GetAppVersion(store, region, ver)
+				appVer, err := db.GetAppVersion(appID, "play", "us", ver)
 				if err != nil {
 					fmt.Println("Error querying database: ", err.Error())
 					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
@@ -149,7 +150,7 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 				//TODO: do things not need to be done different here?
 				store, region, ver := split[4], split[5], split[6]
 
-				appVer, err := db.GetAppVersion(store, region, ver)
+				appVer, err := db.GetAppVersion(appID, store, region, ver)
 				if err != nil {
 					fmt.Println("Error querying database: ", err.Error())
 					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")

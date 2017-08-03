@@ -16,6 +16,8 @@ type xrayDb struct {
 var useDB bool
 var db xrayDb
 
+// Open opens the database with the given config. If enable is false, the
+// functions that modify the database are noops.
 func Open(cfg util.Config, enable bool) error {
 	if enable {
 		useDB = true
@@ -46,13 +48,10 @@ func Open(cfg util.Config, enable bool) error {
 // 	return ret, nil
 // }
 
-/**
-* Add Package
-*
-* Function that allows you to add packages that exist within an APK to the Xray DB.
-* Takes an App object that contains a DB ID and an array of package names (strings).
-*
- */
+//TODO: make Add* functions take a db id and what to add instead of a util.App
+
+// AddPackages is a function that allows you to add packages to the Xray DB. The
+// argument app must contain a DB ID and an array of package names.
 func AddPackages(app *util.App) error {
 	if !useDB || app.DBID == 0 {
 		return nil
@@ -87,6 +86,8 @@ func AddPackages(app *util.App) error {
 	return nil
 }
 
+// AddPerms is a function that allows you to add permissions to the Xray DB. The
+// argument app must contain a DB ID and an array of permissions.
 func AddPerms(app *util.App) error {
 	if !useDB || app.DBID == 0 {
 		return nil
@@ -123,6 +124,8 @@ func AddPerms(app *util.App) error {
 	return nil
 }
 
+// AddHosts is a function that allows you to add hosts to the Xray DB. The
+// argument app must contain a DB ID.
 func AddHosts(app *util.App, hosts []string) error {
 	if !useDB || app.DBID == 0 {
 		return nil
@@ -154,11 +157,14 @@ func AddHosts(app *util.App, hosts []string) error {
 	return nil
 }
 
-func GetAppVersion(store, region, version string) (AppVersion, error) {
+// GetAppVersion gets an app version from the database. The argument app is the
+// app id, in the form com.example.app.
+func GetAppVersion(app, store, region, version string) (AppVersion, error) {
 	var appVer AppVersion
 
 	err := db.QueryRow(
-		"SELECT * FROM app_versions WHERE store = $1 AND region = $2 AND version = $3",
+		"SELECT * FROM app_versions WHERE app = $1 AND store = $2 AND region = $3 AND version = $4",
+		app,
 		store,
 		region,
 		version,
@@ -194,6 +200,7 @@ func GetAppVersion(store, region, version string) (AppVersion, error) {
 	return appVer, nil
 }
 
+// GetAppVersionByID gets an app version given its ID in the database.
 func GetAppVersionByID(id int64) (AppVersion, error) {
 	var appVer AppVersion
 
@@ -229,6 +236,7 @@ func GetAppVersionByID(id int64) (AppVersion, error) {
 	return appVer, nil
 }
 
+// GetDeveloper gets a developer given its ID in the database.
 func GetDeveloper(id int64) (Developer, error) {
 	var dev Developer
 
@@ -247,6 +255,7 @@ func GetDeveloper(id int64) (Developer, error) {
 
 }
 
+// GetDevelopers returns a list of developers.
 func GetDevelopers(num, start int) ([]Developer, error) {
 	rows, err := db.Query("SELECT * FROM developers LIMIT $1 OFFSET $2", num, start)
 	defer rows.Close()
@@ -271,6 +280,7 @@ func GetDevelopers(num, start int) ([]Developer, error) {
 	return ret, nil
 }
 
+// GetCompany returns a company given its ID in the database.
 func GetCompany(id string) (Company, error) {
 	var comp Company
 
@@ -297,6 +307,107 @@ func GetCompany(id string) (Company, error) {
 	return comp, nil
 }
 
+// GetCompanies returns a list of companies.
+func GetCompanies(num, start int) ([]Company, error) {
+	rows, err := db.Query("SELECT * FROM companies LIMIT $1 OFFSET $2", num, start)
+	defer rows.Close()
+	if err != nil {
+		return []Company{}, err
+	}
+	ret := make([]Company, 0, num)
+
+	for i := 0; rows.Next(); i++ {
+		ret = append(ret, Company{})
+		rows.Scan(
+			&ret[i].ID,
+			&ret[i].Name,
+			pq.Array(&ret[i].Hosts),
+			&ret[i].Founded,
+			&ret[i].Acquired,
+			pq.Array(&ret[i].Type),
+			&ret[i].TypeTag,
+			&ret[i].Jurisdiction,
+			&ret[i].Parent,
+			&ret[i].Capital,
+			&ret[i].Equity,
+			&ret[i].Size,
+			pq.Array(&ret[i].DataSources),
+			&ret[i].Description)
+	}
+
+	if rows.Err() != sql.ErrNoRows {
+		return []Company{}, err
+	}
+
+	return ret, nil
+}
+
+// GetApp gets an app given its id, in the form com.example.app.
+func GetApp(id string) (App, error) {
+	var app App
+	err := db.QueryRow("SELECT * FROM apps WHERE id = $1", id).Scan(&app.ID, pq.Array(&app.Vers))
+	if err != nil {
+		return App{}, err
+	}
+
+	return app, nil
+}
+
+// GetApps returns a list of apps.
+func GetApps(num, start int) ([]App, error) {
+	rows, err := db.Query("SELECT * FROM apps LIMIT $1 OFFSET $2", num, start)
+	defer rows.Close()
+	if err != nil {
+		return []App{}, err
+	}
+	ret := make([]App, 0, num)
+	for i := 0; rows.Next(); i++ {
+		var app App
+		err := rows.Scan(
+			&app.ID,
+			pq.Array(&app.Vers))
+		if err != nil {
+			fmt.Println("Database err:", err)
+		} else {
+			ret = append(ret, app)
+		}
+	}
+
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+		fmt.Println("Databse err", rows.Err())
+		return []App{}, rows.Err()
+	}
+
+	return ret, nil
+}
+
+// GetLatestApps returns a list of the newest app versions.
+//
+// TODO: THIS IS WRONG.
+func GetLatestApps(num, start int) ([]App, error) {
+	//TOOD: db join for only only latest to get through
+	rows, err := db.Query("SELECT * FROM apps LIMIT $1 OFFSET $2", num, start)
+	defer rows.Close()
+	if err != nil {
+		return []App{}, err
+	}
+
+	ret := make([]App, 0, num)
+
+	for i := 0; rows.Next(); i++ {
+		ret = append(ret, App{})
+		rows.Scan(&ret[i].ID, pq.Array(&ret[i].Vers))
+	}
+
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+		fmt.Println("Databse err", rows.Err())
+		return []App{}, rows.Err()
+	}
+
+	return ret, nil
+}
+
+// SearchApps returns a list of apps matching a search term.
 func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 	searchTerm = "%" + searchTerm + "%"
 
@@ -350,6 +461,8 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 	return ret, nil
 }
 
+// GetAppsToAnalyze returns a list of up to 10 apps that have analyzed=False and
+// downloaded=True for the analyzer.
 func GetAppsToAnalyze() ([]AppVersion, error) {
 	rows, err := db.Query("SELECT id, app, store, region, version, screen_flags, icon FROM app_versions WHERE analyzed = False AND downloaded = True LIMIT 10")
 	defer rows.Close()
@@ -379,108 +492,16 @@ func GetAppsToAnalyze() ([]AppVersion, error) {
 	return ret, nil
 }
 
-func GetCompanies(num, start int) ([]Company, error) {
-	rows, err := db.Query("SELECT * FROM companies LIMIT $1 OFFSET $2", num, start)
-	defer rows.Close()
-	if err != nil {
-		return []Company{}, err
-	}
-	ret := make([]Company, 0, num)
-
-	for i := 0; rows.Next(); i++ {
-		ret = append(ret, Company{})
-		rows.Scan(
-			&ret[i].ID,
-			&ret[i].Name,
-			pq.Array(&ret[i].Hosts),
-			&ret[i].Founded,
-			&ret[i].Acquired,
-			pq.Array(&ret[i].Type),
-			&ret[i].TypeTag,
-			&ret[i].Jurisdiction,
-			&ret[i].Parent,
-			&ret[i].Capital,
-			&ret[i].Equity,
-			&ret[i].Size,
-			pq.Array(&ret[i].DataSources),
-			&ret[i].Description)
-	}
-
-	if rows.Err() != sql.ErrNoRows {
-		return []Company{}, err
-	}
-
-	return ret, nil
-}
-
+// UnsetDownloaded sets an downloaded=False for given app.
 func UnsetDownloaded(id int64) error {
 	rows, err := db.Query("UPDATE app_versions SET downloaded = False WHERE id = $1", id)
 	rows.Close()
 	return err
 }
 
+// SetAnalyzed sets analyzed=True for a given app.
 func SetAnalyzed(id int64) error {
 	rows, err := db.Query("UPDATE app_versions SET analyzed = True WHERE id = $1", id)
 	rows.Close()
 	return err
-}
-
-func GetApp(id string) (App, error) {
-	var app App
-	err := db.QueryRow("SELECT * FROM apps WHERE id = $1", id).Scan(&app.ID, pq.Array(&app.Vers), &app.Icon)
-	if err != nil {
-		return App{}, err
-	}
-
-	return app, nil
-}
-
-func GetApps(num, start int) ([]App, error) {
-	rows, err := db.Query("SELECT * FROM apps LIMIT $1 OFFSET $2", num, start)
-	defer rows.Close()
-	if err != nil {
-		return []App{}, err
-	}
-	ret := make([]App, 0, num)
-	for i := 0; rows.Next(); i++ {
-		var app App
-		err := rows.Scan(
-			&app.ID,
-			pq.Array(&app.Vers))
-		if err != nil {
-			fmt.Println("Database err:", err)
-		} else {
-			ret = append(ret, app)
-		}
-	}
-
-	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
-		fmt.Println("Databse err", rows.Err())
-		return []App{}, rows.Err()
-	}
-
-	return ret, nil
-}
-
-func GetLatestApps(num, start int) ([]App, error) {
-	//TOOD: db join for only only latest to get through
-	rows, err := db.Query("SELECT * FROM apps LIMIT $1 OFFSET $2", num, start)
-	defer rows.Close()
-	if err != nil {
-		return []App{}, err
-	}
-
-	ret := make([]App, 0, num)
-
-	for i := 0; rows.Next(); i++ {
-		ret = append(ret, App{})
-		rows.Scan(&ret[i].ID, pq.Array(&ret[i].Vers), &ret[i].Icon)
-	}
-
-	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
-		fmt.Println("Databse err", rows.Err())
-		return []App{}, rows.Err()
-	}
-
-	return ret, nil
 }
