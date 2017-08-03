@@ -492,7 +492,8 @@ func searchAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("This many apps found: " + fmt.Sprint(len(results)))
 
 		if err != nil {
-			writeErr(w, mime, http.StatusBadRequest, "Bad_Search", "No apps could not be found")
+			fmt.Printf("Error running search for %s: %s\n", searchTerm, err)
+			writeErr(w, mime, http.StatusBadRequest, "bad_search", "No apps could not be found")
 			return
 		}
 

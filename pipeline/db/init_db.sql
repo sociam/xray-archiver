@@ -1,20 +1,19 @@
 create table apps(
   id        text primary key not null,
-  versions int[]                     ,
-  icon      text -- jun is going to murder me
+  versions int[]
 );
 
 create table app_versions(
-  id                   serial         primary key not null,
-  app                    text references apps(id) not null,
-  store                  text                     not null,
-  region                 text                     not null,
-  version                text                     not null,
-  screen_flags            int                             ,
-  downloaded             bool                     not null,
-  analyzed               bool                     not null,
-  last_dl_attempt   timestamp                     not null,
-  icon                   text
+  id                 serial         primary key not null,
+  app                  text references apps(id) not null,
+  store                text                     not null,
+  region               text                     not null,
+  version              text                     not null,
+  screen_flags          int                             ,
+  downloaded           bool                     not null,
+  analyzed             bool                     not null,
+  last_dl_attempt timestamp                     not null,
+  icon                 text
 );
 
 create table developers(
@@ -52,7 +51,7 @@ create table playstore_apps(
 
 create table search_terms(
   search_term            text                              primary key not null,
-  last_searched          DATE                                          not null
+  last_searched          date                                          not null
 );
 
 create table app_perms(
@@ -62,9 +61,9 @@ create table app_perms(
 
 -- Contains the hostnames that were found in apps via analysis
 create table app_hosts(
-  id         int references app_versions(id) primary key not null,
-  hosts    int[]                                                 ,
-  pis   text[][]
+  id      int references app_versions(id) primary key not null,
+  hosts int[]                                                 ,
+  pis   int[]
 );
 
 create table companies(

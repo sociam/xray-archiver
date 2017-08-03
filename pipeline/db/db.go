@@ -252,40 +252,44 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 	searchTerm = "%" + searchTerm + "%"
 
 	rows, err := db.Query("SELECT * from playstore_apps WHERE title like $1 ORDER BY rating USING> LIMIT 120", searchTerm)
-
 	if err != nil {
 		return []PlaystoreInfo{}, err
 	}
 
 	var ret []PlaystoreInfo
 
-	var id = ""
+	var id string
 
 	for i := 0; rows.Next(); i++ {
-		ret = append(ret, PlaystoreInfo{})
-		rows.Scan(
+		var inf PlaystoreInfo
+		err := rows.Scan(
 			&id,
-			&ret[i].Title,
-			&ret[i].Summary,
-			&ret[i].Description,
-			&ret[i].StoreURL,
-			&ret[i].Price,
-			&ret[i].Free,
-			&ret[i].Rating,
-			&ret[i].NumReviews,
-			&ret[i].Genre,
-			&ret[i].FamilyGenre,
-			&ret[i].Installs.Min,
-			&ret[i].Installs.Max,
-			&ret[i].Developer,
-			&ret[i].Updated,
-			&ret[i].AndroidVer,
-			&ret[i].ContentRating,
-			pq.Array(&ret[i].Screenshots),
-			&ret[i].Video,
-			pq.Array(&ret[i].RecentChanges),
-			&ret[i].CrawlDate,
-			pq.Array(&ret[i].Permissions))
+			&inf.Title,
+			&inf.Summary,
+			&inf.Description,
+			&inf.StoreURL,
+			&inf.Price,
+			&inf.Free,
+			&inf.Rating,
+			&inf.NumReviews,
+			&inf.Genre,
+			&inf.FamilyGenre,
+			&inf.Installs.Min,
+			&inf.Installs.Max,
+			&inf.Developer,
+			&inf.Updated,
+			&inf.AndroidVer,
+			&inf.ContentRating,
+			pq.Array(&inf.Screenshots),
+			&inf.Video,
+			pq.Array(&inf.RecentChanges),
+			&inf.CrawlDate,
+			pq.Array(&inf.Permissions))
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			ret = append(ret, inf)
+		}
 	}
 
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
@@ -348,11 +352,15 @@ func GetApps(num, start int) ([]App, error) {
 	}
 	ret := make([]App, 0, num)
 	for i := 0; rows.Next(); i++ {
-		ret = append(ret, App{})
-		rows.Scan(
-			&ret[i].ID,
-			pq.Array(&ret[i].Vers),
-			&ret[i].Icon)
+		var app App
+		err := rows.Scan(
+			&app.ID,
+			pq.Array(&app.Vers),
+			&app.Icon)
+		if err != nil {
+		} else {
+			ret = append(ret, app)
+		}
 	}
 
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
