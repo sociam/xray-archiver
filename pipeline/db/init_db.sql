@@ -61,9 +61,9 @@ create table app_perms(
 
 -- Contains the hostnames that were found in apps via analysis
 create table app_hosts(
-  id      int references app_versions(id) primary key not null,
-  hosts int[]                                                 ,
-  pis   int[]
+  id       int references app_versions(id) primary key not null,
+  hosts text[]                                                 ,
+  pis    int[]
 );
 
 create table companies(
@@ -85,15 +85,15 @@ create table companies(
 );
 
 create table hosts(
-  id       serial    primary key not null,
-  hostname   text                not null,
-  company    text references companies(id)
+  hostname text     primary key not null,
+  company  text references companies(id)
 );
 
 create user explorer;
 create user retriever;
 create user downloader;
 create user analyzer;
+create user apiserv;
 
 grant insert, select on search_terms to explorer;
 
@@ -111,3 +111,12 @@ grant select on playstore_apps to analyzer;
 grant select, insert, update on app_perms to analyzer;
 grant select, insert on app_hosts to analyzer;
 grant select on companies to analyzer;
+
+grant select on apps to apiserv;
+grant select on app_versions to apiserv;
+grant select on playstore_apps to apiserv;
+grant select on developers to apiserv;
+grant select on app_perms to apiserv;
+grant select on app_hosts to apiserv;
+grant select on companies to apiserv;
+grant select on hosts to apiserv;
