@@ -34,13 +34,10 @@ jobs:
           key: v1-dependencies-{{ checksum "pipeline/package.json" }}
 
 
-      #- run: cd pipeline/db && eslint **/*.js
-      - run: cd pipeline/db && yarn test
+      #- run: cd pipeline && eslint **/*.js
+      - run: cd pipeline && yarn test
 
-      #- run: cd pipeline/archiver && eslint **/*.js
-      - run: cd pipeline/archiver && yarn test
-
-  apiserv:
+  golang:
     docker:
       # specify the version you desire here
       - image: circleci/golang:1.8
@@ -54,24 +51,11 @@ jobs:
 
     steps:
       - checkout
+
+      - run: go get -u github.com/golang/lint/golint
 
       - run: cd pipeline/apiserv && go get -v -t -d ./...
       - run: cd pipeline/apiserv && go test -v ./...
-
-  analyzer:
-    docker:
-      # specify the version you desire here
-      - image: circleci/golang:1.8
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-
-    working_directory: /go/src/github.com/sociam/xray
-
-    steps:
-      - checkout
 
       - run: cd pipeline/analyzer && go get -v -t -d ./...
       - run: cd pipeline/analyzer && go test -v ./...
