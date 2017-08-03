@@ -422,6 +422,7 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 
 	var id string
 	var famGenre sql.NullString
+	var nullableVideo sql.NullString
 
 	for i := 0; rows.Next(); i++ {
 		var inf PlaystoreInfo
@@ -444,15 +445,21 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 			&inf.AndroidVer,
 			&inf.ContentRating,
 			pq.Array(&inf.Screenshots),
-			&inf.Video,
+			&nullableVideo,
 			pq.Array(&inf.RecentChanges),
 			&inf.CrawlDate,
 			pq.Array(&inf.Permissions))
 
+		// Create Function
 		if famGenre.Valid {
-			&inf.FamilyGenre = famGenre.String
+			inf.FamilyGenre = famGenre.String
 		} else {
-			&inf.FamilyGenre = ""
+			inf.FamilyGenre = ""
+		}
+		if nullableVideo.Valid {
+			inf.Video = nullableVideo.String
+		} else {
+			inf.Video = ""
 		}
 		if err != nil {
 			fmt.Println(err)

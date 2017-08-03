@@ -1,7 +1,6 @@
 package db
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/sociam/xray-archiver/pipeline/util"
@@ -49,7 +48,7 @@ type PlaystoreInfo struct {
 	Rating        string         `json:"rating"`
 	NumReviews    int64          `json:"numReviews"`
 	Genre         string         `json:"genre"`
-	FamilyGenre   sql.NullString `json:"familyGenre"`
+	FamilyGenre   string		 `json:"familyGenre"`
 	Installs      Range          `json:"installs"`
 	Developer     int64          `json:"developer"`
 	Updated       time.Time      `json:"updated"`
