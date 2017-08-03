@@ -33,11 +33,11 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "pipeline/package.json" }}
 
-      # run tests!
-      - run: cd pipeline/db && eslint **/*.js
+
+      #- run: cd pipeline/db && eslint **/*.js
       - run: cd pipeline/db && yarn test
 
-      - run: cd pipeline/archiver && eslint **/*.js
+      #- run: cd pipeline/archiver && eslint **/*.js
       - run: cd pipeline/archiver && yarn test
 
   apiserv:
