@@ -47,35 +47,36 @@ jobs:
       # documented at https://circleci.com/docs/2.0/circleci-images/
       # - image: circleci/mongo:3.4.4
 
-    working_directory: /go/src/github.com/sociam/xray
+    working_directory: /go/src/github.com/sociam/xray-archiver
 
     steps:
       - checkout
 
       - run: go get -u github.com/golang/lint/golint
-      - run: go get -u github.com/lib/pq
 
+      - run: cd pipeline/util && go get -v -t -d ./...
       - run: cd pipeline/util && golint -set_exit_status
       - run: cd pipeline/util && go vet
+      - run: cd pipeline/util && go install
       - run: cd pipeline/util && go test -v ./...
 
+      - run: cd pipeline/db && go get -v -t -d ./...
       - run: cd pipeline/db && golint -set_exit_status
       - run: cd pipeline/db && go vet
+      - run: cd pipeline/db && go install
       - run: cd pipeline/db && go test -v ./...
 
+      - run: cd pipeline/apiserv && go get -v -t -d ./...
       - run: cd pipeline/apiserv && golint -set_exit_status
       - run: cd pipeline/apiserv && go vet
+      - run: cd pipeline/apiserv && go install
       - run: cd pipeline/apiserv && go test -v ./...
 
+      - run: cd pipeline/analyzer && go get -v -t -d ./...
       - run: cd pipeline/analyzer && golint -set_exit_status
       - run: cd pipeline/analyzer && go vet
+      - run: cd pipeline/analyzer && go install
       - run: cd pipeline/analyzer && go test -v ./...
-
-      - run:
-          cd pipeline/util && go install
-          cd pipeline/db && go install
-          cd pipeline/apiserv && go install
-          cd pipeline/analyzer && go install
 
 workflows:
   version: 2
