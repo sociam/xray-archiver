@@ -412,6 +412,7 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 	searchTerm = "%" + searchTerm + "%"
 
 	rows, err := db.Query("SELECT * from playstore_apps WHERE title like $1 ORDER BY rating USING> LIMIT 120", searchTerm)
+
 	defer rows.Close()
 	if err != nil {
 		return []PlaystoreInfo{}, err
