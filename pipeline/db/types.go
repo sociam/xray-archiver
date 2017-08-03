@@ -15,8 +15,8 @@ type Range struct {
 
 // App represents an app from the database
 type App struct {
-	ID   sql.NullString `json:"id"`
-	Vers []int64        `json:"vers"`
+	ID   string  `json:"id"`
+	Vers []int64 `json:"vers"`
 }
 
 // AppVersion represents all the information about an app version contained in
@@ -24,7 +24,7 @@ type App struct {
 type AppVersion struct {
 	ID          int64               `json:"id"`
 	App         string              `json:"app"`
-	Store       string              `json:"sql.NullString"`
+	Store       string              `json:"string"`
 	Region      string              `json:"region"`
 	Ver         string              `json:"ver"`
 	ScreenFlags int64               `json:"screenFlags"`
@@ -40,53 +40,53 @@ type StoreInfo interface{}
 
 // PlaystoreInfo represents the data contained in the google play store
 type PlaystoreInfo struct {
-	Title         sql.NullString   `json:"title"`
-	Summary       sql.NullString   `json:"summary"`
-	Description   sql.NullString   `json:"description"`
-	StoreURL      sql.NullString   `json:"storeURL"`
-	Price         sql.NullString   `json:"price"`
-	Free          bool             `json:"free"`
-	Rating        sql.NullString   `json:"rating"`
-	NumReviews    int64            `json:"numReviews"`
-	Genre         sql.NullString   `json:"genre"`
-	FamilyGenre   sql.NullString   `json:"familyGenre"`
-	Installs      Range            `json:"installs"`
-	Developer     int64            `json:"developer"`
-	Updated       time.Time        `json:"updated"`
-	AndroidVer    sql.NullString   `json:"androidVer"`
-	ContentRating sql.NullString   `json:"contentRating"`
-	Screenshots   []sql.NullString `json:"screenshots"`
-	Video         sql.NullString   `json:"video"`
-	RecentChanges []sql.NullString `json:"recentChanges"`
-	CrawlDate     time.Time        `json:"crawlDate"`
-	Permissions   []sql.NullString `json:"permissions"`
+	Title         string         `json:"title"`
+	Summary       string         `json:"summary"`
+	Description   string         `json:"description"`
+	StoreURL      string         `json:"storeURL"`
+	Price         string         `json:"price"`
+	Free          bool           `json:"free"`
+	Rating        string         `json:"rating"`
+	NumReviews    int64          `json:"numReviews"`
+	Genre         string         `json:"genre"`
+	FamilyGenre   sql.NullString `json:"familyGenre"`
+	Installs      Range          `json:"installs"`
+	Developer     int64          `json:"developer"`
+	Updated       time.Time      `json:"updated"`
+	AndroidVer    string         `json:"androidVer"`
+	ContentRating string         `json:"contentRating"`
+	Screenshots   []string       `json:"screenshots"`
+	Video         string         `json:"video"`
+	RecentChanges []string       `json:"recentChanges"`
+	CrawlDate     time.Time      `json:"crawlDate"`
+	Permissions   []string       `json:"permissions"`
 }
 
 // Developer represents a developer from the database
 type Developer struct {
-	ID        int64            `json:"id"`
-	Emails    []sql.NullString `json:"emails"`
-	Name      sql.NullString   `json:"name"`
-	StoreSite sql.NullString   `json:"storeSite"`
-	Site      sql.NullString   `json:"site"`
+	ID        int64    `json:"id"`
+	Emails    []string `json:"emails"`
+	Name      string   `json:"name"`
+	StoreSite string   `json:"storeSite"`
+	Site      string   `json:"site"`
 }
 
 // Company represents a company from the database
 type Company struct {
-	ID           sql.NullString   `json:"id"`
-	Name         sql.NullString   `json:"name"`
-	Hosts        []sql.NullString `json:"nosts"`
-	Founded      sql.NullString   `json:"founded"`
-	Acquired     sql.NullString   `json:"acquired"`
-	Type         []sql.NullString `json:"type"`
-	TypeTag      sql.NullString   `json:"typeTag"`
-	Jurisdiction sql.NullString   `json:"jurisdiction"`
-	Parent       sql.NullString   `json:"parent"`
-	Capital      sql.NullString   `json:"capital"`
-	Equity       sql.NullString   `json:"equity"`
-	Size         Range            `json:"size"`
-	DataSources  []sql.NullString `json:"dataSources"`
-	Description  []sql.NullString `json:"description"`
+	ID           string   `json:"id"`
+	Name         string   `json:"name"`
+	Hosts        []string `json:"nosts"`
+	Founded      string   `json:"founded"`
+	Acquired     string   `json:"acquired"`
+	Type         []string `json:"type"`
+	TypeTag      string   `json:"typeTag"`
+	Jurisdiction string   `json:"jurisdiction"`
+	Parent       string   `json:"parent"`
+	Capital      string   `json:"capital"`
+	Equity       string   `json:"equity"`
+	Size         Range    `json:"size"`
+	DataSources  []string `json:"dataSources"`
+	Description  []string `json:"description"`
 }
 
 // UtilApp creates a *util.App from an AppVersion
