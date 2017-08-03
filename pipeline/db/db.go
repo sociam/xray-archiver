@@ -421,6 +421,7 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 	var ret []PlaystoreInfo
 
 	var id string
+	var famGenre sql.NullString
 
 	for i := 0; rows.Next(); i++ {
 		var inf PlaystoreInfo
@@ -435,7 +436,7 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 			&inf.Rating,
 			&inf.NumReviews,
 			&inf.Genre,
-			&inf.FamilyGenre,
+			&famGenre,
 			&inf.Installs.Min,
 			&inf.Installs.Max,
 			&inf.Developer,
@@ -447,6 +448,12 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 			pq.Array(&inf.RecentChanges),
 			&inf.CrawlDate,
 			pq.Array(&inf.Permissions))
+
+		if famGenre.Valid {
+			&inf.FamilyGenre = famGenre.String
+		} else {
+			&inf.FamilyGenre = ""
+		}
 		if err != nil {
 			fmt.Println(err)
 		} else {
