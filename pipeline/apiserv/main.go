@@ -516,8 +516,8 @@ var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location"
 var port = flag.Uint("port", 8118, "Port to serve on.")
 
 func init() {
-	util.LoadCfg(*cfgFile, util.ApiServ)
-	db.Open(util.Cfg)
+	util.LoadCfg(*cfgFile, util.APIServ)
+	db.Open(util.Cfg, true)
 }
 
 func main() {

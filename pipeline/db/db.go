@@ -13,22 +13,25 @@ type xrayDb struct {
 	*sql.DB
 }
 
-var useDb bool
+var useDB bool
 var db xrayDb
 
-func Open(cfg util.Config) error {
-	sqlDb, err := sql.Open("postgres",
-		fmt.Sprintf("dbname='%s' user='%s' password='%s' host='%s' port='%d' sslmode='disable'",
-			cfg.Db.Database, cfg.Db.User, cfg.Db.Password, cfg.Db.Host, cfg.Db.Port))
-	if err != nil {
-		return err
+func Open(cfg util.Config, enable bool) error {
+	if enable {
+		useDB = true
+		sqlDb, err := sql.Open("postgres",
+			fmt.Sprintf("dbname='%s' user='%s' password='%s' host='%s' port='%d' sslmode='disable'",
+				cfg.DB.Database, cfg.DB.User, cfg.DB.Password, cfg.DB.Host, cfg.DB.Port))
+		if err != nil {
+			return err
+		}
+		db = xrayDb{sqlDb}
 	}
-	db = xrayDb{sqlDb}
 	return nil
 }
 
 // func (db *XrayDb) insertApp(app *App) (int, error) {
-// 	if !useDb {
+// 	if !useDB {
 // 		return 0, nil
 // 	}
 
@@ -43,25 +46,66 @@ func Open(cfg util.Config) error {
 // 	return ret, nil
 // }
 
-func AddPerms(app *util.App, perms []util.Permission) error {
-	if !useDb || app.DbId == 0 {
+/**
+* Add Package
+*
+* Function that allows you to add packages that exist within an APK to the Xray DB.
+* Takes an App object that contains a DB ID and an array of package names (strings).
+*
+ */
+func AddPackages(app *util.App) error {
+	if !useDB || app.DBID == 0 {
 		return nil
 	}
 
-	sPerms := make([]string, 0, len(perms))
-	for _, perm := range perms {
-		sPerms = append(sPerms, perm.Id)
+	var dbPkgs []string
+	// Check if app and packages already exist.
+	err := db.QueryRow("SELECT packages FROM app_packages WHERE id = $1", app.DBID).
+		Scan(pq.Array(&dbPkgs))
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return err
+		}
+		// If the app doesn't exist, insert with whole list of packages
+		rows, err := db.Query("INSERT INTO app_packages VALUES ($1, $2)",
+			app.DBID, pq.Array(&app.Packages))
+		rows.Close()
+		if err != nil {
+			return err
+		}
+	} else {
+		// The app already exists, only add new packages for that app.
+		bothPkgs := util.UniqAppend(app.Packages, dbPkgs)
+		rows, err := db.Query("UPDATE app_packages SET perms = $1 WHERE id = $2",
+			pq.Array(&bothPkgs), app.DBID)
+		rows.Close()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func AddPerms(app *util.App) error {
+	if !useDB || app.DBID == 0 {
+		return nil
+	}
+
+	sPerms := make([]string, 0, len(app.Perms))
+	for _, perm := range app.Perms {
+		sPerms = append(sPerms, perm.ID)
 	}
 
 	var dbPerms []string
-	err := db.QueryRow("SELECT perms FROM app_perms WHERE id = $1", app.DbId).
+	err := db.QueryRow("SELECT perms FROM app_perms WHERE id = $1", app.DBID).
 		Scan(pq.Array(&dbPerms))
 	if err != nil {
 		if err != sql.ErrNoRows {
 			return err
 		}
 		rows, err := db.Query("INSERT INTO app_perms VALUES ($1, $2)",
-			app.DbId, pq.Array(&sPerms))
+			app.DBID, pq.Array(&sPerms))
 		rows.Close()
 		if err != nil {
 			return err
@@ -69,7 +113,7 @@ func AddPerms(app *util.App, perms []util.Permission) error {
 	} else {
 		bothPerms := util.UniqAppend(sPerms, dbPerms)
 		rows, err := db.Query("UPDATE app_perms SET perms = $1 WHERE id = $2",
-			pq.Array(&bothPerms), app.DbId)
+			pq.Array(&bothPerms), app.DBID)
 		rows.Close()
 		if err != nil {
 			return err
@@ -80,19 +124,19 @@ func AddPerms(app *util.App, perms []util.Permission) error {
 }
 
 func AddHosts(app *util.App, hosts []string) error {
-	if !useDb || app.DbId == 0 {
+	if !useDB || app.DBID == 0 {
 		return nil
 	}
 
 	var dbHosts []string
-	err := db.QueryRow("SELECT hosts FROM app_hosts WHERE id = $1", app.DbId).
+	err := db.QueryRow("SELECT hosts FROM app_hosts WHERE id = $1", app.DBID).
 		Scan(pq.Array(&dbHosts))
 	if err != nil {
 		if err != sql.ErrNoRows {
 			return err
 		}
-		rows, err := db.Query("INSERT INTO app_hosts VALUES ($1, $2)",
-			app.DbId, pq.Array(&hosts))
+		rows, err := db.Query("INSERT INTO app_hosts(id, hosts) VALUES ($1, $2)",
+			app.DBID, pq.Array(&hosts))
 		rows.Close()
 		if err != nil {
 			return err
@@ -100,7 +144,7 @@ func AddHosts(app *util.App, hosts []string) error {
 	} else {
 		bothHosts := util.UniqAppend(hosts, dbHosts)
 		rows, err := db.Query("UPDATE app_host SET hosts = $1 WHERE id = $2",
-			pq.Array(&bothHosts), app.DbId)
+			pq.Array(&bothHosts), app.DBID)
 		rows.Close()
 		if err != nil {
 			return err
@@ -299,8 +343,37 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 	}
 
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
-		fmt.Println("Databse err", rows.Err())
+		fmt.Println("Database err", rows.Err())
 		return []PlaystoreInfo{}, rows.Err()
+	}
+
+	return ret, nil
+}
+
+func GetAppsToAnalyze() ([]AppVersion, error) {
+	rows, err := db.Query("SELECT id, app, store, region, version, screen_flags, icon FROM app_versions WHERE analyzed = False AND downloaded = True LIMIT 10")
+	defer rows.Close()
+	if err != nil {
+		return []AppVersion{}, err
+	}
+	ret := make([]AppVersion, 0, 10)
+	for i := 0; rows.Next(); i++ {
+		var cur AppVersion
+		var screenFlags sql.NullInt64
+		var icon sql.NullString
+		err := rows.Scan(&cur.ID, &cur.App, &cur.Store, &cur.Region, &cur.Ver, &screenFlags, &icon)
+		cur.ScreenFlags = screenFlags.Int64
+		cur.Icon = icon.String
+
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			ret = append(ret, cur)
+		}
+	}
+
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+		return []AppVersion{}, err
 	}
 
 	return ret, nil
@@ -340,10 +413,21 @@ func GetCompanies(num, start int) ([]Company, error) {
 	return ret, nil
 }
 
+func UnsetDownloaded(id int64) error {
+	rows, err := db.Query("UPDATE app_versions SET downloaded = False WHERE id = $1", id)
+	rows.Close()
+	return err
+}
+
+func SetAnalyzed(id int64) error {
+	rows, err := db.Query("UPDATE app_versions SET analyzed = True WHERE id = $1", id)
+	rows.Close()
+	return err
+}
+
 func GetApp(id string) (App, error) {
 	var app App
 	err := db.QueryRow("SELECT * FROM apps WHERE id = $1", id).Scan(&app.ID, pq.Array(&app.Vers), &app.Icon)
-
 	if err != nil {
 		return App{}, err
 	}

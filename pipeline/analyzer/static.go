@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"encoding/xml"
-	"github.com/sociam/xray/pipeline/util"
+	"github.com/sociam/xray-archiver/pipeline/util"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -36,7 +36,7 @@ func parseManifest(app *util.App) (*AndroidManifest, error) {
 	}
 
 	if manifest.Package != "" {
-		app.Id = manifest.Package
+		app.ID = manifest.Package
 	}
 	return &manifest, nil
 }
@@ -46,7 +46,7 @@ func (manifest *AndroidManifest) getPerms() []util.Permission {
 }
 
 type Company struct {
-	Id           string   `json:"id"`
+	ID           string   `json:"id"`
 	Name         string   `json:"company"`
 	Domains      []string `json:"domains"`
 	Founded      string   `json:"founded"`
@@ -80,7 +80,7 @@ func simpleAnalyze(app *util.App) ([]string, error) {
 		return []string{}, err
 	}
 
-	for name, _ := range companies {
+	for name := range companies {
 		if _, ok := trackers[name]; !ok {
 			delete(companies, name)
 		}
@@ -103,7 +103,7 @@ func simpleAnalyze(app *util.App) ([]string, error) {
 		return []string{}, err
 	}
 
-	appTrackers := make([]string, 0)
+	var appTrackers []string
 
 	irrelevant := []string{"app", "identity", "n/a", "other", "", "library"}
 	for name, company := range companies {
@@ -148,14 +148,13 @@ func findPackages(app *util.App) ([]string, error) {
 		})
 
 	pkgs := make([]string, 0, 20)
-	for path, _ := range paths {
+	for path := range paths {
 		//pkg := strings.Replace(path, string(os.PathSeparator), ".", -1)
 		pkg := strings.Map(func(ch rune) rune {
 			if ch == os.PathSeparator {
 				return '.'
-			} else {
-				return ch
 			}
+			return ch
 		}, path)
 		pkgs = append(pkgs, pkg)
 	}
