@@ -4,7 +4,7 @@
 #
 version: 2
 jobs:
-  build:
+  node:
     docker:
       # specify the version you desire here
       - image: circleci/node:7.10
@@ -59,3 +59,11 @@ jobs:
 
       - run: cd pipeline/analyzer && go get -v -t -d ./...
       - run: cd pipeline/analyzer && go test -v ./...
+
+workflows:
+  version: 2
+
+  btd:
+    jobs:
+      - node
+      - golang
