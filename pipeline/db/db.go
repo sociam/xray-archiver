@@ -293,7 +293,7 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 	}
 
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
-		fmt.Print("Databse err", rows.Err())
+		fmt.Println("Databse err", rows.Err())
 		return []PlaystoreInfo{}, rows.Err()
 	}
 
@@ -355,16 +355,16 @@ func GetApps(num, start int) ([]App, error) {
 		var app App
 		err := rows.Scan(
 			&app.ID,
-			pq.Array(&app.Vers),
-			&app.Icon)
+			pq.Array(&app.Vers))
 		if err != nil {
+			fmt.Println("Database err:", err)
 		} else {
 			ret = append(ret, app)
 		}
 	}
 
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
-		fmt.Print("Databse err", rows.Err())
+		fmt.Println("Databse err", rows.Err())
 		return []App{}, rows.Err()
 	}
 
@@ -386,7 +386,7 @@ func GetLatestApps(num, start int) ([]App, error) {
 	}
 
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
-		fmt.Print("Databse err", rows.Err())
+		fmt.Println("Databse err", rows.Err())
 		return []App{}, rows.Err()
 	}
 
