@@ -67,7 +67,6 @@ var appPrefixRe = regexp.MustCompile("^/api/apps/")
 var dbIDRe = regexp.MustCompile("^\\d+$")
 var appIDRe = regexp.MustCompile("^[[:alpha:]][\\w$]*(\\.[[:alpha:]][\\w$]*)*$")
 
-
 func parseNumCheck(num string) (val int, oops string, err error) {
 	//oops error
 	val, err = strconv.Atoi(num)
@@ -149,7 +148,7 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 		limit := db.FormParam{"limit", "10"}
 
 		offset := db.FormParam{"offset", "0"}
-		isFull := true
+		isFull := false
 
 		formParams := make([]db.FormParam, 0, 10) //:= make([]db.formParams, 3, 7)
 
@@ -173,7 +172,6 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 					writeErr(w, mime, http.StatusBadRequest, "bad_form", oops)
 					return
 				}
-				fmt.Println("Parsing app form parameters ")
 
 			case offset.Name:
 				offset.Val, oops, _ = parseOffset(val[0])
@@ -183,7 +181,8 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 				}
 
 			case "isFull":
-				_, err := strconv.ParseBool(val[0])
+				var err error
+				isFull, err = strconv.ParseBool(val[0])
 				if err != nil {
 					writeErr(w, mime, http.StatusBadRequest, "bad_form", "isFull needs to be a boolean value, true or false")
 					return
@@ -219,26 +218,35 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 			developers = []string{}
 		}
 
-		if isFull {
-			//TODO: pass store paramters
-			fmt.Println("Gather full details")
+		//TODO: pass store paramters
+		fmt.Println("Gather full details")
 
-			// string  int    int     string[] string[]..
-			results, err := db.QuickQuery("playstore_apps", limit.Val, offset.Val, developers, genres, permisions, appIDs, titles)
+		// string  int    int     string[] string[]..
+		results, err := db.QuickQuery(isFull, "playstore_apps", limit.Val, offset.Val, developers, genres, permisions, appIDs, titles)
 
-			//results, err := db.RetrieveFullFrom("playstore_apps", limit.Val, offset.Val, formParams) // titles /*=[a, b, c]*/, developers /*=[1, 2, 3]*/)
+		//results, err := db.RetrieveFullFrom("playstore_apps", limit.Val, offset.Val, formParams) // titles /*=[a, b, c]*/, developers /*=[1, 2, 3]*/)
 
-			if err != nil {
-				fmt.Println("Error querying database: ", err.Error())
-				writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
-				return
+		if err != nil {
+			fmt.Println("Error querying database: ", err.Error())
+			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+			return
+		}
+
+		if !isFull {
+			stubs := make([]db.AppStub, len(results), len(results))
+			fmt.Println(fmt.Sprint(len(results)) + "   " + fmt.Sprint(len(stubs)))
+			for i, result := range results {
+				fmt.Println(i)
+				stubs[i].Title = result.Title
+				stubs[i].App = result.App
 			}
 
-			util.WriteJSON(w, results)
+			util.WriteJSON(w, stubs)
 
 		} else {
-			//TODO: non full
+			util.WriteJSON(w, results)
 		}
+
 	} else {
 		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
 	}
@@ -257,19 +265,6 @@ func main() {
 	http.HandleFunc("/", hello)
 
 	http.HandleFunc("/api/apps/", gatherAppsEndpoint)
-	//@deprecated
-	// http.HandleFunc("/api/apps", appsEndpoint) //Returned chunked apps
-	// http.HandleFunc("/api/apps/", appEndpoint) //?full=True&title=Title&developer=dev&genre=GENRELIST&permisions=PERMISSIONLIST&appId=id
-	// http.HandleFunc("/api/developers", devsEndpoint)
-	// http.HandleFunc("/api/developers/", devEndpoint)
-	// http.HandleFunc("/api/companies", compsEndpoint)
-	// http.HandleFunc("/api/companies/", compEndpoint)
-	// http.HandleFunc("/api/latest", latestsEndpoint)
-	// http.HandleFunc("/api/search/apps/", searchAppsEndpoint)
-	// http.HandleFunc("/api/search/apps", searchAppsEndpoint)
-
-	//TODO:
-	//http.HandleFunc("/api/latest/", latestEndpoint)
 
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }

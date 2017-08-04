@@ -70,9 +70,17 @@ type Developer struct {
 	Site      string   `json:"site"`
 }
 
+// AppData struct combines playstore info, appVersion abd developer info.
 type AppData struct {
 	PlaystoreInfo
 	AppVersion
+	Developer
+}
+
+//
+type AppStub struct {
+	Title string
+	App   string
 }
 
 // Company represents a company from the database

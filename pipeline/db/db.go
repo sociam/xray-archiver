@@ -385,7 +385,6 @@ func GetLatestApps(num, start int) ([]App, error) {
 	return ret, nil
 }
 
-
 // precentifyArray produces a Postgres compatable 'like any' string intended
 // to be used as part of a larger query.
 func percentifyArray(arr []string) string {
@@ -408,6 +407,7 @@ func percentifyArray(arr []string) string {
 //
 //
 func QuickQuery(
+	fullDetails bool,
 	appStore string,
 	limit string,
 	offset string,
@@ -417,17 +417,17 @@ func QuickQuery(
 	appIDs []string,
 	titles []string) ([]AppData, error) {
 
-	
-	storestart := "SELECT " +
-	 	"id," + 
-	 	"title," +
-	  	"summary," +
-	   	"description," +
-	    "store_url," +
+	var storestart string
+	storestart = "SELECT " +
+		"id," +
+		"title," +
+		"summary," +
+		"description," +
+		"store_url," +
 		"price," +
-		"free," + 
+		"free," +
 		"rating," +
-		"num_reviews," + 
+		"num_reviews," +
 		"genre," +
 		"family_genre," +
 		"min_installs," +
@@ -437,18 +437,18 @@ func QuickQuery(
 		"android_ver," +
 		"content_rating," +
 		"recent_changes," +
-		"app," + "store," +
-		"region," + 
-		"version," + 
+		"app," +
+		"store," +
+		"region," +
+		"version," +
 		"email," + "name," +
 		"store_site," +
-		"site" +
+		"site"
 		//"app_perms.permissions," + "packages" +
-		" FROM " + appStore
 
 	//Table Join Appends
-	tableQuery := " NATURAL JOIN app_versions " + " NATURAL JOIN developers " 
-				//+ "NATURAL JOIN app_perms " + "NATURAL JOIN app_packages"
+	tableQuery := " FROM " + appStore + " NATURAL JOIN app_versions " + " NATURAL JOIN developers "
+	//+ "NATURAL JOIN app_perms " + "NATURAL JOIN app_packages"
 
 	structuredQuery := storestart + tableQuery +
 		" WHERE LOWER(" + appStore + ".title) LIKE any " + percentifyArray(titles) +
@@ -485,8 +485,9 @@ func QuickQuery(
 		//var perms []string
 		//var packages []string
 
+		var err error
 		//Cannot just cast straight into types because of the postgre type conversion
-		err := rows.Scan(
+		err = rows.Scan(
 			&id,
 			&info.Title,
 			&summ,
@@ -500,7 +501,7 @@ func QuickQuery(
 			&famGenre,
 			&info.Installs.Min,
 			&info.Installs.Max,
-			&info.Developer,
+			&info.Developer.ID,
 			&info.Updated,
 			&info.AndroidVer,
 			&info.ContentRating,
@@ -513,8 +514,8 @@ func QuickQuery(
 			&dev.Name,
 			&dev.StoreSite,
 			&dev.Site)
-			// pq.Array(&perms),
-			// pq.Array(&packages)) //XX X: icon should be there, right? right?
+		// pq.Array(&perms),
+		// pq.Array(&packages)) //XX X: icon should be there, right? right?
 
 		if err != nil {
 			fmt.Println("Database Query", err)
