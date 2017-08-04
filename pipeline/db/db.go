@@ -402,134 +402,138 @@ func GetLatestApps(num, start int) ([]App, error) {
 }
 
 // SearchApps returns a list of apps matching a search term.
-func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
-	searchTerm = "%" + searchTerm + "%"
+// func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
+// 	searchTerm = "%" + searchTerm + "%"
 
-	rows, err := db.Query("SELECT * from playstore_apps WHERE title like $1 ORDER BY rating USING> LIMIT 120", searchTerm)
+// 	rows, err := db.Query("SELECT * from playstore_apps WHERE title like $1 ORDER BY rating USING> LIMIT 120", searchTerm)
 
-	defer rows.Close()
-	if err != nil {
-		return []PlaystoreInfo{}, err
+// 	defer rows.Close()
+// 	if err != nil {
+// 		return []PlaystoreInfo{}, err
+// 	}
+
+// 	var ret []PlaystoreInfo
+
+// 	var id string
+// 	var famGenre sql.NullString
+// 	var nullableVideo sql.NullString
+
+// 	for i := 0; rows.Next(); i++ {
+// 		var info PlaystoreInfo
+// 		err := rows.Scan(
+// 			&id,
+// 			&info.Title,
+// 			&info.Summary,
+// 			&info.Description,
+// 			&info.StoreURL,
+// 			&info.Price,
+// 			&info.Free,
+// 			&info.Rating,
+// 			&info.NumReviews,
+// 			&info.Genre,
+// 			&famGenre,
+// 			&info.Installs.Min,
+// 			&info.Installs.Max,
+// 			&info.Developer,
+// 			&info.Updated,
+// 			&info.AndroidVer,
+// 			&info.ContentRating,
+// 			pq.Array(&info.Screenshots),
+// 			&nullableVideo,
+// 			pq.Array(&info.RecentChanges),
+// 			&info.CrawlDate,
+// 			pq.Array(&info.Permissions))
+
+// 		// Create Function
+// 		if famGenre.Valid {
+// 			info.FamilyGenre = famGenre.String
+// 		} else {
+// 			info.FamilyGenre = ""
+// 		}
+// 		if nullableVideo.Valid {
+// 			info.Video = nullableVideo.String
+// 		} else {
+// 			info.Video = ""
+// 		}
+// 		if err != nil {
+// 			fmt.Println(err)
+// 		} else {
+// 			ret = append(ret, info)
+// 		}
+// 	}
+
+// 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+// 		fmt.Println("Database err", rows.Err())
+// 		return []PlaystoreInfo{}, rows.Err()
+// 	}
+
+// 	return ret, nil
+// }
+
+func percentifyArray(arr []string) string {
+
+	partQuery := " (Array[ "
+
+	for i, param := range arr {
+
+		partQuery += "'%" + param + "%'"
+
+		if i < len(arr)-1 {
+			partQuery += ","
+		}
 	}
 
-	var ret []PlaystoreInfo
+	partQuery += "])"
 
-	var id string
-	var famGenre sql.NullString
-	var nullableVideo sql.NullString
-
-	for i := 0; rows.Next(); i++ {
-		var inf PlaystoreInfo
-		err := rows.Scan(
-			&id,
-			&inf.Title,
-			&inf.Summary,
-			&inf.Description,
-			&inf.StoreURL,
-			&inf.Price,
-			&inf.Free,
-			&inf.Rating,
-			&inf.NumReviews,
-			&inf.Genre,
-			&famGenre,
-			&inf.Installs.Min,
-			&inf.Installs.Max,
-			&inf.Developer,
-			&inf.Updated,
-			&inf.AndroidVer,
-			&inf.ContentRating,
-			pq.Array(&inf.Screenshots),
-			&nullableVideo,
-			pq.Array(&inf.RecentChanges),
-			&inf.CrawlDate,
-			pq.Array(&inf.Permissions))
-
-		// Create Function
-		if famGenre.Valid {
-			inf.FamilyGenre = famGenre.String
-		} else {
-			inf.FamilyGenre = ""
-		}
-		if nullableVideo.Valid {
-			inf.Video = nullableVideo.String
-		} else {
-			inf.Video = ""
-		}
-		if err != nil {
-			fmt.Println(err)
-		} else {
-			ret = append(ret, inf)
-		}
-	}
-
-	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
-		fmt.Println("Database err", rows.Err())
-		return []PlaystoreInfo{}, rows.Err()
-	}
-
-	return ret, nil
+	return partQuery
 }
 
-func RetrieveFullFrom(store string, limit string, offset string, whereParams []FormParam) ([]ShowMeWhatYouGot, error) {
+// QuickQuery depricates all of dean's queries.
+//
+//
+func QuickQuery(appStore string,
+	limit string,
+	offset string,
+	developers []string,
+	genres []string,
+	permissions []string,
+	appIDs []string,
+	titles []string) ([]AppData, error) {
 
-	//SELECT * From playstore_apps NATURAL JOIN app_versions NATURAL JOIN developers WHERE playstore_apps.title like '%QR%';
-	storestart := " SELECT " +
-		"id," +
-		"title," +
-		"summary," +
-		"description," +
-		"store_url," +
-		"price," +
-		"free," +
-		"rating," +
-		"num_reviews," +
-		"genre," +
-		"family_genre," +
-		"min_installs," +
-		"max_installs," +
-		"developer," +
-		"updated," +
-		"android_ver," +
-		"content_rating," +
-		"recent_changes," +
-		"app," +
-		"store," +
-		"region," +
-		"version," +
-		"email," +
-		"name," +
-		"store_site," +
-		"site" + " FROM " + store
+	storestart := "SELECT " + "id," + "title," + "summary," + "description," + "store_url," +
+		"price," + "free," + "rating," + "num_reviews," + "genre," + "family_genre," + "min_installs," +
+		"max_installs," + "developer," + "updated," + "android_ver," + "content_rating," + "recent_changes," +
+		"app," + "store," + "region," + "version," + "email," + "name," + "store_site," + "site," +
+		"app_perms.permissions," + "packages" +
+		" FROM " + appStore
 
 	//Table Join Appends
-	tableQuery := " NATURAL JOIN app_versions " +
-		" NATURAL JOIN developers   "
-	//TODO: "NATURAL JOIN app_perms "
+	tableQuery := " FULL OUTER JOIN app_versions " + " FULL OUTER JOIN developers   " +
+		"FULL OUTER JOIN app_perms " + "FULL OUTER JOIN app_packages"
 
-	whereConditions := ""
-	if len(whereParams) > 0 {
-		whereConditions = appsWhereLike(whereParams...)
-	}
-	limiter := "LIMIT " + limit + " OFFSET " + offset
+	structuredQuery := storestart + tableQuery +
+		" WHERE " + appStore + ".title like any " + percentifyArray(titles) +
+		" AND developers.name like any " + percentifyArray(developers) +
+		" AND " + appStore + ".genre like any " + percentifyArray(genres) +
+		//" AND app_perms.permissions like any " + percentifyArray(permissions) + //TODO: s a array so need to check the arrays...
+		" AND app_versions.app like any " + percentifyArray(appIDs)
 
-	structuredQuery := storestart + tableQuery + whereConditions + limiter
-
-	fmt.Println(structuredQuery)
+	println(structuredQuery)
 
 	rows, err := db.Query(structuredQuery)
 
 	defer rows.Close()
 
 	if err != nil {
-		return []ShowMeWhatYouGot{}, err
+		return []AppData{}, err
 	}
 
 	var id string
 
-	var result []ShowMeWhatYouGot
+	var result []AppData
 	for i := 0; rows.Next(); i++ {
 
-		var inf ShowMeWhatYouGot
+		var info AppData
 		var appVer AppVersion
 		var dev Developer
 
@@ -539,27 +543,29 @@ func RetrieveFullFrom(store string, limit string, offset string, whereParams []F
 		var genre sql.NullString
 		var famGenre sql.NullString
 		var video sql.NullString
+		var perms []string
+		var packages []string
 
 		//Cannot just cast straight into types because of the postgre type conversion
 		err := rows.Scan(
 			&id,
-			&inf.Title,
+			&info.Title,
 			&summ,
 			&desc,
-			&inf.StoreURL,
-			&inf.Price,
-			&inf.Free,
-			&inf.Rating,
-			&inf.NumReviews,
+			&info.StoreURL,
+			&info.Price,
+			&info.Free,
+			&info.Rating,
+			&info.NumReviews,
 			&genre,
 			&famGenre,
-			&inf.Installs.Min,
-			&inf.Installs.Max,
-			&inf.Developer,
-			&inf.Updated,
-			&inf.AndroidVer,
-			&inf.ContentRating,
-			pq.Array(&inf.RecentChanges),
+			&info.Installs.Min,
+			&info.Installs.Max,
+			&info.Developer,
+			&info.Updated,
+			&info.AndroidVer,
+			&info.ContentRating,
+			pq.Array(&info.RecentChanges),
 			&appVer.App,
 			&appVer.Store,
 			&appVer.Region,
@@ -567,21 +573,23 @@ func RetrieveFullFrom(store string, limit string, offset string, whereParams []F
 			pq.Array(&dev.Emails),
 			&dev.Name,
 			&dev.StoreSite,
-			&dev.Site) //XX X: icon should be there, right? right?
+			&dev.Site,
+			pq.Array(&perms),
+			pq.Array(&packages)) //XX X: icon should be there, right? right?
 
 		if err != nil {
 			fmt.Println("Database Query", err)
 		} else {
 
-			//inf.FamilyGenre = famGenre.Valid ? famGenre.String : ""
+			//info.FamilyGenre = famGenre.Valid ? famGenre.String : ""
 			//TODO: ight be able to get away with nul being "" after the scan stage
-			inf.Summary = summ.String
-			inf.Description = desc.String
-			inf.Genre = genre.String
-			inf.Video = video.String
-			inf.FamilyGenre = famGenre.String
+			info.Summary = summ.String
+			info.Description = desc.String
+			info.Genre = genre.String
+			info.Video = video.String
+			info.FamilyGenre = famGenre.String
 
-			result = append(result, inf)
+			result = append(result, info)
 		}
 	}
 
@@ -590,7 +598,130 @@ func RetrieveFullFrom(store string, limit string, offset string, whereParams []F
 	}
 
 	return result, nil
+
 }
+
+// func RetrieveFullFrom(store string, limit string, offset string, whereParams []FormParam) ([]AppData, error) {
+
+// 	//SELECT * From playstore_apps FULL OUTER JOIN app_versions FULL OUTER JOIN developers WHERE playstore_apps.title like '%QR%';
+// 	storestart := " SELECT " +
+// 		"id," +
+// 		"title," +
+// 		"summary," +
+// 		"description," +
+// 		"store_url," +
+// 		"price," +
+// 		"free," +
+// 		"rating," +
+// 		"num_reviews," +
+// 		"genre," +
+// 		"family_genre," +
+// 		"min_installs," +
+// 		"max_installs," +
+// 		"developer," +
+// 		"updated," +
+// 		"android_ver," +
+// 		"content_rating," +
+// 		"recent_changes," +
+// 		"app," +
+// 		"store," +
+// 		"region," +
+// 		"version," +
+// 		"email," +
+// 		"name," +
+// 		"store_site," +
+// 		"site" + " FROM " + store
+
+// 	//Table Join Appends
+// 	tableQuery := " FULL OUTER JOIN app_versions " +
+// 		" FULL OUTER JOIN developers   "
+// 	//TODO: "FULL OUTER JOIN app_perms "
+
+// 	whereConditions := ""
+// 	if len(whereParams) > 0 {
+// 		whereConditions = appsWhereLike(whereParams...)
+// 	}
+// 	limiter := "LIMIT " + limit + " OFFSET " + offset
+
+// 	structuredQuery := storestart + tableQuery + whereConditions + limiter
+
+// 	fmt.Println(structuredQuery)
+
+// 	rows, err := db.Query(structuredQuery)
+
+// 	defer rows.Close()
+
+// 	if err != nil {
+// 		return []AppData{}, err
+// 	}
+
+// 	var id string
+
+// 	var result []AppData
+// 	for i := 0; rows.Next(); i++ {
+
+// 		var info AppData
+// 		var appVer AppVersion
+// 		var dev Developer
+
+// 		//Potential null values
+// 		var summ sql.NullString
+// 		var desc sql.NullString
+// 		var genre sql.NullString
+// 		var famGenre sql.NullString
+// 		var video sql.NullString
+
+// 		//Cannot just cast straight into types because of the postgre type conversion
+// 		err := rows.Scan(
+// 			&id,
+// 			&info.Title,
+// 			&summ,
+// 			&desc,
+// 			&info.StoreURL,
+// 			&info.Price,
+// 			&info.Free,
+// 			&info.Rating,
+// 			&info.NumReviews,
+// 			&genre,
+// 			&famGenre,
+// 			&info.Installs.Min,
+// 			&info.Installs.Max,
+// 			&info.Developer,
+// 			&info.Updated,
+// 			&info.AndroidVer,
+// 			&info.ContentRating,
+// 			pq.Array(&info.RecentChanges),
+// 			&appVer.App,
+// 			&appVer.Store,
+// 			&appVer.Region,
+// 			&appVer.Ver,
+// 			pq.Array(&dev.Emails),
+// 			&dev.Name,
+// 			&dev.StoreSite,
+// 			&dev.Site) //XX X: icon should be there, right? right?
+
+// 		if err != nil {
+// 			fmt.Println("Database Query", err)
+// 		} else {
+
+// 			//info.FamilyGenre = famGenre.Valid ? famGenre.String : ""
+// 			//TODO: ight be able to get away with nul being "" after the scan stage
+// 			info.Summary = summ.String
+// 			info.Description = desc.String
+// 			info.Genre = genre.String
+// 			info.Video = video.String
+// 			info.FamilyGenre = famGenre.String
+
+// 			result = append(result, info)
+// 		}
+// 	}
+
+// 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+// 		fmt.Println("Database err", rows.Err())
+// 	}
+
+// 	return result, nil
+// }
 
 /*
 
@@ -599,25 +730,25 @@ Would be casesensitive.
 
 **Like, oh my, like, sally from the valley**
 */
-func appsWhereLike(params ...FormParam) (partQuery string) {
-	whereTerms := " WHERE "
-	fmt.Println("Going through form params, dealing with: ", len(params))
-	for i, param := range params {
+// func appsWhereLike(params ...FormParam) (partQuery string) {
+// 	whereTerms := " WHERE "
+// 	fmt.Println("Going through form params, dealing with: ", len(params))
+// 	for i, param := range params {
 
-		if param.Val == "nil" {
-			fmt.Println("Attempted to check where the param does not exist: ", param.Name)
-			//TODO: cancel out?
-		}
-		part := param.Name + " LIKE " + " '%" + param.Val + "%' "
+// 		if param.Val == "nil" {
+// 			fmt.Println("Attempted to check where the param does not exist: ", param.Name)
+// 			//TODO: cancel out?
+// 		}
+// 		part := param.Name + " LIKE " + " '%" + param.Val + "%' "
 
-		whereTerms += part
-		fmt.Println("Dealing with param", i)
-		if i < len(params)-1 {
-			whereTerms += " AND "
-		}
-	}
-	return whereTerms
-}
+// 		whereTerms += part
+// 		fmt.Println("Dealing with param", i)
+// 		if i < len(params)-1 {
+// 			whereTerms += " AND "
+// 		}
+// 	}
+// 	return whereTerms
+// }
 
 // GetAppsToAnalyze returns a list of up to 10 apps that have analyzed=False and
 // downloaded=True for the analyzer.

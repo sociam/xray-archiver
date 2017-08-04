@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/sociam/xray-archiver/pipeline/db"
 	"github.com/sociam/xray-archiver/pipeline/util"
@@ -68,191 +67,191 @@ var appPrefixRe = regexp.MustCompile("^/api/apps/")
 var dbIDRe = regexp.MustCompile("^\\d+$")
 var appIDRe = regexp.MustCompile("^[[:alpha:]][\\w$]*(\\.[[:alpha:]][\\w$]*)*$")
 
-func appEndpoint(w http.ResponseWriter, r *http.Request) {
-	mime := r.Header.Get("Accept")
+// func appEndpoint(w http.ResponseWriter, r *http.Request) {
+// 	mime := r.Header.Get("Accept")
 
-	if r.Method == "POST" || r.Method == "GET" {
+// 	if r.Method == "POST" || r.Method == "GET" {
 
-		if _, ok := supportedMimes[mime]; !ok {
-			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
-			return
-		}
+// 		if _, ok := supportedMimes[mime]; !ok {
+// 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+// 			return
+// 		}
 
-		split := strings.SplitN(r.URL.Path, "/", 7)
+// 		split := strings.SplitN(r.URL.Path, "/", 7)
 
-		if len(split) < 4 {
-			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Bad app slashes specified")
-			return
-		}
+// 		if len(split) < 4 {
+// 			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Bad app slashes specified")
+// 			return
+// 		}
 
-		appID := split[3]
+// 		appID := split[3]
 
-		if appID == "" {
-			appsEndpoint(w, r)
-		} else if len(split) == 4 && dbIDRe.MatchString(appID) {
-			// Is a DB ID
-			///api/apps/<dbid>
+// 		if appID == "" {
+// 			appsEndpoint(w, r)
+// 		} else if len(split) == 4 && dbIDRe.MatchString(appID) {
+// 			// Is a DB ID
+// 			///api/apps/<dbid>
 
-			dbID, err := strconv.Atoi(appID)
-			if err != nil {
-				writeErr(w, mime, http.StatusBadRequest, "big_int", "dbID is too big")
-			}
+// 			dbID, err := strconv.Atoi(appID)
+// 			if err != nil {
+// 				writeErr(w, mime, http.StatusBadRequest, "big_int", "dbID is too big")
+// 			}
 
-			appVer, err := db.GetAppVersionByID(int64(dbID))
-			if err != nil {
-				writeErr(w, mime, http.StatusBadRequest, "bad_app", "App could not be found")
-				return
-			}
+// 			appVer, err := db.GetAppVersionByID(int64(dbID))
+// 			if err != nil {
+// 				writeErr(w, mime, http.StatusBadRequest, "bad_app", "App could not be found")
+// 				return
+// 			}
 
-			writeData(w, mime, http.StatusOK, appVer)
+// 			writeData(w, mime, http.StatusOK, appVer)
 
-			//util.WriteJSON(w, app)
+// 			//util.WriteJSON(w, app)
 
-		} else if appIDRe.MatchString(appID) {
-			// Is an app ID
-			switch len(split) {
-			case 4:
-				app, err := db.GetApp(appID)
-				if err != nil {
-					fmt.Println("Error querying database: ", err.Error())
-					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
-					return
-				}
+// 		} else if appIDRe.MatchString(appID) {
+// 			// Is an app ID
+// 			switch len(split) {
+// 			case 4:
+// 				app, err := db.GetApp(appID)
+// 				if err != nil {
+// 					fmt.Println("Error querying database: ", err.Error())
+// 					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+// 					return
+// 				}
 
-				writeData(w, mime, http.StatusOK, app)
-			case 5:
-				///api/apps/<appid>/<version string>
-				ver := split[4]
-				// Search for a version string in the user's default app store or in play/us
+// 				writeData(w, mime, http.StatusOK, app)
+// 			case 5:
+// 				///api/apps/<appid>/<version string>
+// 				ver := split[4]
+// 				// Search for a version string in the user's default app store or in play/us
 
-				appVer, err := db.GetAppVersion(appID, "play", "us", ver)
-				if err != nil {
-					fmt.Println("Error querying database: ", err.Error())
-					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
-				}
+// 				appVer, err := db.GetAppVersion(appID, "play", "us", ver)
+// 				if err != nil {
+// 					fmt.Println("Error querying database: ", err.Error())
+// 					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+// 				}
 
-				writeData(w, mime, http.StatusOK, appVer)
+// 				writeData(w, mime, http.StatusOK, appVer)
 
-			case 7:
-				///api/apps/<appid>/<store>/<region>/<version string>
+// 			case 7:
+// 				///api/apps/<appid>/<store>/<region>/<version string>
 
-				// There are parts after the app ID
-				//TODO: do things not need to be done different here?
-				store, region, ver := split[4], split[5], split[6]
+// 				// There are parts after the app ID
+// 				//TODO: do things not need to be done different here?
+// 				store, region, ver := split[4], split[5], split[6]
 
-				appVer, err := db.GetAppVersion(appID, store, region, ver)
-				if err != nil {
-					fmt.Println("Error querying database: ", err.Error())
-					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
-				}
+// 				appVer, err := db.GetAppVersion(appID, store, region, ver)
+// 				if err != nil {
+// 					fmt.Println("Error querying database: ", err.Error())
+// 					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+// 				}
 
-				writeData(w, mime, http.StatusOK, appVer)
+// 				writeData(w, mime, http.StatusOK, appVer)
 
-			default:
-				writeErr(w, mime, http.StatusBadRequest, "bad_req", "Number of parts is not 1, 2, or 4")
-			}
+// 			default:
+// 				writeErr(w, mime, http.StatusBadRequest, "bad_req", "Number of parts is not 1, 2, or 4")
+// 			}
 
-		} else {
-			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Invalid app ID specified")
-		}
-	}
-}
+// 		} else {
+// 			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Invalid app ID specified")
+// 		}
+// 	}
+// }
 
-func appsEndpoint(w http.ResponseWriter, r *http.Request) {
+// func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
-	mime := r.Header.Get("Accept")
-	if r.Method == "POST" || r.Method == "GET" {
-		if _, ok := supportedMimes[mime]; !ok {
-			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
-			return
-		}
-		fmt.Println("Gathering app with heads", r)
-		err := r.ParseForm()
-		if err != nil {
-			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
-			return
-		}
+// 	mime := r.Header.Get("Accept")
+// 	if r.Method == "POST" || r.Method == "GET" {
+// 		if _, ok := supportedMimes[mime]; !ok {
+// 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+// 			return
+// 		}
+// 		fmt.Println("Gathering app with heads", r)
+// 		err := r.ParseForm()
+// 		if err != nil {
+// 			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
+// 			return
+// 		}
 
-		num, start := 10, 0 //Default selection range
-		for name, val := range r.Form {
-			switch name {
+// 		num, start := 10, 0 //Default selection range
+// 		for name, val := range r.Form {
+// 			switch name {
 
-			case "num":
-				if len(val) > 1 {
-					writeErr(w, mime, http.StatusBadRequest, "bad_form", "num must have a single value")
-					return
-				}
-				num, err = strconv.Atoi(val[0])
-				if err != nil {
-					writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be a number")
-					return
-				}
-				if num < 1 || num > 100 {
-					writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be between 1 and 100")
-					return
-				}
+// 			case "num":
+// 				if len(val) > 1 {
+// 					writeErr(w, mime, http.StatusBadRequest, "bad_form", "num must have a single value")
+// 					return
+// 				}
+// 				num, err = strconv.Atoi(val[0])
+// 				if err != nil {
+// 					writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be a number")
+// 					return
+// 				}
+// 				if num < 1 || num > 100 {
+// 					writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be between 1 and 100")
+// 					return
+// 				}
 
-			case "start":
-				if len(val) > 1 {
-					writeErr(w, mime, http.StatusBadRequest, "bad_form", "start must have a single value")
-					return
-				}
-				start, err = strconv.Atoi(val[0])
-				if err != nil {
-					writeErr(w, mime, http.StatusBadRequest, "bad_form", "start value must be a number")
-					return
-				}
-				if start < 0 {
-					writeErr(w, mime, http.StatusBadRequest, "bad_form", "start value must positive")
-					return
-				}
-			default:
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "passed values did not match params", name)
-				return
-			}
-		}
+// 			case "start":
+// 				if len(val) > 1 {
+// 					writeErr(w, mime, http.StatusBadRequest, "bad_form", "start must have a single value")
+// 					return
+// 				}
+// 				start, err = strconv.Atoi(val[0])
+// 				if err != nil {
+// 					writeErr(w, mime, http.StatusBadRequest, "bad_form", "start value must be a number")
+// 					return
+// 				}
+// 				if start < 0 {
+// 					writeErr(w, mime, http.StatusBadRequest, "bad_form", "start value must positive")
+// 					return
+// 				}
+// 			default:
+// 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "passed values did not match params", name)
+// 				return
+// 			}
+// 		}
 
-		fmt.Println("Selecting app range", start, num)
+// 		fmt.Println("Selecting app range", start, num)
 
-		apps, err := db.GetApps(num, start)
-		if err != nil {
-			fmt.Println("Error querying database: ", err.Error())
-			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
-			return
-		}
+// 		apps, err := db.GetApps(num, start)
+// 		if err != nil {
+// 			fmt.Println("Error querying database: ", err.Error())
+// 			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+// 			return
+// 		}
 
-		util.WriteJSON(w, apps)
+// 		util.WriteJSON(w, apps)
 
-	} else {
-		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
-	}
-}
+// 	} else {
+// 		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
+// 	}
+// }
 
 //Playing around with go
 // type EndpointFunc func(w http.ResponseWriter, r *http.Request)
 
-// // func processEndpoint(endpoint EndpointFunc, w http.ResponseWriter, r *http.Request) EndpointFunc {
-// // 	mime := r.Header.Get("Accept")
-// // 	//Check input
-// // 	if r.Method == "POST" || r.Method == "GET" {
-// // 		if _, ok := supportedMimes[mime]; !ok {
-// // 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
-// // 			return
-// // 		}
+// func processEndpoint(endpoint EndpointFunc, w http.ResponseWriter, r *http.Request) EndpointFunc {
+// 	mime := r.Header.Get("Accept")
+// 	//Check input
+// 	if r.Method == "POST" || r.Method == "GET" {
+// 		if _, ok := supportedMimes[mime]; !ok {
+// 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+// 			return
+// 		}
 
-// // 		//XXX:Assuming all endpoints have a form to process...
-// // 		err := r.ParseForm()
-// // 		if err != nil {
-// // 			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
-// // 			return
-// // 		}
+// 		//XXX:Assuming all endpoints have a form to process...
+// 		err := r.ParseForm()
+// 		if err != nil {
+// 			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
+// 			return
+// 		}
 
-// // 		return endpoint(w, r)
+// 		return endpoint(w, r)
 
-// // 	} else {
-// // 		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
-// // 	}
-// // }
+// 	} else {
+// 		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
+// 	}
+// }
 
 func parseNumCheck(num string) (val int, oops string, err error) {
 	//oops error
@@ -347,6 +346,12 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		formParams := make([]db.FormParam, 0, 10) //:= make([]db.formParams, 3, 7)
 
+		titles := []string{""}
+		developers := []string{""}
+		genres := []string{""}
+		permisions := []string{""}
+		appIDs := []string{""}
+
 		fmt.Printf("Parsing app form parameters, params size %s", fmt.Sprint(len(r.Form)))
 		//Should not complain if form is 0...
 
@@ -355,6 +360,7 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 			switch name {
 			case limit.Name:
+				fmt.Println("Got range of limits", val)
 				limit.Val, oops, _ = parseLimit(val[0])
 				if oops != "" {
 					writeErr(w, mime, http.StatusBadRequest, "bad_form", oops)
@@ -377,18 +383,23 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 				}
 
 			case "title":
-				form := db.FormParam{"title", val[0]}
-				formParams = append(formParams, form)
+				fmt.Println("titles:", len(val))
+				titles = val
+				// form := db.FormParam{"title", val[0]}
+				// formParams = append(formParams, form)
 
 			case "developer":
-				formParams = append(formParams, db.FormParam{"developer", val[0]})
+				developers = val
+				//formParams = append(formParams, db.FormParam{"developer", val[0]})
 
 			case "genre":
-				formParams = append(formParams, db.FormParam{"genre", val[0]})
+				genres = val
+				//formParams = append(formParams, db.FormParam{"genre", val[0]})
 				//Valid genre check
 
 			case "appId":
-				formParams = append(formParams, db.FormParam{"appId", val[0]})
+				appIDs = val
+				//formParams = append(formParams, db.FormParam{"appId", val[0]})
 
 			default:
 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "passed form values did not match params", name)
@@ -405,10 +416,18 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 		// 	return
 		// }
 
+		if len(titles) == 0 {
+			developers = []string{}
+		}
+
 		if isFull {
 			//TODO: pass store paramters
 			fmt.Println("Gather full details")
-			results, err := db.RetrieveFullFrom("playstore_apps", limit.Val, offset.Val, formParams) // titles /*=[a, b, c]*/, developers /*=[1, 2, 3]*/)
+
+			// string  int    int     string[] string[]..
+			results, err := db.QuickQuery("playstore_apps", limit.Val, offset.Val, developers, genres, permisions, appIDs, titles)
+
+			//results, err := db.RetrieveFullFrom("playstore_apps", limit.Val, offset.Val, formParams) // titles /*=[a, b, c]*/, developers /*=[1, 2, 3]*/)
 
 			if err != nil {
 				fmt.Println("Error querying database: ", err.Error())
@@ -427,281 +446,281 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// func extractToUseConditions(params ......FormParam) {
+// // func extractToUseConditions(params ......FormParam) {
+
+// // }
+
+// func gatherSingleAppEndpoint(w http.ResponseWriter, r *http.Request) {
+// }
+
+// // What about? ^[a-z0-9_-]*$
+// //var compIDRe = regexp.MustCompile("^\\l+$")
+// var compIDRe = regexp.MustCompile("^[a-z0-9_-]*$")
+
+// func compEndpoint(w http.ResponseWriter, r *http.Request) {
+// 	mime := r.Header.Get("Accept")
+// 	if r.Method == "POST" || r.Method == "GET" {
+// 		if _, ok := supportedMimes[mime]; !ok {
+// 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+// 			return
+// 		}
+
+// 		split := strings.SplitN(r.URL.Path, "/", 7)
+
+// 		if len(split) < 4 {
+// 			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Bad app slashes specified")
+// 			return
+// 		}
+
+// 		compID := split[3]
+// 		fmt.Println("CompID searching:", compID)
+
+// 		if len(split) > 4 {
+// 			compsEndpoint(w, r)
+
+// 		} else if len(split) == 4 && compIDRe.MatchString(compID) {
+// 			company, err := db.GetCompany(string(compID))
+
+// 			if err != nil {
+// 				writeErr(w, mime, http.StatusBadRequest, "bad_company", "Company could not be found")
+// 				return
+// 			}
+
+// 			writeData(w, mime, http.StatusOK, company)
+
+// 			util.WriteJSON(w, company)
+
+// 		} else {
+// 			writeErr(w, mime, http.StatusBadRequest, "bad_company", "Invalid Company ID specified")
+// 		}
+// 	}
+// }
+
+// func compsEndpoint(w http.ResponseWriter, r *http.Request) {
+// 	//TODO: handle OPTIONS and HEADfn
+// 	mime := r.Header.Get("Accept")
+// 	if r.Method == "POST" || r.Method == "GET" {
+
+// 		if _, ok := supportedMimes[mime]; !ok {
+// 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+// 			return
+// 		}
+
+// 		err := r.ParseForm()
+// 		if err != nil {
+// 			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
+// 			return
+// 		}
+
+// 		num, start := 10, 0
+// 		if v, ok := r.Form["num"]; ok && len(v) > 0 {
+// 			if len(v) > 1 {
+// 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num must have a single value")
+// 				return
+// 			}
+// 			num, err = strconv.Atoi(v[0])
+// 			if err != nil {
+// 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be a number")
+// 				return
+// 			}
+// 			if num < 1 || num > 100 {
+// 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be between 1 and 100")
+// 				return
+// 			}
+// 		}
+
+// 		if v, ok := r.Form["start"]; ok && len(v) > 0 {
+// 			if len(v) > 1 {
+// 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "start must have a single value")
+// 				return
+// 			}
+// 			start, err = strconv.Atoi(v[0])
+// 			if err != nil {
+// 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "start value must be a number")
+// 				return
+// 			}
+// 			if start < 0 {
+// 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "start value must positive")
+// 				return
+// 			}
+// 		}
+
+// 		companies, err := db.GetCompanies(num, start)
+// 		if err != nil {
+// 			fmt.Println("Error querying database: ", err.Error())
+// 			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+// 			return
+// 		}
+
+// 		util.WriteJSON(w, companies)
+// 	} else {
+// 		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
+// 	}
+// }
+
+// func devsEndpoint(w http.ResponseWriter, r *http.Request) {
+// 	mime := r.Header.Get("Accept")
+// 	if r.Method == "POST" || r.Method == "GET" {
+// 		if _, ok := supportedMimes[mime]; !ok {
+// 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+// 			return
+// 		}
+
+// 		err := r.ParseForm()
+// 		if err != nil {
+// 			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
+// 			return
+// 		}
+
+// 		num, start := 10, 0
+// 		if v, ok := r.Form["num"]; ok && len(v) > 0 {
+// 			if len(v) > 1 {
+// 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num must have a single value")
+// 				return
+// 			}
+// 			num, err = strconv.Atoi(v[0])
+// 			if err != nil {
+// 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be a number")
+// 				return
+// 			}
+// 			if num < 1 || num > 100 {
+// 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be between 1 and 100")
+// 				return
+// 			}
+// 		}
+
+// 		developers, err := db.GetDevelopers(num, start)
+// 		if err != nil {
+// 			fmt.Println("Error querying database: ", err.Error())
+// 			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+// 			return
+// 		}
+
+// 		util.WriteJSON(w, developers)
+
+// 	} else {
+// 		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
+// 	}
 
 // }
 
-func gatherSingleAppEndpoint(w http.ResponseWriter, r *http.Request) {
-}
+// func devEndpoint(w http.ResponseWriter, r *http.Request) {
+// 	mime := r.Header.Get("Accept")
+// 	if r.Method == "POST" || r.Method == "GET" {
+// 		if _, ok := supportedMimes[mime]; !ok {
+// 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+// 			return
+// 		}
 
-// What about? ^[a-z0-9_-]*$
-//var compIDRe = regexp.MustCompile("^\\l+$")
-var compIDRe = regexp.MustCompile("^[a-z0-9_-]*$")
+// 		split := strings.SplitN(r.URL.Path, "/", 6)
 
-func compEndpoint(w http.ResponseWriter, r *http.Request) {
-	mime := r.Header.Get("Accept")
-	if r.Method == "POST" || r.Method == "GET" {
-		if _, ok := supportedMimes[mime]; !ok {
-			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
-			return
-		}
+// 		if len(split) < 4 {
+// 			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Bad app slashes specified")
+// 			return
+// 		}
 
-		split := strings.SplitN(r.URL.Path, "/", 7)
+// 		devID := split[3]
 
-		if len(split) < 4 {
-			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Bad app slashes specified")
-			return
-		}
+// 		num, err := strconv.Atoi(devID)
 
-		compID := split[3]
-		fmt.Println("CompID searching:", compID)
+// 		if err != nil {
+// 			writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be a number")
+// 			return
+// 		}
 
-		if len(split) > 4 {
-			compsEndpoint(w, r)
+// 		dev, err := db.GetDeveloper(int64(num))
 
-		} else if len(split) == 4 && compIDRe.MatchString(compID) {
-			company, err := db.GetCompany(string(compID))
+// 		if err != nil {
+// 			fmt.Println("Error querying database: ", err.Error())
+// 			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+// 			return
+// 		}
 
-			if err != nil {
-				writeErr(w, mime, http.StatusBadRequest, "bad_company", "Company could not be found")
-				return
-			}
+// 		util.WriteJSON(w, dev)
+// 	}
 
-			writeData(w, mime, http.StatusOK, company)
+// }
 
-			util.WriteJSON(w, company)
+// func latestsEndpoint(w http.ResponseWriter, r *http.Request) {
+// 	mime := r.Header.Get("Accept")
 
-		} else {
-			writeErr(w, mime, http.StatusBadRequest, "bad_company", "Invalid Company ID specified")
-		}
-	}
-}
+// 	if r.Method == "POST" || r.Method == "GET" {
 
-func compsEndpoint(w http.ResponseWriter, r *http.Request) {
-	//TODO: handle OPTIONS and HEADfn
-	mime := r.Header.Get("Accept")
-	if r.Method == "POST" || r.Method == "GET" {
+// 		if _, ok := supportedMimes[mime]; !ok {
+// 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+// 			return
+// 		}
 
-		if _, ok := supportedMimes[mime]; !ok {
-			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
-			return
-		}
+// 		err := r.ParseForm()
+// 		if err != nil {
+// 			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
+// 			return
+// 		}
 
-		err := r.ParseForm()
-		if err != nil {
-			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
-			return
-		}
+// 		num, start := 10, 0
+// 		if v, ok := r.Form["num"]; ok && len(v) > 0 {
+// 			if len(v) > 1 {
+// 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num must have a single value")
+// 				return
+// 			}
+// 			num, err = strconv.Atoi(v[0])
+// 			if err != nil {
+// 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be a number")
+// 				return
+// 			}
+// 			if num < 1 || num > 100 {
+// 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be between 1 and 100")
+// 				return
+// 			}
+// 		}
 
-		num, start := 10, 0
-		if v, ok := r.Form["num"]; ok && len(v) > 0 {
-			if len(v) > 1 {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num must have a single value")
-				return
-			}
-			num, err = strconv.Atoi(v[0])
-			if err != nil {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be a number")
-				return
-			}
-			if num < 1 || num > 100 {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be between 1 and 100")
-				return
-			}
-		}
+// 		latestApps, err := db.GetDevelopers(num, start)
+// 		if err != nil {
+// 			fmt.Println("Error querying database: ", err.Error())
+// 			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+// 			return
+// 		}
 
-		if v, ok := r.Form["start"]; ok && len(v) > 0 {
-			if len(v) > 1 {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "start must have a single value")
-				return
-			}
-			start, err = strconv.Atoi(v[0])
-			if err != nil {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "start value must be a number")
-				return
-			}
-			if start < 0 {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "start value must positive")
-				return
-			}
-		}
+// 		util.WriteJSON(w, latestApps)
 
-		companies, err := db.GetCompanies(num, start)
-		if err != nil {
-			fmt.Println("Error querying database: ", err.Error())
-			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
-			return
-		}
+// 	} else {
+// 		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
+// 	}
+// }
 
-		util.WriteJSON(w, companies)
-	} else {
-		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
-	}
-}
+// func searchAppsEndpoint(w http.ResponseWriter, r *http.Request) {
+// 	mime := r.Header.Get("Accept")
+// 	if r.Method == "POST" || r.Method == "GET" {
+// 		if _, ok := supportedMimes[mime]; !ok {
+// 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+// 			return
+// 		}
 
-func devsEndpoint(w http.ResponseWriter, r *http.Request) {
-	mime := r.Header.Get("Accept")
-	if r.Method == "POST" || r.Method == "GET" {
-		if _, ok := supportedMimes[mime]; !ok {
-			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
-			return
-		}
+// 		split := strings.SplitN(r.URL.Path, "/", 7)
 
-		err := r.ParseForm()
-		if err != nil {
-			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
-			return
-		}
+// 		if len(split) < 4 {
+// 			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Bad app slashes specified")
+// 			return
+// 		}
 
-		num, start := 10, 0
-		if v, ok := r.Form["num"]; ok && len(v) > 0 {
-			if len(v) > 1 {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num must have a single value")
-				return
-			}
-			num, err = strconv.Atoi(v[0])
-			if err != nil {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be a number")
-				return
-			}
-			if num < 1 || num > 100 {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be between 1 and 100")
-				return
-			}
-		}
+// 		searchTerm := split[4]
+// 		fmt.Println("Fetching matches for:", searchTerm)
 
-		developers, err := db.GetDevelopers(num, start)
-		if err != nil {
-			fmt.Println("Error querying database: ", err.Error())
-			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
-			return
-		}
+// 		results, err := db.SearchApps(string(searchTerm))
 
-		util.WriteJSON(w, developers)
+// 		fmt.Println("This many apps found: " + fmt.Sprint(len(results)))
 
-	} else {
-		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
-	}
+// 		if err != nil {
+// 			fmt.Printf("Error running search for %s: %s\n", searchTerm, err)
+// 			writeErr(w, mime, http.StatusBadRequest, "bad_search", "No apps could not be found")
+// 			return
+// 		}
 
-}
+// 		w.Header().Set("Access-Control-Allow-Origin", "*")
 
-func devEndpoint(w http.ResponseWriter, r *http.Request) {
-	mime := r.Header.Get("Accept")
-	if r.Method == "POST" || r.Method == "GET" {
-		if _, ok := supportedMimes[mime]; !ok {
-			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
-			return
-		}
-
-		split := strings.SplitN(r.URL.Path, "/", 6)
-
-		if len(split) < 4 {
-			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Bad app slashes specified")
-			return
-		}
-
-		devID := split[3]
-
-		num, err := strconv.Atoi(devID)
-
-		if err != nil {
-			writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be a number")
-			return
-		}
-
-		dev, err := db.GetDeveloper(int64(num))
-
-		if err != nil {
-			fmt.Println("Error querying database: ", err.Error())
-			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
-			return
-		}
-
-		util.WriteJSON(w, dev)
-	}
-
-}
-
-func latestsEndpoint(w http.ResponseWriter, r *http.Request) {
-	mime := r.Header.Get("Accept")
-
-	if r.Method == "POST" || r.Method == "GET" {
-
-		if _, ok := supportedMimes[mime]; !ok {
-			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
-			return
-		}
-
-		err := r.ParseForm()
-		if err != nil {
-			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
-			return
-		}
-
-		num, start := 10, 0
-		if v, ok := r.Form["num"]; ok && len(v) > 0 {
-			if len(v) > 1 {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num must have a single value")
-				return
-			}
-			num, err = strconv.Atoi(v[0])
-			if err != nil {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be a number")
-				return
-			}
-			if num < 1 || num > 100 {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be between 1 and 100")
-				return
-			}
-		}
-
-		latestApps, err := db.GetDevelopers(num, start)
-		if err != nil {
-			fmt.Println("Error querying database: ", err.Error())
-			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
-			return
-		}
-
-		util.WriteJSON(w, latestApps)
-
-	} else {
-		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
-	}
-}
-
-func searchAppsEndpoint(w http.ResponseWriter, r *http.Request) {
-	mime := r.Header.Get("Accept")
-	if r.Method == "POST" || r.Method == "GET" {
-		if _, ok := supportedMimes[mime]; !ok {
-			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
-			return
-		}
-
-		split := strings.SplitN(r.URL.Path, "/", 7)
-
-		if len(split) < 4 {
-			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Bad app slashes specified")
-			return
-		}
-
-		searchTerm := split[4]
-		fmt.Println("Fetching matches for:", searchTerm)
-
-		results, err := db.SearchApps(string(searchTerm))
-
-		fmt.Println("This many apps found: " + fmt.Sprint(len(results)))
-
-		if err != nil {
-			fmt.Printf("Error running search for %s: %s\n", searchTerm, err)
-			writeErr(w, mime, http.StatusBadRequest, "bad_search", "No apps could not be found")
-			return
-		}
-
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-
-		util.WriteJSON(w, results)
-	}
-}
+// 		util.WriteJSON(w, results)
+// 	}
+// }
 
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
 var port = flag.Uint("port", 8118, "Port to serve on.")
@@ -714,18 +733,17 @@ func init() {
 func main() {
 	http.HandleFunc("/", hello)
 
-	http.HandleFunc("/api/apps", appsEndpoint) //Returned chunked apps
-	http.HandleFunc("/api/apps/", appEndpoint) //?full=True&title=Title&developer=dev&genre=GENRELIST&permisions=PERMISSIONLIST&appId=id
-
-	http.HandleFunc("/api/appsNew/", gatherAppsEndpoint)
+	http.HandleFunc("/api/apps/", gatherAppsEndpoint)
 	//@deprecated
-	http.HandleFunc("/api/developers", devsEndpoint)
-	http.HandleFunc("/api/developers/", devEndpoint)
-	http.HandleFunc("/api/companies", compsEndpoint)
-	http.HandleFunc("/api/companies/", compEndpoint)
-	http.HandleFunc("/api/latest", latestsEndpoint)
-	http.HandleFunc("/api/search/apps/", searchAppsEndpoint)
-	http.HandleFunc("/api/search/apps", searchAppsEndpoint)
+	// http.HandleFunc("/api/apps", appsEndpoint) //Returned chunked apps
+	// http.HandleFunc("/api/apps/", appEndpoint) //?full=True&title=Title&developer=dev&genre=GENRELIST&permisions=PERMISSIONLIST&appId=id
+	// http.HandleFunc("/api/developers", devsEndpoint)
+	// http.HandleFunc("/api/developers/", devEndpoint)
+	// http.HandleFunc("/api/companies", compsEndpoint)
+	// http.HandleFunc("/api/companies/", compEndpoint)
+	// http.HandleFunc("/api/latest", latestsEndpoint)
+	// http.HandleFunc("/api/search/apps/", searchAppsEndpoint)
+	// http.HandleFunc("/api/search/apps", searchAppsEndpoint)
 
 	//TODO:
 	//http.HandleFunc("/api/latest/", latestEndpoint)

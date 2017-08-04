@@ -70,7 +70,7 @@ type Developer struct {
 	Site      string   `json:"site"`
 }
 
-type ShowMeWhatYouGot struct {
+type AppData struct {
 	PlaystoreInfo
 	AppVersion
 }
