@@ -11,138 +11,44 @@ To run locally:
 ```
 go install 
 $GOPATH/bin/apiserv
-
 ```
 
+# How to Use
+The API allows you to build queries using the url and a series of parameters
 
-##Show App Version
+### Params include:
+```
+isFull: bool
+title: string
+developer: string
+genre: string
+appId: string
+```
+future updates need to include:
 
-Returns the latest version information of a single app
+```
+permission: string
+package: string
+hosts: string
+```
 
-* **Method URL**
+Example URL:
+```/api/apps/?isFull=false/developer=Zynga/title=frozen```
 
-```http
-GET /api/apps/:appId/:version
-```  
-*  **URL Params**
-
-   **Required:**
- 
-   `appId=[integer]`
-
-    **Optional:**
- 
-   `version=[string]`
-
-* **Data Params**
-  None
-
-* **Success Response:**
-  * **Code:** 200 <br />
-    **Content:** `{ appid : {{types.AppVersion}}}`
- 
-* **Error Response:**
-  TODO: but but its labourful
-
-* **Sample Call:**
-
-curl /api/apps/500282 -H 'Accept: application/json'
-
-curl /api/apps/500282/playen_US12312 -H 'Accept: application/json'
-
-curl /api/apps/500282/play/en_US/12312 -H 'Accept: application/json'
-
-
-##Show App Selection
-
-Returns the a selection of app meta data given a start pos and a count
-
-* **Method URL**
-
-```http
-GET /api/apps/:amount/:startPos
-```  
-*  **URL Params**
-
-   **Required:**
- 
-   `amount=[integer]`
-
-   `startPos=[integer]`
-
-* **Data Params**
-  None
-
-* **Success Response:**
-  * **Code:** 200 <br />
-    **Content:** `{ appid : {{types.AppVersion}}}`
- 
-* **Error Response:**
-  TODO: but but its labourful
-
-* **Sample Call:**
-
-curl /api/apps/10/2 -H 'Accept: application/json'
-
-
-
-
-TODO: need to select by package name and get back more than version metadata...
-use previous to find this
-
-
-##Show App 
-
-Returns a app and all metadata
-
-* **Method URL**
-
-```http
-GET /api/apps/:packagename
-```  
-*  **URL Params**
-
-   **Required:**
- 
-   `packagename=[string]`
-
-* **Data Params**
-  None
-
-* **Success Response:**
-  * **Code:** 200 <br />
-    **Content:** `{ appid : {{types.storeInfo}}}`
- 
-* **Error Response:**
-  TODO: but but its labourful
-
-* **Sample Call:**
-
-curl /api/apps/com.google.app -H 'Accept: application/json'
-
-
-
-
-
-
-
-
-/api/apps/<appid>/<version>
-
-
- /api/apps/<appid>/<version string>
-
-/api/apps/<amount>/<startPos>
-
-##companies
-
-# url format
-/api/companies/<companyId>
-/api/companies/<amount>/<startPos>
-
-WISHFUlapi 
-
-/api/apps/categroy/ -> apps
-/api/apps/trending/
-/api/apps/developer/
-
+The above when used with Curl might return a json object similar to:
+```
+[
+     {
+          "Title":"Frozen Free Fall",
+          "App":"com.disney.frozensaga_goo"
+     },
+     {
+          "Title":"Candy Crush Jelly Saga",
+          "App":"com.king.candycrushjellysaga"
+     },
+     {
+          "Title":"Word Search",
+          "App":"com.asgardsoft.words"
+     }
+]
+```
