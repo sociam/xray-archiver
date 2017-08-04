@@ -54,7 +54,6 @@ jobs:
 
       - run: go get -u github.com/golang/lint/golint
 
-
       - run: cd pipeline/util && [[ -z $(gofmt -d *.go) ]]
       - run: cd pipeline/util && go get -v -t -d ./...
       - run: cd pipeline/util && golint -set_exit_status
@@ -62,18 +61,21 @@ jobs:
       - run: cd pipeline/util && go install
       - run: cd pipeline/util && go test -v ./...
 
+      - run: cd pipeline/db && [[ -z $(gofmt -d *.go) ]]
       - run: cd pipeline/db && go get -v -t -d ./...
       - run: cd pipeline/db && golint -set_exit_status
       - run: cd pipeline/db && go vet
       - run: cd pipeline/db && go install
       - run: cd pipeline/db && go test -v ./...
 
+      - run: cd pipeline/apiserv && [[ -z $(gofmt -d *.go) ]]
       - run: cd pipeline/apiserv && go get -v -t -d ./...
       - run: cd pipeline/apiserv && golint -set_exit_status
       - run: cd pipeline/apiserv && go vet
       - run: cd pipeline/apiserv && go install
       - run: cd pipeline/apiserv && go test -v ./...
 
+      - run: cd pipeline/analyzer && [[ -z $(gofmt -d *.go) ]]
       - run: cd pipeline/analyzer && go get -v -t -d ./...
       - run: cd pipeline/analyzer && golint -set_exit_status
       - run: cd pipeline/analyzer && go vet
