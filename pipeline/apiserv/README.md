@@ -9,7 +9,7 @@ The API allows you to build queries using the url and a series of parameters. Al
 
 Whilst default values are used, many are actually default to be empty strings. This means that queries are not restricted by default. Details of this can be found down the page.
 
-### Parameters
+## Parameters
 There are a series of parameters that can be used. Each of these can be chained together to produce a single query to the xray database.
 
 ```
@@ -19,27 +19,27 @@ developer: string
 genre: string
 appId: string
 ```
-#### Full Details
+### Full Details
 The ``` isFull ``` parameter is used to toggle between retrieving all appdata that is present for an app or just the stub. This should be set to ``` True ``` or ``` False ```.
 
-Example
+**Example**
 ```
 /api/apps/?isFull=True
 ```
 
-#### Title
+### Title
 The ``` title ``` parameter is used to search for applications based on the title field.
 
 When searching for applications based on title, some apps may share some of the text that has been entered. As a result of this, the API will return data that relates to any app that contains the string that was provided
 
-Example
+**Example**
 ```
 /api/apps/?title=DinnerAtNoon
 ```
 
 You can also chain title multiple times to search for apps that match either string
 
-Example
+**Example**
 ```
 /api/apps/?title=dinner&title=at&title=noon
 ```
@@ -47,20 +47,20 @@ Example
 The above example would return any apps that contain either ``` dinner ```, ``` at ``` or ``` noon ```.
 
 
-#### Developer Name
+### Developer Name
 
 The Developer name parameter will allow you to retrieve app data that relates to specific developers.
 
 As with the title field, developers may the term that you pass to the API. Because of this, the API will retireve all apps that contain the string that you provide.
 
-Example
+**Example**
 ```
 /api/apps/?developer=zynga
 ```
 
 You can also chain developers together to bring back app data that contain either of the strings that are provided
 
-Example
+**Example**
 ```
 /api/apps/?developer=zynga&developer=google
 ```
@@ -70,30 +70,32 @@ This would return back app data relating to apps that have a developer name that
 This can be used to allow you to compare applications that have been produced varying developers.
 
 
-#### Genre Category
+### Genre Category
 
 The Genre parameter will allw you to retieve metadata for applications that are part of a perticular genre. A list of all the possible Genres can be found further down the page.
 
-Example
+**Example**
 ```
 /api/apps/?genre=entertainment
 ```
 
 You can also chain the parameter with more genres. This would allow you to compare app data found in different genres easily.
 
-Example
+**Example**
 ```
 /api/apps/?genre=lifestyle&genre=food_and_drink
 ```
 
 As some genres actually share words, putting part of a genre will return meta data for apps, whos genre's contain that string.
 
-Example
+**Example**
 ```
 /api/apps/?genre=game
 ```
 
-Requesting meta data where the genre contains the string game will actually bring back apps that are part of a range of genres. For example:
+Requesting meta data where the genre contains the string ```game``` will actually bring back apps that belong to one of the game genres.
+
+**The genres included**
 ```
  GAME_ADVENTURE
  GAME_BOARD
@@ -117,7 +119,7 @@ Chaining together 15 ```genre=``` is also possible, however this would be much e
 
 ### Example Query
 
-Example URL:
+**Example URL**
 ```
 /api/apps/?isFull=false&developer=Zynga&title=frozen
 ```
