@@ -470,7 +470,7 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 	return ret, nil
 }
 
-func retrieveFullFromStore(store string, limit int, offset int) ([]ShowMeWhatYouGot, error) {
+func retrieveFullFrom(store string, limit int, offset int, whereParams ...FormParam) ([]ShowMeWhatYouGot, error) {
 
 	//SELECT * From playstore_apps NATURAL JOIN app_versions NATURAL JOIN developers WHERE playstore_apps.title like '%QR%';
 	storestart := "SELECT * FROM " + store
@@ -480,9 +480,13 @@ func retrieveFullFromStore(store string, limit int, offset int) ([]ShowMeWhatYou
 		"NATURAL JOIN developers"
 	//TODO: "NATURAL JOIN app_perms "
 
+	whereConditions := ""
+	if len(whereParams) > 0 {
+		whereConditions = appsWhereLike(whereParams...)
+	}
 	limiter := "LIMIT " + fmt.Sprint(limit) + " OFFSET " + fmt.Sprint(offset)
 
-	structuredQuery := storestart + tableQuery + limiter
+	structuredQuery := storestart + tableQuery + whereConditions + limiter
 
 	rows, err := db.Query(structuredQuery)
 
@@ -577,6 +581,11 @@ func appsWhereLike(params ...FormParam) (partQuery string) {
 	whereTerms := " WHERE "
 	fmt.Println("Going through form params, dealing with: ", len(params))
 	for i, param := range params {
+
+		if param.val == "nil" {
+			fmt.Println("Attempted to check where the param does not exist: ", param.name)
+			//TODO: cancel out?
+		}
 		part := "title" + "like" + "%" + param.val + "%"
 
 		whereTerms += part
