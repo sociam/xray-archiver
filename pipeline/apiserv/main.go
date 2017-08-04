@@ -254,42 +254,121 @@ func processEndpoint(endpoint EndpointFunc, w http.ResponseWriter, r *http.Reque
 	}
 }
 
-// func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
-// 	//Default apps
-// 	limit := 10
-// 	offset := 0
-// 	isFull := false
+func parseNumCheck(num int) (val int, error) {
+	num, err = strconv.Atoi(val[0])
+	
+	if err != nil {
+		writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be a number")
+		return nil, err
+	}
+	
+	if num < 1 {
+		writeErr(w, mime, http.StatusBadRequest, "bad_form", "num can not be a value less than 1...")
+		return nil, err
+	}
+	
+	return num
+}
 
-// 	//Need one of the below
-// 	title := nil
-// 	developers := nil
-// 	//TODO: generate these lists? nah just best case match them.. they vary so much for each store..
-// 	permisions := nil
-// 	genre := nil
-// 	appId := nil
 
-// 	for name, val := range r.Form {
+func parseLimit(num string) (val int, error) {
 
-// 		searchTerm := split[4]
-// 		fmt.Println("Fetching matches for:", searchTerm)
+	num, err = parseNumCheck(num)
+	
+	if len(val) > 1 {
+		writeErr(w, mime, http.StatusBadRequest, "bad_form", "num must have a single value")
+		return 
 
-// 		results, err := db.SearchApps(string(searchTerm))
+	if limit > 1000000
+		writeErr(w, mime, http.StatusBadRequest, "bad_form", "Limit to high. Please slow down. Chunk the request using the offset")
+		return num	
+}
 
-// 		fmt.Println("This many apps found: " + fmt.Sprint(len(results)))
+func parseOffset(num string) (val int, error) {
+	num, err = parseNumCheck(num)
+	
+	start, err = strconv.Atoi(val[0])
+	if err != nil {
+		writeErr(w, mime, http.StatusBadRequest, "bad_form", "offset value must be a number")
+		return
+	}
+	if start < 0 {
+		writeErr(w, mime, http.StatusBadRequest, "bad_form", "offset value must positive")
+		return
+	}
+}
 
-// 		w.Header().Set("Access-Control-Allow-Origin", "*")
+func validGenre(gen string ) (val string, error) {
+	//TODO: Check against genre constnats
+	return gen
+}
 
-// 	}
+func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
+	//Default apps
+	limit := 10
+	offset := 0
+	isFull := false
 
-// 	if title != nil { //|| developers != nil || permisions != nil etc etc
-// 		writeErr(w, mime, http.StatusBadRequest, "no_params", "Please send one of the required params")
-// 		return
-// 	}
-// 	util.WriteJSON(w, results)
-// }
+	//Need one of the below
+	title := nil
+	developer := nil
+	//TODO: generate these lists? nah just best case match them.. they vary so much for each store..
+	permisions := nil
+	genre := nil
+	appId := nil
 
-// func gatherSingleAppEndpoint(w http.ResponseWriter, r *http.Request) {
-// }
+
+	fmt.Println("Parsing app form paramters ")
+	//Should not complain if form is 0... 
+	
+	for name, val := range r.Form {
+
+		case "limit":
+			limit, err = parseLimit(val)
+			if err != nil 
+				return
+
+		case "offset":
+			offset, err = parseOffset(val)
+			if err != nil 
+				return
+
+
+		case "isFull":
+			b, err = strconv.ParseBool(val)
+			if err != nil s
+				writeErr(w, mime, http.StatusBadRequest, "bad_form", "isFull needs to be a boolean value, true or false")
+				return
+
+		case "developer":
+			developer = val
+
+
+		case "genre":
+			genre, err = parseGenre(val)
+			if err != nil 
+				return
+
+		case "appId":
+			appId = val
+
+		default:
+			writeErr(w, mime, http.StatusBadRequest, "bad_form", "passed form values did not match params", name)
+			return
+		}
+	}
+
+	//XXX: check limit < offset 
+
+	if title != nil { //|| developers != nil || permisions != nil etc etc
+		writeErr(w, mime, http.StatusBadRequest, "no_params", "Please send one of the required params")
+		return
+	}
+	util.WriteJSON(w, results)
+}
+
+func gatherSingleAppEndpoint(w http.ResponseWriter, r *http.Request) {
+}
 
 // What about? ^[a-z0-9_-]*$
 //var compIDRe = regexp.MustCompile("^\\l+$")
