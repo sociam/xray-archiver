@@ -470,35 +470,104 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 	return ret, nil
 }
 
-// func retrieveFullFromStore(condition string, store string) {
+func retrieveFullFromStore(condition string, store string) ([]ShowMeWhatYouGot, error) {
 
-// 	//SELECT * From playstore_apps NATURAL JOIN app_versions NATURAL JOIN developers WHERE playstore_apps.title like '%QR%';
-// 	storestart = "SELECT * FROM " + store
+	//SELECT * From playstore_apps NATURAL JOIN app_versions NATURAL JOIN developers WHERE playstore_apps.title like '%QR%';
+	storestart := "SELECT * FROM " + store
 
-// 	//Table Join Appends
-// 	tableQuery := "NATURAL JOIN app_versions" +
-// 		"NATURAL JOIN developers" +
-// 		"NATURAL JOIN app_perms "
+	//Table Join Appends
+	tableQuery := "NATURAL JOIN app_versions" +
+		"NATURAL JOIN developers"
+	//TODO: "NATURAL JOIN app_perms "
 
-// 	structuredQuery := tableQuery + condition
+	structuredQuery := storestart + tableQuery + condition
 
-// 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
-// 		fmt.Println("Database err", rows.Err())
-// 		return []PlaystoreInfo{}, rows.Err()
-// 	}
+	rows, err := db.Query(structuredQuery)
 
-// 	for i := 0; rows.Next(); i++ {
+	defer rows.Close()
 
-// 	}
+	if err != nil {
+		return []ShowMeWhatYouGot{}, err
+	}
 
-// 	return result, nil
-// }
+	var id string
+
+	var result []ShowMeWhatYouGot
+	for i := 0; rows.Next(); i++ {
+
+		var inf ShowMeWhatYouGot
+		var appVer AppVersion
+		var dev Developer
+
+		//Potential null values
+		var summ sql.NullString
+		var desc sql.NullString
+		var genre sql.NullString
+		var famGenre sql.NullString
+		var video sql.NullString
+
+		//Cannot just cast straight into types because of the postgre type conversion
+		err := rows.Scan(
+			&id,
+			&inf.Title,
+			&summ,
+			&desc,
+			&inf.StoreURL,
+			&inf.Price,
+			&inf.Free,
+			&inf.Rating,
+			&inf.NumReviews,
+			&genre,
+			&famGenre,
+			&inf.Installs.Min,
+			&inf.Installs.Max,
+			&inf.Developer,
+			&inf.Updated,
+			&inf.AndroidVer,
+			&inf.ContentRating,
+			pq.Array(&inf.Screenshots),
+			&video,
+			pq.Array(&inf.RecentChanges),
+			&inf.CrawlDate,
+			pq.Array(&inf.Permissions),
+			&appVer.App,
+			&appVer.Store,
+			&appVer.Region,
+			&appVer.Ver,
+			&appVer.ScreenFlags,
+			&dev.ID,
+			pq.Array(&dev.Emails),
+			&dev.Name,
+			&dev.StoreSite,
+			&dev.Site) //XXX: icon should be there, right? right?
+
+		if err != nil {
+			fmt.Println("Database Query", err)
+		} else {
+
+			//inf.FamilyGenre = famGenre.Valid ? famGenre.String : ""
+			//TODO: ight be able to get away with nul being "" after the scan stage
+			inf.Summary = summ.String
+			inf.Description = desc.String
+			inf.Genre = genre.String
+			inf.Video = video.String
+			inf.FamilyGenre = famGenre.String
+
+			result = append(result, inf)
+		}
+	}
+
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+		fmt.Println("Database err", rows.Err())
+	}
+
+	return result, nil
+}
 
 // func retrieveApps() ([]PlaystoreInfo, error) {
-// 	searchTerm = "%" + searchTerm + "%"
+// 	// searchTerm := "%" + searchTerm + "%"
 
-// 	rows, err := db.Query("SELECT * from playstore_apps WHERE title like $1 ORDER BY rating USING> LIMIT 120", searchTerm)
-
+// 	// rows, err := db.Query("SELECT * from playstore_apps WHERE title like $1 ORDER BY rating USING> LIMIT 120", searchTerm)
 // }
 
 // GetAppsToAnalyze returns a list of up to 10 apps that have analyzed=False and

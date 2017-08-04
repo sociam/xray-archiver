@@ -39,26 +39,26 @@ type StoreInfo interface{}
 
 // PlaystoreInfo represents the data contained in the google play store
 type PlaystoreInfo struct {
-	Title         string         `json:"title"`
-	Summary       string         `json:"summary"`
-	Description   string         `json:"description"`
-	StoreURL      string         `json:"storeURL"`
-	Price         string         `json:"price"`
-	Free          bool           `json:"free"`
-	Rating        string         `json:"rating"`
-	NumReviews    int64          `json:"numReviews"`
-	Genre         string         `json:"genre"`
-	FamilyGenre   string		 `json:"familyGenre"`
-	Installs      Range          `json:"installs"`
-	Developer     int64          `json:"developer"`
-	Updated       time.Time      `json:"updated"`
-	AndroidVer    string         `json:"androidVer"`
-	ContentRating string         `json:"contentRating"`
-	Screenshots   []string       `json:"screenshots"`
-	Video         string         `json:"video"`
-	RecentChanges []string       `json:"recentChanges"`
-	CrawlDate     time.Time      `json:"crawlDate"`
-	Permissions   []string       `json:"permissions"`
+	Title         string    `json:"title"`
+	Summary       string    `json:"summary"`
+	Description   string    `json:"description"`
+	StoreURL      string    `json:"storeURL"`
+	Price         string    `json:"price"`
+	Free          bool      `json:"free"`
+	Rating        string    `json:"rating"`
+	NumReviews    int64     `json:"numReviews"`
+	Genre         string    `json:"genre"`
+	FamilyGenre   string    `json:"familyGenre"`
+	Installs      Range     `json:"installs"`
+	Developer     int64     `json:"developer"`
+	Updated       time.Time `json:"updated"`
+	AndroidVer    string    `json:"androidVer"`
+	ContentRating string    `json:"contentRating"`
+	Screenshots   []string  `json:"screenshots"`
+	Video         string    `json:"video"`
+	RecentChanges []string  `json:"recentChanges"`
+	CrawlDate     time.Time `json:"crawlDate"`
+	Permissions   []string  `json:"permissions"`
 }
 
 // Developer represents a developer from the database
@@ -68,6 +68,11 @@ type Developer struct {
 	Name      string   `json:"name"`
 	StoreSite string   `json:"storeSite"`
 	Site      string   `json:"site"`
+}
+
+type ShowMeWhatYouGot struct {
+	PlaystoreInfo
+	AppVersion
 }
 
 // Company represents a company from the database
