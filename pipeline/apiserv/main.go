@@ -159,7 +159,7 @@ func appEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 func appsEndpoint(w http.ResponseWriter, r *http.Request) {
-	//TODO: handle OPTIONS and HEAD
+
 	mime := r.Header.Get("Accept")
 	if r.Method == "POST" || r.Method == "GET" {
 		if _, ok := supportedMimes[mime]; !ok {
@@ -228,6 +228,36 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//Playing around with go
+type EndpointFunc func(w http.ResponseWriter, r *http.Request)
+
+func processEndpoint(endpoint EndpointFunc, w http.ResponseWriter, r *http.Request) {
+	mime := r.Header.Get("Accept")
+	//Check input
+	if r.Method == "POST" || r.Method == "GET" {
+		if _, ok := supportedMimes[mime]; !ok {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+			return
+		}
+
+		err := r.ParseForm()
+		if err != nil {
+			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
+			return
+		}
+
+		endpoint(w, r)
+
+	} else {
+		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
+	}
+}
+
+func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
+	//Default apps
+
+}
+
 // What about? ^[a-z0-9_-]*$
 //var compIDRe = regexp.MustCompile("^\\l+$")
 var compIDRe = regexp.MustCompile("^[a-z0-9_-]*$")
@@ -272,7 +302,7 @@ func compEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 func compsEndpoint(w http.ResponseWriter, r *http.Request) {
-	//TODO: handle OPTIONS and HEAD
+	//TODO: handle OPTIONS and HEADfn
 	mime := r.Header.Get("Accept")
 	if r.Method == "POST" || r.Method == "GET" {
 		if _, ok := supportedMimes[mime]; !ok {
@@ -504,8 +534,11 @@ func init() {
 
 func main() {
 	http.HandleFunc("/", hello)
-	http.HandleFunc("/api/apps", appsEndpoint)
-	http.HandleFunc("/api/apps/", appEndpoint)
+
+	http.HandleFunc("/api/apps", appsEndpoint) //Returned chunked apps
+	http.HandleFunc("/api/apps/", appEndpoint) //?full=True&title=Title&developer=dev&genre=GENRELIST&permisions=PERMISSIONLIST&appId=id
+
+	http.han
 
 	//@deprecated
 	http.HandleFunc("/api/developers", devsEndpoint)
