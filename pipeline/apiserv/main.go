@@ -240,6 +240,7 @@ func processEndpoint(endpoint EndpointFunc, w http.ResponseWriter, r *http.Reque
 			return
 		}
 
+		//XXX:Assuming all endpoints have a form to process...
 		err := r.ParseForm()
 		if err != nil {
 			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
@@ -253,10 +254,42 @@ func processEndpoint(endpoint EndpointFunc, w http.ResponseWriter, r *http.Reque
 	}
 }
 
-func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
-	//Default apps
+// func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
+// 	//Default apps
+// 	limit := 10
+// 	offset := 0
+// 	isFull := false
 
-}
+// 	//Need one of the below
+// 	title := nil
+// 	developers := nil
+// 	//TODO: generate these lists? nah just best case match them.. they vary so much for each store..
+// 	permisions := nil
+// 	genre := nil
+// 	appId := nil
+
+// 	for name, val := range r.Form {
+
+// 		searchTerm := split[4]
+// 		fmt.Println("Fetching matches for:", searchTerm)
+
+// 		results, err := db.SearchApps(string(searchTerm))
+
+// 		fmt.Println("This many apps found: " + fmt.Sprint(len(results)))
+
+// 		w.Header().Set("Access-Control-Allow-Origin", "*")
+
+// 	}
+
+// 	if title != nil { //|| developers != nil || permisions != nil etc etc
+// 		writeErr(w, mime, http.StatusBadRequest, "no_params", "Please send one of the required params")
+// 		return
+// 	}
+// 	util.WriteJSON(w, results)
+// }
+
+// func gatherSingleAppEndpoint(w http.ResponseWriter, r *http.Request) {
+// }
 
 // What about? ^[a-z0-9_-]*$
 //var compIDRe = regexp.MustCompile("^\\l+$")
@@ -305,6 +338,7 @@ func compsEndpoint(w http.ResponseWriter, r *http.Request) {
 	//TODO: handle OPTIONS and HEADfn
 	mime := r.Header.Get("Accept")
 	if r.Method == "POST" || r.Method == "GET" {
+
 		if _, ok := supportedMimes[mime]; !ok {
 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
 			return
@@ -447,7 +481,9 @@ func devEndpoint(w http.ResponseWriter, r *http.Request) {
 
 func latestsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
+
 	if r.Method == "POST" || r.Method == "GET" {
+
 		if _, ok := supportedMimes[mime]; !ok {
 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
 			return
@@ -537,8 +573,6 @@ func main() {
 
 	http.HandleFunc("/api/apps", appsEndpoint) //Returned chunked apps
 	http.HandleFunc("/api/apps/", appEndpoint) //?full=True&title=Title&developer=dev&genre=GENRELIST&permisions=PERMISSIONLIST&appId=id
-
-	http.han
 
 	//@deprecated
 	http.HandleFunc("/api/developers", devsEndpoint)
