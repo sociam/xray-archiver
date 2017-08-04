@@ -122,7 +122,7 @@ Example URL:
 /api/apps/?isFull=false&developer=Zynga&title=frozen
 ```
 
-The above when used with Curl might return a json object similar to:
+The above when used with Curl might return JSON similar to:
 ```
 [
      {
