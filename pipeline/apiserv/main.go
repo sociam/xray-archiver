@@ -330,7 +330,7 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 	genre := db.FormParam{"genre", ""}
 	appId := db.FormParam{"appId", ""}
 
-	formParms := make([]db.formParms, 3, 7)
+	formParams := make([]db.FormParam, 0, 10) //:= make([]db.formParams, 3, 7)
 
 	fmt.Println("Parsing app form paramters ")
 	//Should not complain if form is 0...
@@ -362,20 +362,18 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case "title":
-			formParms.append(formParms, db.FormParam{"title", val[0]})
+			form := db.FormParam{"title", val[0]}
+			formParams = append(formParams, form)
 
 		case "developer":
-			formParms.append(db.FormParam{"developer", val[0]})
+			formParams = append(formParams, db.FormParam{"developer", val[0]})
 
 		case "genre":
-			genre, oops, err = parseGenre(val[0])
-			if oops != "" {
-				return
-			}
-			formParms.append(db.FormParam{"genre", val[0]})
+			formParams = append(formParams, db.FormParam{"genre", val[0]})
+			//Valid genre check
 
 		case "appId":
-			formParms.append(db.FormParam{"appId", val[0]})
+			formParams = append(formParams, db.FormParam{"appId", val[0]})
 
 		default:
 			writeErr(w, mime, http.StatusBadRequest, "bad_form", "passed form values did not match params", name)
@@ -385,14 +383,14 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	//XXX: check limit < offset
 
-	if FormParam.len > 0 {
+	if len(formParams) > 0 {
 		writeErr(w, mime, http.StatusBadRequest, "no_params", "Please send one of the required params")
 		return
 	}
 
 	if isFull {
 		//TODO: pass store paramters
-		results = retrieveFullFrom("play", limit, offset, formParms)
+		results = db.retrieveFullFrom("play", limit, offset, formParams)
 	} else {
 		//TODO: non full
 	}

@@ -13,14 +13,14 @@ create table app_versions(
   downloaded           bool                     not null,
   analyzed             bool                     not null,
   last_dl_attempt timestamp                     not null,
-  icon                 text
+  icon                 text                     
 );
 
 create table developers(
   id         serial primary key not null,
   email      text[]             not null,
   name         text             not null,
-  store_site   text                     ,
+  store_site   text      AppVersion               ,
   site         text
 );
 
