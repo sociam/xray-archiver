@@ -97,33 +97,35 @@ func simpleAnalyze(app *util.App) ([]string, error) {
 	// 	return nil
 	// }
 
-	cmd := exec.Command("grep", "-Earho", "\"https?://[^ >]+\"", app.OutDir())
-	urls, err := cmd.Output()
+	cmd := exec.Command("grep", "-Erho", "\"https?://[^ >]+\"",
+		path.Join(app.OutDir(), "smali", "**", "*.smali"))
+	out, err := cmd.Output()
 	if err != nil {
 		return []string{}, err
 	}
+	urls := strings.Split(string(out), "\n")
 
-	var appTrackers []string
+	// var appTrackers []string
 
-	irrelevant := []string{"app", "identity", "n/a", "other", "", "library"}
-	for name, company := range companies {
-		for _, domain := range company.Domains {
-			if strings.Contains(string(urls), string(domain)) {
-				toAppend := true
-				for _, cat := range irrelevant {
-					if companies[name].TypeTag == cat {
-						toAppend = false
-						break
-					}
-				}
-				if toAppend {
-					appTrackers = append(appTrackers, name)
-				}
-			}
-		}
-	}
+	// irrelevant := []string{"app", "identity", "n/a", "other", "", "library"}
+	// for name, company := range companies {
+	// 	for _, domain := range company.Domains {
+	// 		if strings.Contains(string(urls), string(domain)) {
+	// 			toAppend := true
+	// 			for _, cat := range irrelevant {
+	// 				if companies[name].TypeTag == cat {
+	// 					toAppend = false
+	// 					break
+	// 				}
+	// 			}
+	// 			if toAppend {
+	// 				appTrackers = append(appTrackers, name)
+	// 			}
+	// 		}
+	// 	}
+	// }
 
-	return appTrackers, nil
+	return urls, nil
 }
 
 func findPackages(app *util.App) ([]string, error) {
