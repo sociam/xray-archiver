@@ -54,6 +54,8 @@ jobs:
 
       - run: go get -u github.com/golang/lint/golint
 
+      - run: [[ -z $(gofmt -d **/*.go) ]]
+
       - run: cd pipeline/util && go get -v -t -d ./...
       - run: cd pipeline/util && golint -set_exit_status
       - run: cd pipeline/util && go vet
