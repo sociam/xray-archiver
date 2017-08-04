@@ -72,8 +72,48 @@ This can be used to allow you to compare applications that have been produced va
 
 #### Genre Category
 
-#### Application ID
+The Genre parameter will allw you to retieve metadata for applications that are part of a perticular genre. A list of all the possible Genres can be found further down the page.
 
+Example
+```
+/api/apps/?genre=entertainment
+```
+
+You can also chain the parameter with more genres. This would allow you to compare app data found in different genres easily.
+
+Example
+```
+/api/apps/?genre=lifestyle&genre=food_and_drink
+```
+
+As some genres actually share words, putting part of a genre will return meta data for apps, whos genre's contain that string.
+
+Example
+```
+/api/apps/?genre=game
+```
+
+Requesting meta data where the genre contains the string game will actually bring back apps that are part of a range of genres. For example:
+```
+ GAME_ADVENTURE
+ GAME_BOARD
+ GAME_SPORTS
+ GAME_CASUAL
+ GAME_TRIVIA
+ GAME_ROLE_PLAYING
+ GAME_ACTION
+ GAME_PUZZLE
+ GAME_CARD
+ GAME_SIMULATION
+ GAME_ARCADE
+ GAME_STRATEGY
+ GAME_WORD
+ GAME_RACING
+ GAME_EDUCATIONAL
+```
+Chaining together 15 ```genre=``` is also possible, however this would be much easier to do should you want all metadata for games in the database
+
+#### Application ID
 
 ### Example Query
 
@@ -119,4 +159,48 @@ Additional updates are required so that the API will include:
 permission: string
 package: string
 hosts: string
+```
+
+### Genre Types
+
+*TODO: format better / create wiki page for these*
+```
+ PRODUCTIVITY
+ SHOPPING
+ FINANCE
+ PARENTING
+ MUSIC_AND_AUDIO
+ PERSONALIZATION
+ BUSINESS
+ GAME_CARD
+ GAME_SIMULATION
+ GAME_ARCADE
+ ENTERTAINMENT
+ GAME_RACING
+ LIFESTYLE
+ GAME_ADVENTURE
+ VIDEO_PLAYERS
+ GAME_BOARD
+ TOOLS
+ GAME_SPORTS
+ GAME_CASUAL
+ GAME_TRIVIA
+ COMMUNICATION
+ LIBRARIES_AND_DEMO
+ FOOD_AND_DRINK
+ BOOKS_AND_REFERENCE
+ HOUSE_AND_HOME
+ GAME_ROLE_PLAYING
+ ART_AND_DESIGN
+ HEALTH_AND_FITNESS
+ EDUCATION
+ TRAVEL_AND_LOCAL
+ GAME_ACTION
+ PHOTOGRAPHY
+ GAME_PUZZLE
+ GAME_STRATEGY
+ GAME_WORD
+ SOCIAL
+ NEWS_AND_MAGAZINES
+ GAME_EDUCATIONAL
 ```
