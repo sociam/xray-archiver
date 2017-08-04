@@ -470,7 +470,7 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 	return ret, nil
 }
 
-func retrieveFullFromStore(condition string, store string) ([]ShowMeWhatYouGot, error) {
+func retrieveFullFromStore(store string, limit int, offset int) ([]ShowMeWhatYouGot, error) {
 
 	//SELECT * From playstore_apps NATURAL JOIN app_versions NATURAL JOIN developers WHERE playstore_apps.title like '%QR%';
 	storestart := "SELECT * FROM " + store
@@ -480,7 +480,9 @@ func retrieveFullFromStore(condition string, store string) ([]ShowMeWhatYouGot, 
 		"NATURAL JOIN developers"
 	//TODO: "NATURAL JOIN app_perms "
 
-	structuredQuery := storestart + tableQuery + condition
+	limiter := "LIMIT " + fmt.Sprint(limit) + " OFFSET " + fmt.Sprint(offset)
+
+	structuredQuery := storestart + tableQuery + limiter
 
 	rows, err := db.Query(structuredQuery)
 
@@ -564,11 +566,27 @@ func retrieveFullFromStore(condition string, store string) ([]ShowMeWhatYouGot, 
 	return result, nil
 }
 
-// func retrieveApps() ([]PlaystoreInfo, error) {
-// 	// searchTerm := "%" + searchTerm + "%"
+/*
 
-// 	// rows, err := db.Query("SELECT * from playstore_apps WHERE title like $1 ORDER BY rating USING> LIMIT 120", searchTerm)
-// }
+Provide like base search on params passed. Assume values exist in database
+Would be casesensitive.
+
+**Like, oh my, like, sally from the valley**
+*/
+func appsWhereLike(params ...FormParam) (partQuery string) {
+	whereTerms := " WHERE "
+	fmt.Println("Going through form params, dealing with: ", len(params))
+	for i, param := range params {
+		part := "title" + "like" + "%" + param.val + "%"
+
+		whereTerms += part
+
+		if i != len(params) {
+			whereTerms += " AND "
+		}
+	}
+	return whereTerms
+}
 
 // GetAppsToAnalyze returns a list of up to 10 apps that have analyzed=False and
 // downloaded=True for the analyzer.

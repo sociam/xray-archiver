@@ -12,6 +12,12 @@ type Range struct {
 	Max int64 `json:"max"`
 }
 
+/*NOTE: case senstive*/
+type FormParam struct {
+	name string `json:"name"`
+	val  string `json:"val"`
+}
+
 // App represents an app from the database
 type App struct {
 	ID   string  `json:"id"`
