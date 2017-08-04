@@ -49,6 +49,27 @@ The above example would return any apps that contain either ``` dinner ```, ``` 
 
 #### Developer Name
 
+The Developer name parameter will allow you to retrieve app data that relates to specific developers.
+
+As with the title field, developers may the term that you pass to the API. Because of this, the API will retireve all apps that contain the string that you provide.
+
+Example
+```
+/api/apps/?developer=zynga
+```
+
+You can also chain developers together to bring back app data that contain either of the strings that are provided
+
+Example
+```
+/api/apps/?developer=zynga&developer=google
+```
+
+This would return back app data relating to apps that have a developer name that contains either: ```zynga``` or ```google```.
+
+This can be used to allow you to compare applications that have been produced varying developers.
+
+
 #### Genre Category
 
 #### Application ID
