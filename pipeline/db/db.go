@@ -2,11 +2,10 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/lib/pq"
 	"github.com/sociam/xray-archiver/pipeline/util"
-
-	"fmt"
 )
 
 type xrayDb struct {
@@ -206,12 +205,7 @@ func GetAppVersionByID(id int64) (AppVersion, error) {
 
 	err := db.QueryRow(
 		"SELECT * FROM app_versions WHERE id = $1", id).Scan(
-		&appVer.ID,
-		&appVer.App,
-		&appVer.Store,
-		&appVer.Region,
-		&appVer.Ver,
-		&appVer.ScreenFlags)
+		&appVer)
 
 	if err != nil {
 		return appVer, err
@@ -475,6 +469,37 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 
 	return ret, nil
 }
+
+// func retrieveFullFromStore(condition string, store string) {
+
+// 	//SELECT * From playstore_apps NATURAL JOIN app_versions NATURAL JOIN developers WHERE playstore_apps.title like '%QR%';
+// 	storestart = "SELECT * FROM " + store
+
+// 	//Table Join Appends
+// 	tableQuery := "NATURAL JOIN app_versions" +
+// 		"NATURAL JOIN developers" +
+// 		"NATURAL JOIN app_perms "
+
+// 	structuredQuery := tableQuery + condition
+
+// 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+// 		fmt.Println("Database err", rows.Err())
+// 		return []PlaystoreInfo{}, rows.Err()
+// 	}
+
+// 	for i := 0; rows.Next(); i++ {
+
+// 	}
+
+// 	return result, nil
+// }
+
+// func retrieveApps() ([]PlaystoreInfo, error) {
+// 	searchTerm = "%" + searchTerm + "%"
+
+// 	rows, err := db.Query("SELECT * from playstore_apps WHERE title like $1 ORDER BY rating USING> LIMIT 120", searchTerm)
+
+// }
 
 // GetAppsToAnalyze returns a list of up to 10 apps that have analyzed=False and
 // downloaded=True for the analyzer.
