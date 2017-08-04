@@ -470,23 +470,51 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 	return ret, nil
 }
 
-func retrieveFullFrom(store string, limit int, offset int, whereParams ...FormParam) ([]ShowMeWhatYouGot, error) {
+func RetrieveFullFrom(store string, limit string, offset string, whereParams []FormParam) ([]ShowMeWhatYouGot, error) {
 
 	//SELECT * From playstore_apps NATURAL JOIN app_versions NATURAL JOIN developers WHERE playstore_apps.title like '%QR%';
-	storestart := "SELECT * FROM " + store
+	storestart := " SELECT " +
+		"id," +
+		"title," +
+		"summary," +
+		"description," +
+		"store_url," +
+		"price," +
+		"free," +
+		"rating," +
+		"num_reviews," +
+		"genre," +
+		"family_genre," +
+		"min_installs," +
+		"max_installs," +
+		"developer," +
+		"updated," +
+		"android_ver," +
+		"content_rating," +
+		"recent_changes," +
+		"app," +
+		"store," +
+		"region," +
+		"version," +
+		"email," +
+		"name," +
+		"store_site," +
+		"site" + " FROM " + store
 
 	//Table Join Appends
-	tableQuery := "NATURAL JOIN app_versions" +
-		"NATURAL JOIN developers"
+	tableQuery := " NATURAL JOIN app_versions " +
+		" NATURAL JOIN developers   "
 	//TODO: "NATURAL JOIN app_perms "
 
 	whereConditions := ""
 	if len(whereParams) > 0 {
 		whereConditions = appsWhereLike(whereParams...)
 	}
-	limiter := "LIMIT " + fmt.Sprint(limit) + " OFFSET " + fmt.Sprint(offset)
+	limiter := "LIMIT " + limit + " OFFSET " + offset
 
 	structuredQuery := storestart + tableQuery + whereConditions + limiter
+
+	fmt.Println(structuredQuery)
 
 	rows, err := db.Query(structuredQuery)
 
@@ -531,21 +559,15 @@ func retrieveFullFrom(store string, limit int, offset int, whereParams ...FormPa
 			&inf.Updated,
 			&inf.AndroidVer,
 			&inf.ContentRating,
-			pq.Array(&inf.Screenshots),
-			&video,
 			pq.Array(&inf.RecentChanges),
-			&inf.CrawlDate,
-			pq.Array(&inf.Permissions),
 			&appVer.App,
 			&appVer.Store,
 			&appVer.Region,
 			&appVer.Ver,
-			&appVer.ScreenFlags,
-			&dev.ID,
 			pq.Array(&dev.Emails),
 			&dev.Name,
 			&dev.StoreSite,
-			&dev.Site) //XXX: icon should be there, right? right?
+			&dev.Site) //XX X: icon should be there, right? right?
 
 		if err != nil {
 			fmt.Println("Database Query", err)
@@ -586,11 +608,11 @@ func appsWhereLike(params ...FormParam) (partQuery string) {
 			fmt.Println("Attempted to check where the param does not exist: ", param.Name)
 			//TODO: cancel out?
 		}
-		part := "title" + "like" + "%" + param.Val + "%"
+		part := param.Name + " LIKE " + " '%" + param.Val + "%' "
 
 		whereTerms += part
-
-		if i != len(params) {
+		fmt.Println("Dealing with param", i)
+		if i < len(params)-1 {
 			whereTerms += " AND "
 		}
 	}

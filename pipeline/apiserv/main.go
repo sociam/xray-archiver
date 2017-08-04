@@ -229,30 +229,30 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 //Playing around with go
-type EndpointFunc func(w http.ResponseWriter, r *http.Request)
+// type EndpointFunc func(w http.ResponseWriter, r *http.Request)
 
-func processEndpoint(endpoint EndpointFunc, w http.ResponseWriter, r *http.Request) {
-	mime := r.Header.Get("Accept")
-	//Check input
-	if r.Method == "POST" || r.Method == "GET" {
-		if _, ok := supportedMimes[mime]; !ok {
-			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
-			return
-		}
+// // func processEndpoint(endpoint EndpointFunc, w http.ResponseWriter, r *http.Request) EndpointFunc {
+// // 	mime := r.Header.Get("Accept")
+// // 	//Check input
+// // 	if r.Method == "POST" || r.Method == "GET" {
+// // 		if _, ok := supportedMimes[mime]; !ok {
+// // 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+// // 			return
+// // 		}
 
-		//XXX:Assuming all endpoints have a form to process...
-		err := r.ParseForm()
-		if err != nil {
-			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
-			return
-		}
+// // 		//XXX:Assuming all endpoints have a form to process...
+// // 		err := r.ParseForm()
+// // 		if err != nil {
+// // 			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
+// // 			return
+// // 		}
 
-		endpoint(w, r)
+// // 		return endpoint(w, r)
 
-	} else {
-		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
-	}
-}
+// // 	} else {
+// // 		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
+// // 	}
+// // }
 
 func parseNumCheck(num string) (val int, oops string, err error) {
 	//oops error
@@ -262,8 +262,8 @@ func parseNumCheck(num string) (val int, oops string, err error) {
 		return 0, "num value must be a number", nil
 	}
 
-	if val < 1 {
-		return 0, "num can not be a value less than 1...", nil
+	if val < 0 {
+		return 0, "num can not be a value less than 0...", nil
 	}
 
 	return val, "", nil
@@ -315,87 +315,116 @@ func parseOffset(num string) (val string, oops string, err error) {
 
 func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
-	//Default apps
-
-	limit := db.FormParam{"limit", "10"}
-
-	offset := db.FormParam{"offset", "0"}
-	isFull := false
-
-	//Need one of the below
-	title := db.FormParam{"title", ""}
-	developer := db.FormParam{"developer", ""}
-	//TODO: generate these lists? nah just best case match them.. they vary so much for each store..
-	permisions := db.FormParam{"permisions", ""}
-	genre := db.FormParam{"genre", ""}
-	appId := db.FormParam{"appId", ""}
-
-	formParams := make([]db.FormParam, 0, 10) //:= make([]db.formParams, 3, 7)
-
-	fmt.Println("Parsing app form paramters ")
-	//Should not complain if form is 0...
-
-	for name, val := range r.Form {
-		oops := ""
-		var err error
-		switch name {
-		case limit.Name:
-			limit.Val, oops, err = parseLimit(val[0])
-			if oops != "" {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", oops)
-				return
-			}
-
-		case offset.Name:
-			offset.Val, oops, err = parseOffset(val[0])
-			if oops != "" {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", oops)
-				return
-			}
-
-		case "isFull":
-			var b bool
-			b, err = strconv.ParseBool(val[0])
-			if err != nil {
-				writeErr(w, mime, http.StatusBadRequest, "bad_form", "isFull needs to be a boolean value, true or false")
-				return
-			}
-
-		case "title":
-			form := db.FormParam{"title", val[0]}
-			formParams = append(formParams, form)
-
-		case "developer":
-			formParams = append(formParams, db.FormParam{"developer", val[0]})
-
-		case "genre":
-			formParams = append(formParams, db.FormParam{"genre", val[0]})
-			//Valid genre check
-
-		case "appId":
-			formParams = append(formParams, db.FormParam{"appId", val[0]})
-
-		default:
-			writeErr(w, mime, http.StatusBadRequest, "bad_form", "passed form values did not match params", name)
+	//Check input
+	if r.Method == "POST" || r.Method == "GET" {
+		if _, ok := supportedMimes[mime]; !ok {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
 			return
 		}
-	}
 
-	//XXX: check limit < offset
+		//XXX:Assuming all endpoints have a form to process...
+		err := r.ParseForm()
+		if err != nil {
+			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
+			return
+		}
 
-	if len(formParams) > 0 {
-		writeErr(w, mime, http.StatusBadRequest, "no_params", "Please send one of the required params")
-		return
-	}
+		mime := r.Header.Get("Accept")
+		//Default apps
 
-	if isFull {
-		//TODO: pass store paramters
-		results = db.retrieveFullFrom("play", limit, offset, formParams)
+		limit := db.FormParam{"limit", "10"}
+
+		offset := db.FormParam{"offset", "0"}
+		isFull := true
+
+		//Need one of the below
+		// title := db.FormParam{"title", ""}
+		// developer := db.FormParam{"developer", ""}
+		// //TODO: generate these lists? nah just best case match them.. they vary so much for each store..
+		// permisions := db.FormParam{"permisions", ""}
+		// genre := db.FormParam{"genre", ""}
+		// appId := db.FormParam{"appId", ""}
+
+		formParams := make([]db.FormParam, 0, 10) //:= make([]db.formParams, 3, 7)
+
+		fmt.Printf("Parsing app form parameters, params size %s", fmt.Sprint(len(r.Form)))
+		//Should not complain if form is 0...
+
+		for name, val := range r.Form {
+			oops := ""
+
+			switch name {
+			case limit.Name:
+				limit.Val, oops, _ = parseLimit(val[0])
+				if oops != "" {
+					writeErr(w, mime, http.StatusBadRequest, "bad_form", oops)
+					return
+				}
+				fmt.Println("Parsing app form parameters ")
+
+			case offset.Name:
+				offset.Val, oops, _ = parseOffset(val[0])
+				if oops != "" {
+					writeErr(w, mime, http.StatusBadRequest, "bad_form", oops)
+					return
+				}
+
+			case "isFull":
+				_, err := strconv.ParseBool(val[0])
+				if err != nil {
+					writeErr(w, mime, http.StatusBadRequest, "bad_form", "isFull needs to be a boolean value, true or false")
+					return
+				}
+
+			case "title":
+				form := db.FormParam{"title", val[0]}
+				formParams = append(formParams, form)
+
+			case "developer":
+				formParams = append(formParams, db.FormParam{"developer", val[0]})
+
+			case "genre":
+				formParams = append(formParams, db.FormParam{"genre", val[0]})
+				//Valid genre check
+
+			case "appId":
+				formParams = append(formParams, db.FormParam{"appId", val[0]})
+
+			default:
+				writeErr(w, mime, http.StatusBadRequest, "bad_form", "passed form values did not match params", name)
+				return
+			}
+		}
+		println("Finished passing parameters, formParams", len(formParams))
+
+		//XXX: check limit < offset
+
+		// if len(formParams) == 0 {
+		// 	fmt.Println("please give a parameter")
+		// 	writeErr(w, mime, http.StatusBadRequest, "no_params", "Please send one of the required params")
+		// 	return
+		// }
+
+		if isFull {
+			//TODO: pass store paramters
+			fmt.Println("Gather full details")
+			results, err := db.RetrieveFullFrom("playstore_apps", limit.Val, offset.Val, formParams) // titles /*=[a, b, c]*/, developers /*=[1, 2, 3]*/)
+
+			if err != nil {
+				fmt.Println("Error querying database: ", err.Error())
+				writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+				return
+			}
+
+			util.WriteJSON(w, results)
+
+		} else {
+			//TODO: non full
+		}
 	} else {
-		//TODO: non full
+		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
 	}
 
-	util.WriteJSON(w, results)
 }
 
 // func extractToUseConditions(params ......FormParam) {
@@ -688,6 +717,7 @@ func main() {
 	http.HandleFunc("/api/apps", appsEndpoint) //Returned chunked apps
 	http.HandleFunc("/api/apps/", appEndpoint) //?full=True&title=Title&developer=dev&genre=GENRELIST&permisions=PERMISSIONLIST&appId=id
 
+	http.HandleFunc("/api/appsNew/", gatherAppsEndpoint)
 	//@deprecated
 	http.HandleFunc("/api/developers", devsEndpoint)
 	http.HandleFunc("/api/developers/", devEndpoint)
