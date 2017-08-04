@@ -234,9 +234,8 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		if !isFull {
 			stubs := make([]db.AppStub, len(results), len(results))
-			fmt.Println(fmt.Sprint(len(results)) + "   " + fmt.Sprint(len(stubs)))
 			for i, result := range results {
-				fmt.Println(i)
+				fmt.Println(result.App)
 				stubs[i].Title = result.Title
 				stubs[i].App = result.App
 			}

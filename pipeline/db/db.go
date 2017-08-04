@@ -472,9 +472,7 @@ func QuickQuery(
 	var result []AppData
 	for i := 0; rows.Next(); i++ {
 
-		var info AppData
-		var appVer AppVersion
-		var dev Developer
+		var appData AppData
 
 		//Potential null values
 		var summ sql.NullString
@@ -489,47 +487,46 @@ func QuickQuery(
 		//Cannot just cast straight into types because of the postgre type conversion
 		err = rows.Scan(
 			&id,
-			&info.Title,
+			&appData.Title,
 			&summ,
 			&desc,
-			&info.StoreURL,
-			&info.Price,
-			&info.Free,
-			&info.Rating,
-			&info.NumReviews,
+			&appData.StoreURL,
+			&appData.Price,
+			&appData.Free,
+			&appData.Rating,
+			&appData.NumReviews,
 			&genre,
 			&famGenre,
-			&info.Installs.Min,
-			&info.Installs.Max,
-			&info.Developer.ID,
-			&info.Updated,
-			&info.AndroidVer,
-			&info.ContentRating,
-			pq.Array(&info.RecentChanges),
-			&appVer.App,
-			&appVer.Store,
-			&appVer.Region,
-			&appVer.Ver,
-			pq.Array(&dev.Emails),
-			&dev.Name,
-			&dev.StoreSite,
-			&dev.Site)
+			&appData.Installs.Min,
+			&appData.Installs.Max,
+			&appData.Developer.ID,
+			&appData.Updated,
+			&appData.AndroidVer,
+			&appData.ContentRating,
+			pq.Array(&appData.RecentChanges),
+			&appData.App,
+			&appData.Store,
+			&appData.Region,
+			&appData.Ver,
+			pq.Array(&appData.Emails),
+			&appData.Name,
+			&appData.StoreSite,
+			&appData.Site)
 		// pq.Array(&perms),
 		// pq.Array(&packages)) //XX X: icon should be there, right? right?
-
 		if err != nil {
 			fmt.Println("Database Query", err)
 		} else {
 
 			//info.FamilyGenre = famGenre.Valid ? famGenre.String : ""
 			//TODO: ight be able to get away with nul being "" after the scan stage
-			info.Summary = summ.String
-			info.Description = desc.String
-			info.Genre = genre.String
-			info.Video = video.String
-			info.FamilyGenre = famGenre.String
+			appData.Summary = summ.String
+			appData.Description = desc.String
+			appData.Genre = genre.String
+			appData.Video = video.String
+			appData.FamilyGenre = famGenre.String
 
-			result = append(result, info)
+			result = append(result, appData)
 		}
 	}
 
