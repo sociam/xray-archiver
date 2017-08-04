@@ -254,107 +254,128 @@ func processEndpoint(endpoint EndpointFunc, w http.ResponseWriter, r *http.Reque
 	}
 }
 
-func parseNumCheck(num int) (val int, error) {
-	numReal, err = strconv.Atoi(val[0])
-	
+func parseNumCheck(num string) (val int, oops string, err error) {
+	//oops error
+	val, err = strconv.Atoi(num)
+
 	if err != nil {
-		writeErr(w, mime, http.StatusBadRequest, "bad_form", "num value must be a number")
-		return nil, err
+		return 0, "num value must be a number", nil
 	}
-	
-	if numReal < 1 {
-		writeErr(w, mime, http.StatusBadRequest, "bad_form", "num can not be a value less than 1...")
-		return nil, err
+
+	if val < 1 {
+		return 0, "num can not be a value less than 1...", nil
 	}
-	
-	return num, nil
+
+	return val, "", nil
 }
 
+func parseLimit(num string) (val string, oops string, err error) {
 
-func parseLimit(num string) (val string, error) {
-
-	num, err = parseNumCheck(num)
-	
 	if len(val) > 1 {
-		writeErr(w, mime, http.StatusBadRequest, "bad_form", "num must have a single value")
-		return 
+		return "", "num must have a single value", nil
+	}
+	realNum := 0
 
-	if limit > 1000000
-		writeErr(w, mime, http.StatusBadRequest, "bad_form", "Limit to high. Please slow down. Chunk the request using the offset")
-		return
-		
-	return num, nil
+	realNum, oops, err = parseNumCheck(num)
+
+	if oops != "" {
+		return num, oops, nil
+	}
+
+	if realNum > 1000000 {
+		return num, "Limit to high. Please slow down. Chunk the request using the offset", nil
+	}
+
+	return num, "", err
 }
 
-func parseOffset(num string) (val string, error) {
-	num, err = parseNumCheck(num)
-	
-	start, err = strconv.Atoi(val[0])
+func parseOffset(num string) (val string, oops string, err error) {
+	realNum := 0
+
+	realNum, oops, err = parseNumCheck(num)
+
+	if oops != "" {
+		return num, oops, nil
+	}
+
 	if err != nil {
-		writeErr(w, mime, http.StatusBadRequest, "bad_form", "offset value must be a number")
-		return
+		return num, "offset value must be a number", nil
 	}
-	if start < 0 {
-		writeErr(w, mime, http.StatusBadRequest, "bad_form", "offset value must positive")
-		return
+	if realNum < 0 {
+		return num, "offset value must positive", nil
 	}
 
-	retrn num, nil
+	return num, "", err
 }
 
-func validGenre(gen string ) (val string, error) {
-	//TODO: Check against genre constnats
-	return gen
-}
+// func validGenre(gen string ) (val string, error) {
+// 	//TODO: Check against genre constnats
+// 	return gen
+// }
 
 func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
+	mime := r.Header.Get("Accept")
 	//Default apps
 
-	limit := FormParam("limit","10")
-	offset := FormParam("offset","0")
-	isFull := False
+	limit := db.FormParam{"limit", "10"}
 
+	offset := db.FormParam{"offset", "0"}
+	isFull := false
 
 	//Need one of the below
-	title := FormParam("title",nil)
-	developer := FormParam("developer",nil)
+	title := db.FormParam{"title", ""}
+	developer := db.FormParam{"developer", ""}
 	//TODO: generate these lists? nah just best case match them.. they vary so much for each store..
-	permisions := FormParam("permisions",nil)
-	genre := FormParam("genre",nil)
-	appId := FormParam("appId",nil)
+	permisions := db.FormParam{"permisions", ""}
+	genre := db.FormParam{"genre", ""}
+	appId := db.FormParam{"appId", ""}
 
+	formParms := make([]db.formParms, 3, 7)
 
 	fmt.Println("Parsing app form paramters ")
-	//Should not complain if form is 0... 
-	
+	//Should not complain if form is 0...
+
 	for name, val := range r.Form {
-
-		case limit.name:
-			limit.val, err = parseLimit(val)
-			if err != nil 
+		oops := ""
+		var err error
+		switch name {
+		case limit.Name:
+			limit.Val, oops, err = parseLimit(val[0])
+			if oops != "" {
+				writeErr(w, mime, http.StatusBadRequest, "bad_form", oops)
 				return
+			}
 
-		case offset.name:
-			offset.val, err = parseOffset(val)
-			if err != nil 
+		case offset.Name:
+			offset.Val, oops, err = parseOffset(val[0])
+			if oops != "" {
+				writeErr(w, mime, http.StatusBadRequest, "bad_form", oops)
 				return
+			}
 
-		case isFull:
-			b, err = strconv.ParseBool(val)
-			if err != nil s
+		case "isFull":
+			var b bool
+			b, err = strconv.ParseBool(val[0])
+			if err != nil {
 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "isFull needs to be a boolean value, true or false")
 				return
+			}
 
-		case developer.name:
-			developer.val = val
+		case "title":
+			formParms.append(formParms, db.FormParam{"title", val[0]})
 
-		case genre.name:
-			genre.val, err = parseGenre(val)
-			if err != nil 
+		case "developer":
+			formParms.append(db.FormParam{"developer", val[0]})
+
+		case "genre":
+			genre, oops, err = parseGenre(val[0])
+			if oops != "" {
 				return
+			}
+			formParms.append(db.FormParam{"genre", val[0]})
 
-		case appId.appId:
-			appId.val = val
+		case "appId":
+			formParms.append(db.FormParam{"appId", val[0]})
 
 		default:
 			writeErr(w, mime, http.StatusBadRequest, "bad_form", "passed form values did not match params", name)
@@ -362,26 +383,27 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	//XXX: check limit < offset 
+	//XXX: check limit < offset
 
-	if title.val != nil { //|| developers != nil || permisions != nil etc etc
+	if FormParam.len > 0 {
 		writeErr(w, mime, http.StatusBadRequest, "no_params", "Please send one of the required params")
 		return
 	}
 
-	
-	if (isFull) {
+	if isFull {
 		//TODO: pass store paramters
-		retrieveFullFrom("play", limit,offset, )
+		results = retrieveFullFrom("play", limit, offset, formParms)
+	} else {
+		//TODO: non full
 	}
-	
+
 	util.WriteJSON(w, results)
 }
 
-func extractToUseConditions(params ......FormParam) {
+// func extractToUseConditions(params ......FormParam) {
 
-}
- 
+// }
+
 func gatherSingleAppEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 

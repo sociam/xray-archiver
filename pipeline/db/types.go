@@ -12,12 +12,6 @@ type Range struct {
 	Max int64 `json:"max"`
 }
 
-/*NOTE: case senstive*/
-type FormParam struct {
-	name string `json:"name"`
-	val  string `json:"val"`
-}
-
 // App represents an app from the database
 type App struct {
 	ID   string  `json:"id"`
@@ -102,4 +96,19 @@ type Company struct {
 // UtilApp creates a *util.App from an AppVersion
 func (a AppVersion) UtilApp() *util.App {
 	return util.NewApp(a.ID, a.App, a.Store, a.Region, a.Ver)
+}
+
+/*NOTE: case senstive*/
+type FormParam struct {
+	Name string `json:"name"`
+	Val  string `json:"val"`
+}
+
+func NewFormParam(name string, val string) *FormParam {
+	return &FormParam{Name: name, Val: val}
+}
+
+func (f *FormParam) UtilFormApps() *FormParam {
+	// doing something with id here
+	return NewFormParam(f.Name, f.Val)
 }

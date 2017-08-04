@@ -582,11 +582,11 @@ func appsWhereLike(params ...FormParam) (partQuery string) {
 	fmt.Println("Going through form params, dealing with: ", len(params))
 	for i, param := range params {
 
-		if param.val == "nil" {
-			fmt.Println("Attempted to check where the param does not exist: ", param.name)
+		if param.Val == "nil" {
+			fmt.Println("Attempted to check where the param does not exist: ", param.Name)
 			//TODO: cancel out?
 		}
-		part := "title" + "like" + "%" + param.val + "%"
+		part := "title" + "like" + "%" + param.Val + "%"
 
 		whereTerms += part
 
