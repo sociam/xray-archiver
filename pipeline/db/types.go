@@ -108,7 +108,7 @@ func (a AppVersion) UtilApp() *util.App {
 	return util.NewApp(a.ID, a.App, a.Store, a.Region, a.Ver)
 }
 
-/* FormParam is is a struct to represent parameters passed through a URL
+// FormParam is is a struct to represent parameters passed through a URL
 // please note that form params are infact case senstive*/
 type FormParam struct {
 	Name string `json:"name"`
@@ -121,7 +121,9 @@ func NewFormParam(name string, val string) *FormParam {
 	return &FormParam{Name: name, Val: val}
 }
 
-// UtilFormApps
+// UtilFormApps constructs a FormParam Using a function
+// that constructrs a form param. Seems like it's not
+// needed
 func (f *FormParam) UtilFormApps() *FormParam {
 	// doing something with id here
 	return NewFormParam(f.Name, f.Val)
