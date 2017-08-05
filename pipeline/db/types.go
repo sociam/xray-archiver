@@ -77,7 +77,9 @@ type AppData struct {
 	Developer
 }
 
-//
+// AppStub represents the 'stub' of app data located in the Database.
+// it is formed of only the title given to the app by the developer
+// and the App ID that it can be uniquely identified as.
 type AppStub struct {
 	Title string
 	App   string
@@ -106,16 +108,20 @@ func (a AppVersion) UtilApp() *util.App {
 	return util.NewApp(a.ID, a.App, a.Store, a.Region, a.Ver)
 }
 
-/*NOTE: case senstive*/
+/* FormParam is is a struct to represent parameters passed through a URL
+// please note that form params are infact case senstive*/
 type FormParam struct {
 	Name string `json:"name"`
 	Val  string `json:"val"`
 }
 
+// NewFormParam constructs a new struct consisting of a
+// form elements name and the value associated with it.
 func NewFormParam(name string, val string) *FormParam {
 	return &FormParam{Name: name, Val: val}
 }
 
+// UtilFormApps
 func (f *FormParam) UtilFormApps() *FormParam {
 	// doing something with id here
 	return NewFormParam(f.Name, f.Val)

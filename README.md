@@ -22,6 +22,9 @@ A Postgres database contains a series of tables required by all elements of the 
 
 An init_db.sql file located in the db folder of this project can be used to initial a postgres database.
 
+## API Server
+An API server has been developed to allow others to interface with the data collected and generated. Information regarding this API can be found in the [API ReadMe](https://github.com/sociam/xray-archiver/tree/develop/pipeline/apiserv)
+
 # Installation
 
 ## install.sh
