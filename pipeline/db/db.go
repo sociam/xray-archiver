@@ -219,7 +219,6 @@ func GetDeveloper(id int64) (Developer, error) {
 	var dev Developer
 
 	err := db.QueryRow("SELECT * from developers WHERE id = $1", id).Scan(
-		&dev.ID,
 		pq.Array(&dev.Emails),
 		&dev.Name,
 		&dev.StoreSite,
@@ -244,7 +243,6 @@ func GetDevelopers(num, start int) ([]Developer, error) {
 	for i := 0; rows.Next(); i++ {
 		ret = append(ret, Developer{})
 		rows.Scan(
-			&ret[i].ID,
 			pq.Array(&ret[i].Emails),
 			&ret[i].Name,
 			&ret[i].Site,
@@ -407,15 +405,9 @@ func percentifyArray(arr []string) string {
 //
 //
 func QuickQuery(
-	fullDetails bool,
-	appStore string,
-	limit string,
-	offset string,
-	developers []string,
-	genres []string,
-	permissions []string,
-	appIDs []string,
-	titles []string) ([]AppData, error) {
+	fullDetails bool, appStore string, limit string, offset string, developers []string,
+	genres []string, permissions []string, appIDs []string, titles []string,
+) ([]AppVersion, error) {
 
 	var storestart string
 	storestart = "SELECT " +
@@ -432,7 +424,6 @@ func QuickQuery(
 		"a.family_genre," +
 		"a.min_installs," +
 		"a.max_installs," +
-		"a.developer," +
 		"a.updated," +
 		"a.android_ver," +
 		"a.content_rating," +
@@ -466,15 +457,14 @@ func QuickQuery(
 	defer rows.Close()
 
 	if err != nil {
-		return []AppData{}, err
+		return []AppVersion{}, err
 	}
 
-	var id string
-
-	var result []AppData
+	var result []AppVersion
 	for i := 0; rows.Next(); i++ {
 
-		var appData AppData
+		var appData AppVersion
+		var playInf PlayStoreInfo
 
 		//Potential null values
 		var summ sql.NullString
@@ -488,32 +478,31 @@ func QuickQuery(
 		var err error
 		//Cannot just cast straight into types because of the postgre type conversion
 		err = rows.Scan(
-			&id,
-			&appData.Title,
+			&appData.ID,
+			&playInf.Title,
 			&summ,
 			&desc,
-			&appData.StoreURL,
-			&appData.Price,
-			&appData.Free,
-			&appData.Rating,
-			&appData.NumReviews,
+			&playInf.StoreURL,
+			&playInf.Price,
+			&playInf.Free,
+			&playInf.Rating,
+			&playInf.NumReviews,
 			&genre,
 			&famGenre,
-			&appData.Installs.Min,
-			&appData.Installs.Max,
-			&appData.Developer.ID,
-			&appData.Updated,
-			&appData.AndroidVer,
-			&appData.ContentRating,
-			pq.Array(&appData.RecentChanges),
+			&playInf.Installs.Min,
+			&playInf.Installs.Max,
+			&playInf.Updated,
+			&playInf.AndroidVer,
+			&playInf.ContentRating,
+			pq.Array(&playInf.RecentChanges),
 			&appData.App,
 			&appData.Store,
 			&appData.Region,
 			&appData.Ver,
-			pq.Array(&appData.Emails),
-			&appData.Name,
-			&appData.StoreSite,
-			&appData.Site)
+			pq.Array(&appData.Dev.Emails),
+			&appData.Dev.Name,
+			&appData.Dev.StoreSite,
+			&appData.Dev.Site)
 		// pq.Array(&perms),
 		// pq.Array(&packages)) //XX X: icon should be there, right? right?
 		if err != nil {
@@ -522,11 +511,11 @@ func QuickQuery(
 
 			//info.FamilyGenre = famGenre.Valid ? famGenre.String : ""
 			//TODO: ight be able to get away with nul being "" after the scan stage
-			appData.Summary = summ.String
-			appData.Description = desc.String
-			appData.Genre = genre.String
-			appData.Video = video.String
-			appData.FamilyGenre = famGenre.String
+			playInf.Summary = summ.String
+			playInf.Description = desc.String
+			playInf.Genre = genre.String
+			playInf.Video = video.String
+			playInf.FamilyGenre = famGenre.String
 
 			result = append(result, appData)
 		}

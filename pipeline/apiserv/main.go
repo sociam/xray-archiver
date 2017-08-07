@@ -224,7 +224,7 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 			stubs := make([]db.AppStub, len(results), len(results))
 			for i, result := range results {
 				fmt.Println(result.App)
-				stubs[i].Title = result.Title
+				stubs[i].Title = result.StoreInfo.(db.PlayStoreInfo).Title
 				stubs[i].App = result.App
 			}
 
