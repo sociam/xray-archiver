@@ -38,7 +38,6 @@ type AppVersion struct {
 // store
 type StoreInfo interface{}
 
-
 // PlayStoreInfo represents the data contained in the google play store
 type PlayStoreInfo struct {
 	Title         string    `json:"title"`
