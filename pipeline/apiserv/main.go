@@ -126,6 +126,13 @@ func parseOffset(num string) (val string, oops string, err error) {
 // 	return gen
 // }
 
+// FormParam is is a struct to represent parameters passed through a URL
+// please note that form params are infact case senstive*/
+type FormParam struct {
+	Name string `json:"name"`
+	Val  string `json:"val"`
+}
+
 func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 	//Check input
@@ -145,12 +152,12 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 		mime := r.Header.Get("Accept")
 		//Default apps
 
-		limit := db.FormParam{"limit", "10"}
+		limit := FormParam{"limit", "10"}
 
-		offset := db.FormParam{"offset", "0"}
+		offset := FormParam{"offset", "0"}
 		isFull := false
 
-		formParams := make([]db.FormParam, 0, 10) //:= make([]db.formParams, 3, 7)
+		formParams := make([]FormParam, 0, 10) //:= make([]db.formParams, 3, 7)
 
 		titles := []string{""}
 		developers := []string{""}
