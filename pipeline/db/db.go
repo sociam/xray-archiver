@@ -419,44 +419,45 @@ func QuickQuery(
 
 	var storestart string
 	storestart = "SELECT " +
-		"id," +
-		"title," +
-		"summary," +
-		"description," +
-		"store_url," +
-		"price," +
-		"free," +
-		"rating," +
-		"num_reviews," +
-		"genre," +
-		"family_genre," +
-		"min_installs," +
-		"max_installs," +
-		"developer," +
-		"updated," +
-		"android_ver," +
-		"content_rating," +
-		"recent_changes," +
-		"app," +
-		"store," +
-		"region," +
-		"version," +
-		"email," + "name," +
-		"store_site," +
-		"site"
+		"a.id," +
+		"a.title," +
+		"a.summary," +
+		"a.description," +
+		"a.store_url," +
+		"a.price," +
+		"a.free," +
+		"a.rating," +
+		"a.num_reviews," +
+		"a.genre," +
+		"a.family_genre," +
+		"a.min_installs," +
+		"a.max_installs," +
+		"a.developer," +
+		"a.updated," +
+		"a.android_ver," +
+		"a.content_rating," +
+		"a.recent_changes," +
+		"v.app," +
+		"v.store," +
+		"v.region," +
+		"v.version," +
+		"d.email," +
+		"d.name," +
+		"d.store_site," +
+		"d.site"
 		//"app_perms.permissions," + "packages" +
 
 	//Table Join Appends
-	tableQuery := " FROM " + appStore + "a, app_versions v, developers d"
+	tableQuery := " FROM " + appStore + " a, app_versions v, developers d"
 	//+ "NATURAL JOIN app_perms " + "NATURAL JOIN app_packages"
 
 	structuredQuery := storestart + tableQuery +
-		" WHERE a.id = v.id AND a.developer = d.developer" +
-		" LOWER(" + appStore + ".title) LIKE any " + percentifyArray(titles) +
-		" AND LOWER(developers.name) LIKE any " + percentifyArray(developers) +
-		" AND LOWER(" + appStore + ".genre) LIKE any " + percentifyArray(genres) +
+		" WHERE a.id = v.id AND a.developer = d.id" +
+		" AND LOWER(a.title) LIKE any " + percentifyArray(titles) +
+		" AND LOWER(d.name) LIKE any " + percentifyArray(developers) +
+		" AND LOWER(a.genre) LIKE any " + percentifyArray(genres) +
 		//" AND LOWER(app_perms.permissions) like any " + percentifyArray(permissions) + //TODO: s a array so need to check the arrays...
-		" AND LOWER(app_versions.app) LIKE any " + percentifyArray(appIDs)
+		" AND LOWER(v.app) LIKE any " + percentifyArray(appIDs)
 
 	println(structuredQuery)
 
