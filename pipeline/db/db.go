@@ -448,7 +448,8 @@ func QuickQuery(
 		" AND LOWER(d.name) LIKE any " + percentifyArray(developers) +
 		" AND LOWER(a.genre) LIKE any " + percentifyArray(genres) +
 		//" AND LOWER(app_perms.permissions) like any " + percentifyArray(permissions) + //TODO: s a array so need to check the arrays...
-		" AND LOWER(v.app) LIKE any " + percentifyArray(appIDs)
+		" AND LOWER(v.app) LIKE any " + percentifyArray(appIDs) +
+		" LIMIT " + limit + " OFFSET " + offset
 
 	println(structuredQuery)
 

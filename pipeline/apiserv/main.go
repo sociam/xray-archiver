@@ -166,6 +166,7 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 			case "limit":
 				fmt.Println("Got range of limits", val)
 				limit, oops, _ = parseLimit(val[0])
+				fmt.Println("Limit Value = ", limit)
 				if oops != "" {
 					writeErr(w, mime, http.StatusBadRequest, "bad_form", oops)
 					return
