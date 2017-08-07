@@ -124,6 +124,17 @@ func AddPerms(app *util.App) error {
 	return nil
 }
 
+// SetIcon is a function that sets the icon field of the DB.
+func SetIcon(id int64, icon string) error {
+	if !useDB || id == 0 {
+		return nil
+	}
+
+	rows, err := db.Query("UPDATE app_versions SET icon = $1 WHERE id = $2", icon, id)
+	rows.Close()
+	return err
+}
+
 // AddHosts is a function that allows you to add hosts to the Xray DB. The
 // argument app must contain a DB ID.
 func AddHosts(app *util.App, hosts []string) error {

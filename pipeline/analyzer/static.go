@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"github.com/sociam/xray-archiver/pipeline/util"
 	"io/ioutil"
 	"os"
@@ -18,27 +19,52 @@ type AndroidManifest struct {
 	Package    string            `xml:"package,attr"`
 	Perms      []util.Permission `xml:"uses-permission"`
 	Sdk23Perms []util.Permission `xml:"uses-permission-sdk-23"`
+	icon       string            `xml:"application>icon,attr"`
 }
 
-func parseManifest(app *util.App) (*AndroidManifest, error) {
-	manifest := AndroidManifest{}
+func parseManifest(app *util.App) (manifest *AndroidManifest, gotIcon bool, err error) {
+	manifest = &AndroidManifest{}
 	manifestFile, err := os.Open(path.Join(app.OutDir(), "AndroidManifest.xml"))
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	bytes, err := ioutil.ReadAll(manifestFile)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
-	err = xml.Unmarshal(bytes, &manifest)
+	err = xml.Unmarshal(bytes, manifest)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	if manifest.Package != "" {
 		app.ID = manifest.Package
 	}
-	return &manifest, nil
+
+	split := strings.SplitN(manifest.icon, "/", 2)
+	locn, name := split[0], split[1]
+	locn = path.Join(app.OutDir(), "res", locn[1:]) // /tmp/<outdir>/res/{mipmap,drawable}
+	name = name + ".png"                            // icon_katana.png
+
+	var matches []string
+	if matches, err = filepath.Glob(path.Join(locn+"-*xxxdpi*", name)); err == nil && len(matches) > 0 {
+	} else if matches, err = filepath.Glob(path.Join(locn+"-*xxdpi*", name)); err == nil && len(matches) > 0 {
+	} else if matches, err = filepath.Glob(path.Join(locn+"-*xdpi*", name)); err == nil && len(matches) > 0 {
+	} else if matches, err = filepath.Glob(path.Join(locn+"-*hdpi*", name)); err == nil && len(matches) > 0 {
+	} else if matches, err = filepath.Glob(path.Join(locn+"-*tvdpi*", name)); err == nil && len(matches) > 0 {
+	} else if matches, err = filepath.Glob(path.Join(locn+"-*mdpi*", name)); err == nil && len(matches) > 0 {
+	} else if matches, err = filepath.Glob(path.Join(locn+"*", name)); err == nil && len(matches) > 0 {
+	} else {
+		return manifest, false, nil
+	}
+
+	err = os.Rename(matches[0], path.Join(app.AppDir(), "icon.png"))
+	if err != nil {
+		fmt.Printf("Failed to rename icon %s to %s", matches[0], path.Join(app.AppDir(), "icon.png"))
+		return manifest, false, nil
+	}
+
+	return manifest, true, nil
 }
 
 func (manifest *AndroidManifest) getPerms() []util.Permission {

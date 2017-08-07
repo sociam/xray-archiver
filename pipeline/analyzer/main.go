@@ -6,6 +6,7 @@ import (
 	"github.com/sociam/xray-archiver/pipeline/db"
 	"github.com/sociam/xray-archiver/pipeline/util"
 	"log"
+	"net/url"
 	"os"
 	"time"
 )
@@ -36,7 +37,7 @@ func analyze(app *util.App) error {
 	fmt.Println("done.")
 
 	fmt.Println("Getting permissions...")
-	manifest, err := parseManifest(app)
+	manifest, gotIcon, err := parseManifest(app)
 	if err != nil {
 		fmt.Println("Error parsing manifest: ", err.Error())
 	} else {
@@ -45,6 +46,14 @@ func analyze(app *util.App) error {
 		err = db.AddPerms(app)
 		if err != nil {
 			fmt.Printf("Error writing permissions to DB: %s\n", err.Error())
+		}
+		if gotIcon {
+			app.Icon = "/" + url.PathEscape(app.ID) + "/" + url.PathEscape(app.Store) +
+				"/" + url.PathEscape(app.Region) + "/" + url.PathEscape(app.Ver) + "/icon.png"
+			err = db.SetIcon(app.DBID, app.Icon)
+			if err != nil {
+				fmt.Printf("Error setting icon of app in DB: %s\n", err.Error())
+			}
 		}
 	}
 
