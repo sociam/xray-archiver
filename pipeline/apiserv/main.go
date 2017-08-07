@@ -126,13 +126,6 @@ func parseOffset(num string) (val string, oops string, err error) {
 // 	return gen
 // }
 
-// FormParam is is a struct to represent parameters passed through a URL
-// please note that form params are infact case senstive*/
-type FormParam struct {
-	Name string `json:"name"`
-	Val  string `json:"val"`
-}
-
 func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 	//Check input
@@ -152,9 +145,9 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 		mime := r.Header.Get("Accept")
 		//Default apps
 
-		limit := FormParam{"limit", "10"}
+		limit := "10"
 
-		offset := FormParam{"offset", "0"}
+		offset := "0"
 		isFull := false
 
 		formParams := make([]FormParam, 0, 10) //:= make([]db.formParams, 3, 7)
@@ -162,7 +155,7 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 		titles := []string{""}
 		developers := []string{""}
 		genres := []string{""}
-		permisions := []string{""}
+		permissions := []string{""}
 		appIDs := []string{""}
 
 		fmt.Printf("Parsing app form parameters, params size %s", fmt.Sprint(len(r.Form)))
@@ -172,16 +165,16 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 			oops := ""
 
 			switch name {
-			case limit.Name:
+			case "limit":
 				fmt.Println("Got range of limits", val)
-				limit.Val, oops, _ = parseLimit(val[0])
+				limit, oops, _ = parseLimit(val[0])
 				if oops != "" {
 					writeErr(w, mime, http.StatusBadRequest, "bad_form", oops)
 					return
 				}
 
-			case offset.Name:
-				offset.Val, oops, _ = parseOffset(val[0])
+			case "offset":
+				offset, oops, _ = parseOffset(val[0])
 				if oops != "" {
 					writeErr(w, mime, http.StatusBadRequest, "bad_form", oops)
 					return
@@ -198,21 +191,16 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 			case "title":
 				fmt.Println("titles:", len(val))
 				titles = val
-				// form := db.FormParam{"title", val[0]}
-				// formParams = append(formParams, form)
 
 			case "developer":
 				developers = val
-				//formParams = append(formParams, db.FormParam{"developer", val[0]})
 
 			case "genre":
 				genres = val
-				//formParams = append(formParams, db.FormParam{"genre", val[0]})
-				//Valid genre check
+				//Valid genre constant check
 
 			case "appId":
 				appIDs = val
-				//formParams = append(formParams, db.FormParam{"appId", val[0]})
 
 			default:
 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "passed form values did not match params", name)
@@ -225,13 +213,9 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 			developers = []string{}
 		}
 
-		//TODO: pass store paramters
-		fmt.Println("Gather full details")
+		fmt.Println("Gathering full details")
 
-		// string  int    int     string[] string[]..
-		results, err := db.QuickQuery(isFull, "playstore_apps", limit.Val, offset.Val, developers, genres, permisions, appIDs, titles)
-
-		//results, err := db.RetrieveFullFrom("playstore_apps", limit.Val, offset.Val, formParams) // titles /*=[a, b, c]*/, developers /*=[1, 2, 3]*/)
+		results, err := db.QuickQuery(isFull, "playstore_apps", limit, offset, developers, genres, permissions, appIDs, titles)
 
 		if err != nil {
 			fmt.Println("Error querying database: ", err.Error())
