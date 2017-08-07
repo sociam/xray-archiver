@@ -3,42 +3,73 @@ package main
 import (
 	"encoding/json"
 	"encoding/xml"
-	"github.com/sociam/xray-archiver/pipeline/util"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/sociam/xray-archiver/pipeline/util"
 )
 
 // AndroidManifest is a struct representing the interesting parts of the
 // AndroidManifest.xml in APKs
 type AndroidManifest struct {
-	Package    string            `xml:"package,attr"`
-	Perms      []util.Permission `xml:"uses-permission"`
-	Sdk23Perms []util.Permission `xml:"uses-permission-sdk-23"`
+	Package     string            `xml:"package,attr"`
+	Perms       []util.Permission `xml:"uses-permission"`
+	Sdk23Perms  []util.Permission `xml:"uses-permission-sdk-23"`
+	Application manifestApp       `xml:"application"`
 }
 
-func parseManifest(app *util.App) (*AndroidManifest, error) {
-	manifest := AndroidManifest{}
+type manifestApp struct {
+	Icon string `xml:"icon,attr"`
+}
+
+func parseManifest(app *util.App) (manifest *AndroidManifest, gotIcon bool, err error) {
+	manifest = &AndroidManifest{}
 	manifestFile, err := os.Open(path.Join(app.OutDir(), "AndroidManifest.xml"))
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	bytes, err := ioutil.ReadAll(manifestFile)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
-	err = xml.Unmarshal(bytes, &manifest)
+	err = xml.Unmarshal(bytes, manifest)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	if manifest.Package != "" {
 		app.ID = manifest.Package
 	}
-	return &manifest, nil
+
+	split := strings.SplitN(manifest.Application.Icon, "/", 2)
+	locn, name := split[0], split[1]
+	locn = path.Join(app.OutDir(), "res", locn[1:]) // /tmp/<outdir>/res/{mipmap,drawable}
+	name = name + ".png"                            // icon_katana.png
+
+	var matches []string
+	if matches, err = filepath.Glob(path.Join(locn+"-*xxxdpi*", name)); err == nil && len(matches) > 0 {
+	} else if matches, err = filepath.Glob(path.Join(locn+"-*xxdpi*", name)); err == nil && len(matches) > 0 {
+	} else if matches, err = filepath.Glob(path.Join(locn+"-*xdpi*", name)); err == nil && len(matches) > 0 {
+	} else if matches, err = filepath.Glob(path.Join(locn+"-*hdpi*", name)); err == nil && len(matches) > 0 {
+	} else if matches, err = filepath.Glob(path.Join(locn+"-*tvdpi*", name)); err == nil && len(matches) > 0 {
+	} else if matches, err = filepath.Glob(path.Join(locn+"-*mdpi*", name)); err == nil && len(matches) > 0 {
+	} else if matches, err = filepath.Glob(path.Join(locn+"*", name)); err == nil && len(matches) > 0 {
+	} else {
+		return manifest, false, nil
+	}
+
+	err = os.Rename(matches[0], path.Join(app.AppDir(), "icon.png"))
+	if err != nil {
+		fmt.Printf("Failed to rename icon %s to %s", matches[0], path.Join(app.AppDir(), "icon.png"))
+		return manifest, false, nil
+	}
+
+	return manifest, true, nil
 }
 
 func (manifest *AndroidManifest) getPerms() []util.Permission {
@@ -97,33 +128,35 @@ func simpleAnalyze(app *util.App) ([]string, error) {
 	// 	return nil
 	// }
 
-	cmd := exec.Command("grep", "-Earho", "\"https?://[^ >]+\"", app.OutDir())
-	urls, err := cmd.Output()
+	cmd := exec.Command("sh", "-c", "grep", "-Erho", "\"https?://[^ >]+\"", "--", path.Join(app.OutDir(), "smali/**/*.smali"))
+
+	out, err := cmd.Output()
 	if err != nil {
 		return []string{}, err
 	}
+	urls := strings.Split(string(out), "\n")
 
-	var appTrackers []string
+	// var appTrackers []string
 
-	irrelevant := []string{"app", "identity", "n/a", "other", "", "library"}
-	for name, company := range companies {
-		for _, domain := range company.Domains {
-			if strings.Contains(string(urls), string(domain)) {
-				toAppend := true
-				for _, cat := range irrelevant {
-					if companies[name].TypeTag == cat {
-						toAppend = false
-						break
-					}
-				}
-				if toAppend {
-					appTrackers = append(appTrackers, name)
-				}
-			}
-		}
-	}
+	// irrelevant := []string{"app", "identity", "n/a", "other", "", "library"}
+	// for name, company := range companies {
+	// 	for _, domain := range company.Domains {
+	// 		if strings.Contains(string(urls), string(domain)) {
+	// 			toAppend := true
+	// 			for _, cat := range irrelevant {
+	// 				if companies[name].TypeTag == cat {
+	// 					toAppend = false
+	// 					break
+	// 				}
+	// 			}
+	// 			if toAppend {
+	// 				appTrackers = append(appTrackers, name)
+	// 			}
+	// 		}
+	// 	}
+	// }
 
-	return appTrackers, nil
+	return urls, nil
 }
 
 func findPackages(app *util.App) ([]string, error) {

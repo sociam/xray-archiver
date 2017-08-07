@@ -24,6 +24,7 @@ type App struct {
 	Perms                  []Permission
 	Hosts                  []string
 	Packages               []string
+	Icon                   string
 }
 
 // Permission Struct represents the permission information found
@@ -44,15 +45,21 @@ func AppByPath(path string) *App {
 	return &App{Path: path}
 }
 
+// AppDir returns the directory of the apk and other misc files.
+func (app *App) AppDir() string {
+	if app.Path != "" {
+		return path.Dir(app.Path)
+	}
+	return path.Join(Cfg.AppDir, app.ID, app.Store, app.Region, app.Ver)
+}
+
 // ApkPath creates a string that represents the location of the APK
 // on disk. Used to populate the Path string of an App object.
 func (app *App) ApkPath() string {
 	if app.Path != "" {
 		return app.Path
 	}
-	return path.Join(
-		Cfg.AppDir, app.ID, app.Store, app.Region,
-		app.Ver, app.ID+".apk")
+	return path.Join(app.AppDir(), app.ID+".apk")
 }
 
 // OutDir specifies where Apps should be unpacked to. it also creates
