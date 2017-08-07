@@ -19,7 +19,7 @@ type AndroidManifest struct {
 	Package    string            `xml:"package,attr"`
 	Perms      []util.Permission `xml:"uses-permission"`
 	Sdk23Perms []util.Permission `xml:"uses-permission-sdk-23"`
-	icon       string            `xml:"application>icon,attr"`
+	Icon       string            `xml:"application>icon,attr"`
 }
 
 func parseManifest(app *util.App) (manifest *AndroidManifest, gotIcon bool, err error) {
@@ -41,7 +41,7 @@ func parseManifest(app *util.App) (manifest *AndroidManifest, gotIcon bool, err 
 		app.ID = manifest.Package
 	}
 
-	split := strings.SplitN(manifest.icon, "/", 2)
+	split := strings.SplitN(manifest.Icon, "/", 2)
 	locn, name := split[0], split[1]
 	locn = path.Join(app.OutDir(), "res", locn[1:]) // /tmp/<outdir>/res/{mipmap,drawable}
 	name = name + ".png"                            // icon_katana.png
