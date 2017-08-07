@@ -3,12 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/sociam/xray-archiver/pipeline/db"
-	"github.com/sociam/xray-archiver/pipeline/util"
 	"log"
 	"net/url"
 	"os"
 	"time"
+
+	"github.com/sociam/xray-archiver/pipeline/db"
+	"github.com/sociam/xray-archiver/pipeline/util"
 )
 
 func analyze(app *util.App) error {
@@ -50,6 +51,7 @@ func analyze(app *util.App) error {
 		if gotIcon {
 			app.Icon = "/" + url.PathEscape(app.ID) + "/" + url.PathEscape(app.Store) +
 				"/" + url.PathEscape(app.Region) + "/" + url.PathEscape(app.Ver) + "/icon.png"
+			fmt.Printf("Got icon: %s\n", app.Icon)
 			err = db.SetIcon(app.DBID, app.Icon)
 			if err != nil {
 				fmt.Printf("Error setting icon of app in DB: %s\n", err.Error())
