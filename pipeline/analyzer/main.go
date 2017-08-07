@@ -65,11 +65,11 @@ func analyze(app *util.App) error {
 		fmt.Printf("Error getting hosts: %s\n", err.Error())
 	}
 	fmt.Printf("Hosts found: %v\n\n", app.Hosts)
-	// TODO: put this in a better place
-	// err = db.AddHosts(app, app.Hosts)
-	// if err != nil {
-	// 	fmt.Printf("Error writing hosts to DB: %s\n", err.Error())
-	// }
+
+	err = db.AddHosts(app, app.Hosts)
+	if err != nil {
+		fmt.Printf("Error writing hosts to DB: %s\n", err.Error())
+	}
 
 	app.Packages, err = findPackages(app)
 	if err != nil {
