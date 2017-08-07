@@ -4,22 +4,27 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"github.com/sociam/xray-archiver/pipeline/util"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/sociam/xray-archiver/pipeline/util"
 )
 
 // AndroidManifest is a struct representing the interesting parts of the
 // AndroidManifest.xml in APKs
 type AndroidManifest struct {
-	Package    string            `xml:"package,attr"`
-	Perms      []util.Permission `xml:"uses-permission"`
-	Sdk23Perms []util.Permission `xml:"uses-permission-sdk-23"`
-	Icon       string            `xml:"application>icon,attr"`
+	Package     string            `xml:"package,attr"`
+	Perms       []util.Permission `xml:"uses-permission"`
+	Sdk23Perms  []util.Permission `xml:"uses-permission-sdk-23"`
+	Application manifestApp       `xml:"application"`
+}
+
+type manifestApp struct {
+	Icon string `xml:"icon,attr"`
 }
 
 func parseManifest(app *util.App) (manifest *AndroidManifest, gotIcon bool, err error) {
@@ -41,7 +46,7 @@ func parseManifest(app *util.App) (manifest *AndroidManifest, gotIcon bool, err 
 		app.ID = manifest.Package
 	}
 
-	split := strings.SplitN(manifest.Icon, "/", 2)
+	split := strings.SplitN(manifest.Application.Icon, "/", 2)
 	locn, name := split[0], split[1]
 	locn = path.Join(app.OutDir(), "res", locn[1:]) // /tmp/<outdir>/res/{mipmap,drawable}
 	name = name + ".png"                            // icon_katana.png
