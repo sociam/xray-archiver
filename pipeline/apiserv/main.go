@@ -150,8 +150,6 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 		offset := "0"
 		isFull := false
 
-		formParams := make([]FormParam, 0, 10) //:= make([]db.formParams, 3, 7)
-
 		titles := []string{""}
 		developers := []string{""}
 		genres := []string{""}
@@ -207,7 +205,6 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		println("Finished passing parameters, formParams", len(formParams))
 
 		if len(titles) == 0 {
 			developers = []string{}
