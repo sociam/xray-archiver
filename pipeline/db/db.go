@@ -77,7 +77,7 @@ func AddPackages(app *util.App) error {
 		bothPkgs := util.UniqAppend(app.Packages, dbPkgs)
 		rows, err := db.Query("UPDATE app_packages SET perms = $1 WHERE id = $2",
 			pq.Array(&bothPkgs), app.DBID)
-		if rows != nil { rows.Close() }
+		if rows != nil { rows.Close() } }
 		if err != nil {
 			return err
 		}
@@ -269,7 +269,7 @@ func GetDeveloper(id int64) (Developer, error) {
 // GetDevelopers returns a list of developers.
 func GetDevelopers(num, start int) ([]Developer, error) {
 	rows, err := db.Query("SELECT * FROM developers LIMIT $1 OFFSET $2", num, start)
-	defer if rows != nil { rows.Close() }
+	if rows != nil { defer rows.Close() }
 	if err != nil {
 		return []Developer{}, err
 	}
@@ -321,7 +321,7 @@ func GetCompany(id string) (Company, error) {
 // GetCompanies returns a list of companies.
 func GetCompanies(num, start int) ([]Company, error) {
 	rows, err := db.Query("SELECT * FROM companies LIMIT $1 OFFSET $2", num, start)
-	defer if rows != nil { rows.Close() }
+	if rows != nil { defer rows.Close() }
 	if err != nil {
 		return []Company{}, err
 	}
@@ -367,7 +367,7 @@ func GetApp(id string) (App, error) {
 // GetApps returns a list of apps.
 func GetApps(num, start int) ([]App, error) {
 	rows, err := db.Query("SELECT * FROM apps LIMIT $1 OFFSET $2", num, start)
-	defer if rows != nil { rows.Close() }
+	if rows != nil { defer rows.Close() }
 	if err != nil {
 		return []App{}, err
 	}
@@ -398,7 +398,7 @@ func GetApps(num, start int) ([]App, error) {
 func GetLatestApps(num, start int) ([]App, error) {
 	//TOOD: db join for only only latest to get through
 	rows, err := db.Query("SELECT * FROM apps LIMIT $1 OFFSET $2", num, start)
-	defer if rows != nil { rows.Close() }
+	if rows != nil { defer rows.Close() }
 	if err != nil {
 		return []App{}, err
 	}
@@ -424,7 +424,7 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 
 	rows, err := db.Query("SELECT * from playstore_apps WHERE title like $1 ORDER BY rating USING> LIMIT 120", searchTerm)
 
-	defer if rows != nil { rows.Close() }
+	if rows != nil { defer rows.Close() }
 	if err != nil {
 		return []PlaystoreInfo{}, err
 	}
@@ -491,7 +491,7 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 // downloaded=True for the analyzer.
 func GetAppsToAnalyze() ([]AppVersion, error) {
 	rows, err := db.Query("SELECT id, app, store, region, version, screen_flags, icon FROM app_versions WHERE analyzed = False AND downloaded = True LIMIT 10")
-	defer if rows != nil { rows.Close() }
+	if rows != nil { defer rows.Close() }
 	if err != nil {
 		return []AppVersion{}, err
 	}
