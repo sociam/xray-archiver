@@ -68,7 +68,9 @@ func AddPackages(app *util.App) error {
 		// If the app doesn't exist, insert with whole list of packages
 		rows, err := db.Query("INSERT INTO app_packages VALUES ($1, $2)",
 			app.DBID, pq.Array(&app.Packages))
-		if rows != nil { rows.Close() }
+		if rows != nil {
+			rows.Close()
+		}
 		if err != nil {
 			return err
 		}
@@ -77,7 +79,9 @@ func AddPackages(app *util.App) error {
 		bothPkgs := util.UniqAppend(app.Packages, dbPkgs)
 		rows, err := db.Query("UPDATE app_packages SET perms = $1 WHERE id = $2",
 			pq.Array(&bothPkgs), app.DBID)
-		if rows != nil { rows.Close() } }
+		if rows != nil {
+			rows.Close()
+		}
 		if err != nil {
 			return err
 		}
@@ -107,7 +111,9 @@ func AddPerms(app *util.App) error {
 		}
 		rows, err := db.Query("INSERT INTO app_perms VALUES ($1, $2)",
 			app.DBID, pq.Array(&sPerms))
-		if rows != nil { rows.Close() }
+		if rows != nil {
+			rows.Close()
+		}
 		if err != nil {
 			return err
 		}
@@ -115,7 +121,9 @@ func AddPerms(app *util.App) error {
 		bothPerms := util.UniqAppend(sPerms, dbPerms)
 		rows, err := db.Query("UPDATE app_perms SET perms = $1 WHERE id = $2",
 			pq.Array(&bothPerms), app.DBID)
-		if rows != nil { rows.Close() }
+		if rows != nil {
+			rows.Close()
+		}
 		if err != nil {
 			return err
 		}
@@ -131,7 +139,9 @@ func SetIcon(id int64, icon string) error {
 	}
 
 	rows, err := db.Query("UPDATE app_versions SET icon = $1 WHERE id = $2", icon, id)
-	if rows != nil { rows.Close() }
+	if rows != nil {
+		rows.Close()
+	}
 	return err
 }
 
@@ -151,7 +161,9 @@ func AddHosts(app *util.App, hosts []string) error {
 		}
 		rows, err := db.Query("INSERT INTO app_hosts(id, hosts) VALUES ($1, $2)",
 			app.DBID, pq.Array(&hosts))
-		if rows != nil { rows.Close() }
+		if rows != nil {
+			rows.Close()
+		}
 		if err != nil {
 			return err
 		}
@@ -159,7 +171,9 @@ func AddHosts(app *util.App, hosts []string) error {
 		bothHosts := util.UniqAppend(hosts, dbHosts)
 		rows, err := db.Query("UPDATE app_host SET hosts = $1 WHERE id = $2",
 			pq.Array(&bothHosts), app.DBID)
-		if rows != nil { rows.Close() }
+		if rows != nil {
+			rows.Close()
+		}
 		if err != nil {
 			return err
 		}
@@ -269,7 +283,9 @@ func GetDeveloper(id int64) (Developer, error) {
 // GetDevelopers returns a list of developers.
 func GetDevelopers(num, start int) ([]Developer, error) {
 	rows, err := db.Query("SELECT * FROM developers LIMIT $1 OFFSET $2", num, start)
-	if rows != nil { defer rows.Close() }
+	if rows != nil {
+		defer rows.Close()
+	}
 	if err != nil {
 		return []Developer{}, err
 	}
@@ -321,7 +337,9 @@ func GetCompany(id string) (Company, error) {
 // GetCompanies returns a list of companies.
 func GetCompanies(num, start int) ([]Company, error) {
 	rows, err := db.Query("SELECT * FROM companies LIMIT $1 OFFSET $2", num, start)
-	if rows != nil { defer rows.Close() }
+	if rows != nil {
+		defer rows.Close()
+	}
 	if err != nil {
 		return []Company{}, err
 	}
@@ -367,7 +385,9 @@ func GetApp(id string) (App, error) {
 // GetApps returns a list of apps.
 func GetApps(num, start int) ([]App, error) {
 	rows, err := db.Query("SELECT * FROM apps LIMIT $1 OFFSET $2", num, start)
-	if rows != nil { defer rows.Close() }
+	if rows != nil {
+		defer rows.Close()
+	}
 	if err != nil {
 		return []App{}, err
 	}
@@ -398,7 +418,9 @@ func GetApps(num, start int) ([]App, error) {
 func GetLatestApps(num, start int) ([]App, error) {
 	//TOOD: db join for only only latest to get through
 	rows, err := db.Query("SELECT * FROM apps LIMIT $1 OFFSET $2", num, start)
-	if rows != nil { defer rows.Close() }
+	if rows != nil {
+		defer rows.Close()
+	}
 	if err != nil {
 		return []App{}, err
 	}
@@ -424,7 +446,9 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 
 	rows, err := db.Query("SELECT * from playstore_apps WHERE title like $1 ORDER BY rating USING> LIMIT 120", searchTerm)
 
-	if rows != nil { defer rows.Close() }
+	if rows != nil {
+		defer rows.Close()
+	}
 	if err != nil {
 		return []PlaystoreInfo{}, err
 	}
@@ -491,7 +515,9 @@ func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
 // downloaded=True for the analyzer.
 func GetAppsToAnalyze() ([]AppVersion, error) {
 	rows, err := db.Query("SELECT id, app, store, region, version, screen_flags, icon FROM app_versions WHERE analyzed = False AND downloaded = True LIMIT 10")
-	if rows != nil { defer rows.Close() }
+	if rows != nil {
+		defer rows.Close()
+	}
 	if err != nil {
 		return []AppVersion{}, err
 	}
@@ -521,13 +547,17 @@ func GetAppsToAnalyze() ([]AppVersion, error) {
 // UnsetDownloaded sets an downloaded=False for given app.
 func UnsetDownloaded(id int64) error {
 	rows, err := db.Query("UPDATE app_versions SET downloaded = False WHERE id = $1", id)
-	if rows != nil { rows.Close() }
+	if rows != nil {
+		rows.Close()
+	}
 	return err
 }
 
 // SetAnalyzed sets analyzed=True for a given app.
 func SetAnalyzed(id int64) error {
 	rows, err := db.Query("UPDATE app_versions SET analyzed = True WHERE id = $1", id)
-	if rows != nil { rows.Close() }
+	if rows != nil {
+		rows.Close()
+	}
 	return err
 }
