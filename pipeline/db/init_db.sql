@@ -20,7 +20,7 @@ create table developers(
   id         serial primary key not null,
   email      text[]             not null,
   name         text             not null,
-  store_site   text      AppVersion               ,
+  store_site   text                     ,
   site         text
 );
 

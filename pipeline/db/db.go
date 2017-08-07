@@ -447,11 +447,12 @@ func QuickQuery(
 		//"app_perms.permissions," + "packages" +
 
 	//Table Join Appends
-	tableQuery := " FROM " + appStore + " NATURAL JOIN app_versions " + " NATURAL JOIN developers "
+	tableQuery := " FROM " + appStore + "a, app_versions v, developers d"
 	//+ "NATURAL JOIN app_perms " + "NATURAL JOIN app_packages"
 
 	structuredQuery := storestart + tableQuery +
-		" WHERE LOWER(" + appStore + ".title) LIKE any " + percentifyArray(titles) +
+		" WHERE a.id = v.id AND a.developer = d.developer" +
+		" LOWER(" + appStore + ".title) LIKE any " + percentifyArray(titles) +
 		" AND LOWER(developers.name) LIKE any " + percentifyArray(developers) +
 		" AND LOWER(" + appStore + ".genre) LIKE any " + percentifyArray(genres) +
 		//" AND LOWER(app_perms.permissions) like any " + percentifyArray(permissions) + //TODO: s a array so need to check the arrays...
