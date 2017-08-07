@@ -517,6 +517,8 @@ func QuickQuery(
 			playInf.Video = video.String
 			playInf.FamilyGenre = famGenre.String
 
+			appData.StoreInfo = playInf
+
 			result = append(result, appData)
 		}
 	}
