@@ -128,8 +128,8 @@ func simpleAnalyze(app *util.App) ([]string, error) {
 	// 	return nil
 	// }
 
-	cmd := exec.Command("grep", "-Erho", "\"https?://[^ >]+\"",
-		path.Join(app.OutDir(), "smali", "**", "*.smali"))
+	cmd := exec.Command("sh", "-c", "grep", "-Erho", "\"https?://[^ >]+\"", "--", path.Join(app.OutDir(), "smali/**/*.smali"))
+
 	out, err := cmd.Output()
 	if err != nil {
 		return []string{}, err
