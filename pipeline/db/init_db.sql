@@ -13,7 +13,7 @@ create table app_versions(
   downloaded           bool                     not null,
   analyzed             bool                     not null,
   last_dl_attempt timestamp                     not null,
-  icon                 text                     
+  icon                 text
 );
 
 create table developers(
@@ -23,6 +23,13 @@ create table developers(
   store_site   text                     ,
   site         text
 );
+
+create table alt_apps(
+   id             int     references app_versions(id) not null,
+   title         text                                 not null,
+   url           text                                         ,
+   primary key (id, title)
+)
 
 create table playstore_apps(
   id                      int primary key references app_versions(id) not null,
@@ -116,6 +123,7 @@ grant select on playstore_apps to analyzer;
 grant select, insert, update on app_perms to analyzer;
 grant select, insert on app_hosts to analyzer;
 grant select on companies to analyzer;
+grant select, insert, update on alt_apps to analyzer;
 
 grant select on apps to apiserv;
 grant select on app_versions to apiserv;
@@ -125,3 +133,4 @@ grant select on app_perms to apiserv;
 grant select on app_hosts to apiserv;
 grant select on companies to apiserv;
 grant select on hosts to apiserv;
+grant select on alt_apps to apiserv;
