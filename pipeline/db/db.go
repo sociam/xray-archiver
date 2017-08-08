@@ -2,11 +2,10 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/lib/pq"
 	"github.com/sociam/xray-archiver/pipeline/util"
-
-	"fmt"
 )
 
 type xrayDb struct {
@@ -31,22 +30,6 @@ func Open(cfg util.Config, enable bool) error {
 	}
 	return nil
 }
-
-// func (db *XrayDb) insertApp(app *App) (int, error) {
-// 	if !useDB {
-// 		return 0, nil
-// 	}
-
-// 	var ret int
-// 	err := db.QueryRow(
-// 		"SELECT id FROM app_versions WHERE app = $1 AND store = $2 AND region = $3 AND version = $4",
-// 		app.id, app.store, app.region, app.ver).Scan(&ret)
-// 	if err != nil {
-// 		return 0, err
-// 	}
-
-// 	return ret, nil
-// }
 
 //TODO: make Add* functions take a db id and what to add instead of a util.App
 
@@ -231,12 +214,7 @@ func GetAppVersionByID(id int64) (AppVersion, error) {
 
 	err := db.QueryRow(
 		"SELECT * FROM app_versions WHERE id = $1", id).Scan(
-		&appVer.ID,
-		&appVer.App,
-		&appVer.Store,
-		&appVer.Region,
-		&appVer.Ver,
-		&appVer.ScreenFlags)
+		&appVer)
 
 	if err != nil {
 		return appVer, err
@@ -266,7 +244,6 @@ func GetDeveloper(id int64) (Developer, error) {
 	var dev Developer
 
 	err := db.QueryRow("SELECT * from developers WHERE id = $1", id).Scan(
-		&dev.ID,
 		pq.Array(&dev.Emails),
 		&dev.Name,
 		&dev.StoreSite,
@@ -293,7 +270,6 @@ func GetDevelopers(num, start int) ([]Developer, error) {
 	for i := 0; rows.Next(); i++ {
 		ret = append(ret, Developer{})
 		rows.Scan(
-			&ret[i].ID,
 			pq.Array(&ret[i].Emails),
 			&ret[i].Name,
 			&ret[i].Site,
@@ -440,75 +416,166 @@ func GetLatestApps(num, start int) ([]App, error) {
 	return ret, nil
 }
 
-// SearchApps returns a list of apps matching a search term.
-func SearchApps(searchTerm string) ([]PlaystoreInfo, error) {
-	searchTerm = "%" + searchTerm + "%"
+// precentifyArray produces a Postgres compatable 'like any' string intended
+// to be used as part of a larger query.
+func percentifyArray(arr []string) string {
 
-	rows, err := db.Query("SELECT * from playstore_apps WHERE title like $1 ORDER BY rating USING> LIMIT 120", searchTerm)
+	partQuery := " (Array[ "
 
-	if rows != nil {
-		defer rows.Close()
+	for i, param := range arr {
+		partQuery += "LOWER('%" + param + "%')"
+		if i < len(arr)-1 {
+			partQuery += ","
+		}
+
 	}
+
+	partQuery += "])"
+
+	return partQuery
+}
+
+// QuickQuery depricates all of dean's queries.
+//
+//
+func QuickQuery(
+	fullDetails bool, appStore string, limit string, offset string, developers []string,
+	genres []string, permissions []string, appIDs []string, titles []string,
+) ([]AppVersion, error) {
+
+	var storestart string
+	storestart = "SELECT " +
+		"a.id," +
+		"a.title," +
+		"a.summary," +
+		"a.description," +
+		"a.store_url," +
+		"a.price," +
+		"a.free," +
+		"a.rating," +
+		"a.num_reviews," +
+		"a.genre," +
+		"a.family_genre," +
+		"a.min_installs," +
+		"a.max_installs," +
+		"a.updated," +
+		"a.android_ver," +
+		"a.content_rating," +
+		"a.recent_changes," +
+		"v.app," +
+		"v.store," +
+		"v.region," +
+		"v.version," +
+		"d.email," +
+		"d.name," +
+		"d.store_site," +
+		"d.site," +
+		"h.hosts," +
+		"p.permissions," +
+		"pkg.packages"
+		//"app_perms.permissions," + "packages" +
+
+	tableQuery := " FROM " +
+		appStore +
+		" a FULL OUTER JOIN app_versions v ON (a.id = v.id) " +
+		" FULL OUTER JOIN developers d ON (a.developer = d.id) " +
+		" FULL OUTER JOIN app_hosts h ON (a.id = h.id) " +
+		" FULL OUTER JOIN app_perms p ON (a.id = p.id) " +
+		" FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) "
+
+	//Table Join Appends
+	//+ "NATURAL JOIN app_perms " + "NATURAL JOIN app_packages"
+	structuredQuery := storestart + tableQuery +
+		" WHERE LOWER(a.title) LIKE any " + percentifyArray(titles) +
+		" AND LOWER(d.name) LIKE any " + percentifyArray(developers) +
+		" AND LOWER(a.genre) LIKE any " + percentifyArray(genres) +
+		//" AND LOWER(app_perms.permissions) like any " + percentifyArray(permissions) + //TODO: s a array so need to check the arrays...
+		" AND LOWER(v.app) LIKE any " + percentifyArray(appIDs) +
+		" LIMIT " + limit + " OFFSET " + offset
+
+	println(structuredQuery)
+
+	rows, err := db.Query(structuredQuery)
+
+	defer rows.Close()
+
 	if err != nil {
-		return []PlaystoreInfo{}, err
+		return []AppVersion{}, err
 	}
 
-	var ret []PlaystoreInfo
-
-	var id string
-	var famGenre sql.NullString
-	var nullableVideo sql.NullString
-
+	var result []AppVersion
 	for i := 0; rows.Next(); i++ {
-		var inf PlaystoreInfo
-		err := rows.Scan(
-			&id,
-			&inf.Title,
-			&inf.Summary,
-			&inf.Description,
-			&inf.StoreURL,
-			&inf.Price,
-			&inf.Free,
-			&inf.Rating,
-			&inf.NumReviews,
-			&inf.Genre,
-			&famGenre,
-			&inf.Installs.Min,
-			&inf.Installs.Max,
-			&inf.Developer,
-			&inf.Updated,
-			&inf.AndroidVer,
-			&inf.ContentRating,
-			pq.Array(&inf.Screenshots),
-			&nullableVideo,
-			pq.Array(&inf.RecentChanges),
-			&inf.CrawlDate,
-			pq.Array(&inf.Permissions))
 
-		// Create Function
-		if famGenre.Valid {
-			inf.FamilyGenre = famGenre.String
-		} else {
-			inf.FamilyGenre = ""
-		}
-		if nullableVideo.Valid {
-			inf.Video = nullableVideo.String
-		} else {
-			inf.Video = ""
-		}
+		var appData AppVersion
+		var playInf PlayStoreInfo
+
+		//Potential null values
+		var summ sql.NullString
+		var desc sql.NullString
+		var genre sql.NullString
+		var famGenre sql.NullString
+		var video sql.NullString
+		//var perms []string
+		//var packages []string
+
+		var err error
+		//Cannot just cast straight into types because of the postgre type conversion
+		err = rows.Scan(
+			&appData.ID,
+			&playInf.Title,
+			&summ,
+			&desc,
+			&playInf.StoreURL,
+			&playInf.Price,
+			&playInf.Free,
+			&playInf.Rating,
+			&playInf.NumReviews,
+			&genre,
+			&famGenre,
+			&playInf.Installs.Min,
+			&playInf.Installs.Max,
+			&playInf.Updated,
+			&playInf.AndroidVer,
+			&playInf.ContentRating,
+			pq.Array(&playInf.RecentChanges),
+			&appData.App,
+			&appData.Store,
+			&appData.Region,
+			&appData.Ver,
+			pq.Array(&appData.Dev.Emails),
+			&appData.Dev.Name,
+			&appData.Dev.StoreSite,
+			&appData.Dev.Site,
+			pq.Array(&appData.Hosts),
+			pq.Array(&appData.Perms),
+			pq.Array(&appData.Packages))
+		// pq.Array(&perms),
+		// pq.Array(&packages)) //XX X: icon should be there, right? right?
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Database Query", err)
 		} else {
-			ret = append(ret, inf)
+
+			//info.FamilyGenre = famGenre.Valid ? famGenre.String : ""
+			//TODO: ight be able to get away with nul being "" after the scan stage
+			playInf.Summary = summ.String
+			playInf.Description = desc.String
+			playInf.Genre = genre.String
+			playInf.Video = video.String
+			playInf.FamilyGenre = famGenre.String
+
+			appData.StoreInfo = playInf
+
+			fmt.Println("Hosts: ", appData.Hosts)
+			result = append(result, appData)
 		}
 	}
 
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
 		fmt.Println("Database err", rows.Err())
-		return []PlaystoreInfo{}, rows.Err()
 	}
 
-	return ret, nil
+	return result, nil
+
 }
 
 // GetAppsToAnalyze returns a list of up to 10 apps that have analyzed=False and

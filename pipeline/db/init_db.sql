@@ -13,7 +13,7 @@ create table app_versions(
   downloaded           bool                     not null,
   analyzed             bool                     not null,
   last_dl_attempt timestamp                     not null,
-  icon                 text
+  icon                 text                     
 );
 
 create table developers(

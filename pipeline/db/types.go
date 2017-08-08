@@ -21,26 +21,28 @@ type App struct {
 // AppVersion represents all the information about an app version contained in
 // the database
 type AppVersion struct {
-	ID          int64               `json:"id"`
-	App         string              `json:"app"`
-	Store       string              `json:"string"`
-	Region      string              `json:"region"`
-	Ver         string              `json:"ver"`
-	ScreenFlags int64               `json:"screenFlags"`
-	Hosts       map[string][]string `json:"hosts"`
-	Perms       []util.Permission   `json:"permissions"`
-	StoreInfo   StoreInfo           `json:"storeinfo"`
-	Icon        string              `json:"icon"`
+	ID          int64     `json:"id"`
+	App         string    `json:"app"`
+	Store       string    `json:"string"`
+	Region      string    `json:"region"`
+	Ver         string    `json:"ver"`
+	ScreenFlags int64     `json:"screenFlags"`
+	StoreInfo   StoreInfo `json:"storeinfo"`
+	Icon        string    `json:"icon"`
+	Dev         Developer `json:"developer"`
+	Hosts       []string  `json:"hosts"`
+	Perms       []string  `json:"perms"`
+	Packages    []string  `json:"packages"`
 }
 
 // StoreInfo represents the information contained about an app in its respective
 // store
 type StoreInfo interface{}
 
-// PlaystoreInfo represents the data contained in the google play store
-type PlaystoreInfo struct {
+// PlayStoreInfo represents the data contained in the google play store
+type PlayStoreInfo struct {
 	Title         string    `json:"title"`
-	Summary       string    `json:"summary"`
+	Summary       string    `json:"summary"` //TODO:Omitempty for null vlaues?
 	Description   string    `json:"description"`
 	StoreURL      string    `json:"storeURL"`
 	Price         string    `json:"price"`
@@ -63,11 +65,18 @@ type PlaystoreInfo struct {
 
 // Developer represents a developer from the database
 type Developer struct {
-	ID        int64    `json:"id"`
 	Emails    []string `json:"emails"`
 	Name      string   `json:"name"`
 	StoreSite string   `json:"storeSite"`
 	Site      string   `json:"site"`
+}
+
+// AppStub represents the 'stub' of app data located in the Database.
+// it is formed of only the title given to the app by the developer
+// and the App ID that it can be uniquely identified as.
+type AppStub struct {
+	Title string
+	App   string
 }
 
 // Company represents a company from the database
