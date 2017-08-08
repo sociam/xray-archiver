@@ -165,6 +165,7 @@ func AddHosts(app *util.App, hosts []string) error {
 	return nil
 }
 
+// SetReflect sets the value of uses_reflect for an app version
 func SetReflect(id int64, val bool) error {
 	rows, err := db.Query("UPDATE app_versions SET uses_reflect = $1 WHERE id = $2", val, id)
 	if rows != nil {
