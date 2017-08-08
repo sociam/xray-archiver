@@ -27,17 +27,17 @@ type AppVersion struct {
 	Region      string              `json:"region"`
 	Ver         string              `json:"ver"`
 	ScreenFlags int64               `json:"screenFlags"`
-	Hosts       map[string][]string `json:"hosts"`
-	Perms       []util.Permission   `json:"permissions"`
 	StoreInfo   StoreInfo           `json:"storeinfo"`
 	Icon        string              `json:"icon"`
 	Dev         Developer           `json:"developer"`
+	Hosts		[]string			`json:hosts`
+	Perms		[]string			`json:perms`
+	Packages	[]string			`json:packages`
 }
 
 // StoreInfo represents the information contained about an app in its respective
 // store
 type StoreInfo interface{}
-
 // PlayStoreInfo represents the data contained in the google play store
 type PlayStoreInfo struct {
 	Title         string    `json:"title"`

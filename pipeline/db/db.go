@@ -469,14 +469,20 @@ func QuickQuery(
 		"d.email," +
 		"d.name," +
 		"d.store_site," +
-		"d.site" +
-		"h.hosts"
+		"d.site," +
+		"h.hosts," +
+		"p.permissions," + 
+		"pkg.packages"
 		//"app_perms.permissions," + "packages" +
+
+	tableQuery := " FROM " + 
+		appStore + 
+		" a, app_versions v, developers d, app_hosts h, app_perms p, app_packages pkg "
 
 	//Table Join Appends
 	//+ "NATURAL JOIN app_perms " + "NATURAL JOIN app_packages"
 	structuredQuery := storestart + tableQuery +
-		" WHERE a.id = v.id AND a.developer = d.id AND h.hosts" +
+		" WHERE a.id = v.id AND a.developer = d.id AND h.id = v.id AND p.id = v.id AND pkg.id = v.id " +
 		" AND LOWER(a.title) LIKE any " + percentifyArray(titles) +
 		" AND LOWER(d.name) LIKE any " + percentifyArray(developers) +
 		" AND LOWER(a.genre) LIKE any " + percentifyArray(genres) +
@@ -536,7 +542,10 @@ func QuickQuery(
 			pq.Array(&appData.Dev.Emails),
 			&appData.Dev.Name,
 			&appData.Dev.StoreSite,
-			&appData.Dev.Site)
+			&appData.Dev.Site,
+			pq.Array(&appData.Hosts),
+			pq.Array(&appData.Perms),
+			pq.Array(&appData.Packages))
 		// pq.Array(&perms),
 		// pq.Array(&packages)) //XX X: icon should be there, right? right?
 		if err != nil {
@@ -553,6 +562,7 @@ func QuickQuery(
 
 			appData.StoreInfo = playInf
 
+			fmt.Println("Hosts: ", appData.Hosts)
 			result = append(result, appData)
 		}
 	}
