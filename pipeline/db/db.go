@@ -415,10 +415,10 @@ func GetLatestApps(num, start int) ([]App, error) {
 	return ret, nil
 }
 
-func GetIconPath(appId string) (string, error) {
+func GetIconPath(appID string) (string, error) {
 	var appPath string
-	fmt.Println("Selecting icon path:", appId)
-	err := db.QueryRow("SELECT icon FROM app_versions where app = $1", appId).Scan(&appPath)
+	fmt.Println("Selecting icon path:", appID)
+	err := db.QueryRow("SELECT icon FROM app_versions where app = $1", appID).Scan(&appPath)
 	if err != nil {
 		return "", err
 	}
