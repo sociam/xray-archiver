@@ -29,7 +29,7 @@ create table alt_apps(
    title         text                                 not null,
    url           text                                         ,
    primary key (id, title)
-)
+);
 
 create table playstore_apps(
   id                      int primary key references app_versions(id) not null,
