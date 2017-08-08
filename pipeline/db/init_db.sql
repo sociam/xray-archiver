@@ -25,7 +25,7 @@ create table developers(
 );
 
 create table alt_apps(
-   id             int     references app_versions(id) not null,
+   id            text             references apps(id) not null,
    title         text                                 not null,
    url           text                                         ,
    primary key (id, title)
