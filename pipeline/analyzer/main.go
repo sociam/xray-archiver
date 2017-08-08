@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/sociam/xray-archiver/pipeline/db"
@@ -107,11 +108,17 @@ func runServer() {
 			time.Sleep(30 * time.Second)
 		}
 
+		wg := sync.WaitGroup{}
+		wg.Add(len(apps))
 		for _, dbApp := range apps {
-			app := dbApp.UtilApp()
-			fmt.Printf("Got app %v\n", app)
-			analyze(app)
+			go func() {
+				app := dbApp.UtilApp()
+				fmt.Printf("Got app %v\n", app)
+				analyze(app)
+				wg.Done()
+			}()
 		}
+		wg.Wait()
 	}
 }
 
