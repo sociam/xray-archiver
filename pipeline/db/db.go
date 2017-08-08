@@ -471,12 +471,12 @@ func QuickQuery(
 		"d.store_site," +
 		"d.site," +
 		"h.hosts," +
-		"p.permissions," + 
+		"p.permissions," +
 		"pkg.packages"
 		//"app_perms.permissions," + "packages" +
 
-	tableQuery := " FROM " + 
-		appStore + 
+	tableQuery := " FROM " +
+		appStore +
 		" a FULL OUTER JOIN app_versions v ON (a.id = v.id) " +
 		" FULL OUTER JOIN developers d ON (a.developer = d.id) " +
 		" FULL OUTER JOIN app_hosts h ON (a.id = h.id) " +

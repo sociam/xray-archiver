@@ -21,23 +21,24 @@ type App struct {
 // AppVersion represents all the information about an app version contained in
 // the database
 type AppVersion struct {
-	ID          int64               `json:"id"`
-	App         string              `json:"app"`
-	Store       string              `json:"string"`
-	Region      string              `json:"region"`
-	Ver         string              `json:"ver"`
-	ScreenFlags int64               `json:"screenFlags"`
-	StoreInfo   StoreInfo           `json:"storeinfo"`
-	Icon        string              `json:"icon"`
-	Dev         Developer           `json:"developer"`
-	Hosts		[]string			`json:hosts`
-	Perms		[]string			`json:perms`
-	Packages	[]string			`json:packages`
+	ID          int64     `json:"id"`
+	App         string    `json:"app"`
+	Store       string    `json:"string"`
+	Region      string    `json:"region"`
+	Ver         string    `json:"ver"`
+	ScreenFlags int64     `json:"screenFlags"`
+	StoreInfo   StoreInfo `json:"storeinfo"`
+	Icon        string    `json:"icon"`
+	Dev         Developer `json:"developer"`
+	Hosts       []string  `json:hosts`
+	Perms       []string  `json:perms`
+	Packages    []string  `json:packages`
 }
 
 // StoreInfo represents the information contained about an app in its respective
 // store
 type StoreInfo interface{}
+
 // PlayStoreInfo represents the data contained in the google play store
 type PlayStoreInfo struct {
 	Title         string    `json:"title"`
