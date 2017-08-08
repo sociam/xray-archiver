@@ -469,15 +469,14 @@ func QuickQuery(
 		"d.email," +
 		"d.name," +
 		"d.store_site," +
-		"d.site"
+		"d.site" +
+		"h.hosts"
 		//"app_perms.permissions," + "packages" +
 
 	//Table Join Appends
-	tableQuery := " FROM " + appStore + " a, app_versions v, developers d"
 	//+ "NATURAL JOIN app_perms " + "NATURAL JOIN app_packages"
-
 	structuredQuery := storestart + tableQuery +
-		" WHERE a.id = v.id AND a.developer = d.id" +
+		" WHERE a.id = v.id AND a.developer = d.id AND h.hosts" +
 		" AND LOWER(a.title) LIKE any " + percentifyArray(titles) +
 		" AND LOWER(d.name) LIKE any " + percentifyArray(developers) +
 		" AND LOWER(a.genre) LIKE any " + percentifyArray(genres) +
