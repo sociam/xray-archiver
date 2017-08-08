@@ -60,7 +60,7 @@ func AddPackages(app *util.App) error {
 	} else {
 		// The app already exists, only add new packages for that app.
 		bothPkgs := util.UniqAppend(app.Packages, dbPkgs)
-		rows, err := db.Query("UPDATE app_packages SET perms = $1 WHERE id = $2",
+		rows, err := db.Query("UPDATE app_packages SET packages = $1 WHERE id = $2",
 			pq.Array(&bothPkgs), app.DBID)
 		if rows != nil {
 			rows.Close()
