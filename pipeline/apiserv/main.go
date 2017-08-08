@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/sociam/xray-archiver/pipeline/db"
 	"github.com/sociam/xray-archiver/pipeline/util"
@@ -54,7 +54,7 @@ func writeData(w http.ResponseWriter, mime string, status int, data interface{})
 		err1 = util.WriteJSON(w, data)
 	}
 	if err1 != nil {
-		log.Println(err1)
+		fmt.Println(err1)
 	}
 }
 
@@ -126,7 +126,7 @@ func parseOffset(num string) (val string, oops string, err error) {
 // 	return gen
 // }
 
-func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
+func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 	//Check input
 	if r.Method == "POST" || r.Method == "GET" {
@@ -241,6 +241,103 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func logoEndpoint(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func gatherApp(w http.ResponseWriter, r *http.Request) {
+	mime := r.Header.Get("Accept")
+	//Check input
+	if r.Method == "POST" || r.Method == "GET" {
+		if _, ok := supportedMimes[mime]; !ok {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+			return
+		}
+
+		//api/apps/appid/
+		split := strings.SplitN(r.URL.Path, "/", 5)
+
+		if len(split) < 5 {
+			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Bad app slashes specified for icon")
+			return
+		}
+
+		appID := split[3]
+		// store := split[4]
+		// version := split[5]
+
+		fmt.Println("Grabbing: ", appID)
+
+		if len(split) == 4 && dbIDRe.MatchString(appID) {
+			// Is a DB ID
+			///api/apps/<dbid>
+
+			dbID, err := strconv.Atoi(appID)
+			if err != nil {
+				writeErr(w, mime, http.StatusBadRequest, "big_int", "dbID is too big")
+			}
+
+			appVer, err := db.GetAppVersionByID(int64(dbID))
+			if err != nil {
+				writeErr(w, mime, http.StatusBadRequest, "bad_app", "App could not be found")
+				return
+			}
+
+			writeData(w, mime, http.StatusOK, appVer)
+
+			//util.WriteJSON(w, app)
+
+		} else if appIDRe.MatchString(appID) {
+			// Is an app ID
+			switch len(split) {
+			case 4:
+				app, err := db.GetApp(appID)
+				if err != nil {
+					fmt.Println("Error querying database: ", err.Error())
+					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+					return
+				}
+
+				writeData(w, mime, http.StatusOK, app)
+			case 5:
+				///api/apps/<appid>/<icon
+				ver := split[4]
+				// Search for a version string in the user's default app store or in play/us
+
+				appVer, err := db.GetAppVersion(appID, "play", "us", ver)
+				if err != nil {
+					fmt.Println("Error querying database: ", err.Error())
+					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+				}
+
+				writeData(w, mime, http.StatusOK, appVer)
+
+			case 7:
+				///api/apps/<appid>/<store>/<region>/<version string>
+
+				// There are parts after the app ID
+				//TODO: do things not need to be done different here?
+				store, region, ver := split[4], split[5], split[6]
+
+				appVer, err := db.GetAppVersion(appID, store, region, ver)
+				if err != nil {
+					fmt.Println("Error querying database: ", err.Error())
+					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+				}
+
+				writeData(w, mime, http.StatusOK, appVer)
+
+			default:
+				writeErr(w, mime, http.StatusBadRequest, "bad_req", "Number of parts is not range")
+			}
+
+		} else {
+			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Invalid app ID specified")
+		}
+
+	}
+}
+
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
 var port = flag.Uint("port", 8118, "Port to serve on.")
 
@@ -250,9 +347,11 @@ func init() {
 }
 
 func main() {
-	http.HandleFunc("/", hello)
+	http.Handle("/", http.FileServer(http.Dir(util.Cfg.AppDir)))
 
-	http.HandleFunc("/api/apps/", gatherAppsEndpoint)
+	http.HandleFunc("/api/apps", appsEndpoint)
+
+	http.HandleFunc("/api/apps/", gatherApp) //specific app can be grabed here including the logo
 
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
