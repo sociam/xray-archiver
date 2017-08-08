@@ -415,7 +415,7 @@ func GetLatestApps(num, start int) ([]App, error) {
 	return ret, nil
 }
 
-func GetLogoPath(appId string) (string, error) {
+func GetIconPath(appId string) (string, error) {
 	var appPath string
 	fmt.Println("Selecting icon path:", appId)
 	err := db.QueryRow("SELECT icon FROM app_versions where app = $1", appId).Scan(&appPath)
@@ -475,6 +475,7 @@ func QuickQuery(
 		"v.store," +
 		"v.region," +
 		"v.version," +
+		"v.icon," +
 		"d.email," +
 		"d.name," +
 		"d.store_site," +
@@ -551,6 +552,7 @@ func QuickQuery(
 			&appData.Store,
 			&appData.Region,
 			&appData.Ver,
+			&appData.Icon,
 			pq.Array(&appData.Dev.Emails),
 			&appData.Dev.Name,
 			&appData.Dev.StoreSite,
