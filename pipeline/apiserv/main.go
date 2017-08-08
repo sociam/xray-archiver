@@ -127,6 +127,7 @@ func parseOffset(num string) (val string, oops string, err error) {
 // }
 
 func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	mime := r.Header.Get("Accept")
 	//Check input
 	if r.Method == "POST" || r.Method == "GET" {
