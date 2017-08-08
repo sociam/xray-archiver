@@ -165,6 +165,14 @@ func AddHosts(app *util.App, hosts []string) error {
 	return nil
 }
 
+func SetReflect(id int64, val bool) error {
+	rows, err := db.Query("UPDATE app_versions SET uses_reflect = $1 WHERE id = $2", val, id)
+	if rows != nil {
+		rows.Close()
+	}
+	return err
+}
+
 // GetAppVersion gets an app version from the database. The argument app is the
 // app id, in the form com.example.app.
 func GetAppVersion(app, store, region, version string) (AppVersion, error) {

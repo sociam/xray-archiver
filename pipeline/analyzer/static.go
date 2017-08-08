@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	// "encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
@@ -96,26 +96,26 @@ type company struct {
 func simpleAnalyze(app *util.App) ([]string, error) {
 	//TODO: fix error handling
 
-	//TODO: replace with DB calls
-	var companies map[string]company
-	companyFile, err := os.Open(path.Join(util.Cfg.DataDir, "company_details.json"))
-	if err != nil {
-		return []string{}, err
-	}
-	bytes, err := ioutil.ReadAll(companyFile)
-	if err != nil {
-		return []string{}, err
-	}
-	err = json.Unmarshal(bytes, &companies)
-	if err != nil {
-		return []string{}, err
-	}
+	// //TODO: replace with DB calls
+	// var companies map[string]company
+	// companyFile, err := os.Open(path.Join(util.Cfg.DataDir, "company_details.json"))
+	// if err != nil {
+	// 	return []string{}, err
+	// }
+	// bytes, err := ioutil.ReadAll(companyFile)
+	// if err != nil {
+	// 	return []string{}, err
+	// }
+	// err = json.Unmarshal(bytes, &companies)
+	// if err != nil {
+	// 	return []string{}, err
+	// }
 
-	for name := range companies {
-		if _, ok := trackers[name]; !ok {
-			delete(companies, name)
-		}
-	}
+	// for name := range companies {
+	// 	if _, ok := trackers[name]; !ok {
+	// 		delete(companies, name)
+	// 	}
+	// }
 
 	// getDomainCo := func(host string) *string {
 	// 	for _, company := range companies {
@@ -128,7 +128,7 @@ func simpleAnalyze(app *util.App) ([]string, error) {
 	// 	return nil
 	// }
 
-	cmd := exec.Command("sh", "-c", "grep", "-Erho", "\"https?://[^ >]+\"", "--", path.Join(app.OutDir(), "smali/**/*.smali"))
+	cmd := exec.Command("grep", "-Eaho", "https?://[^/ ]+", "--", path.Join(app.OutDir(), "classes.dex"))
 
 	out, err := cmd.Output()
 	if err != nil {
@@ -157,6 +157,19 @@ func simpleAnalyze(app *util.App) ([]string, error) {
 	// }
 
 	return urls, nil
+}
+
+func checkReflect(app *util.App) error {
+	cmd := exec.Command("grep", "-Paqh", "\x00\x00\x00.Ljava/lang/reflect[/a-zA-Z]*;\x00\x00\x00", "--", path.Join(app.OutDir(), "classes.dex"))
+
+	out, err := cmd.Output()
+	if err != nil && strings.TrimSpace(string(out)) == "" {
+		return err
+	} else {
+		app.UsesReflect = err == nil
+	}
+
+	return nil
 }
 
 func findPackages(app *util.App) ([]string, error) {

@@ -64,12 +64,25 @@ func analyze(app *util.App) error {
 	app.Hosts, err = simpleAnalyze(app)
 	if err != nil {
 		fmt.Printf("Error getting hosts: %s\n", err.Error())
-	}
-	fmt.Printf("Hosts found: %v\n\n", app.Hosts)
+	} else {
+		fmt.Printf("Hosts found: %v\n\n", app.Hosts)
 
-	err = db.AddHosts(app, app.Hosts)
+		err = db.AddHosts(app, app.Hosts)
+		if err != nil {
+			fmt.Printf("Error writing hosts to DB: %s\n", err.Error())
+		}
+	}
+
+	err = checkReflect(app)
 	if err != nil {
-		fmt.Printf("Error writing hosts to DB: %s\n", err.Error())
+		fmt.Printf("Error checking for reflect usage: %s\n", err.Error())
+	} else {
+		fmt.Printf("App uses reflect: %v\n", app.UsesReflect)
+
+		err = db.SetReflect(app.DBID, app.UsesReflect)
+		if err != nil {
+			fmt.Printf("Error writing reflect usage to DB: %s\n", err.Error())
+		}
 	}
 
 	app.Packages, err = findPackages(app)
