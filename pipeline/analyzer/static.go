@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/sociam/xray-archiver/pipeline/util"
@@ -93,6 +94,8 @@ type company struct {
 	Description  string   `json:"description"`
 }
 
+var hostregex = regexp.MustCompile(".https?://([^/]+)")
+
 func simpleAnalyze(app *util.App) ([]string, error) {
 	//TODO: fix error handling
 
@@ -128,13 +131,19 @@ func simpleAnalyze(app *util.App) ([]string, error) {
 	// 	return nil
 	// }
 
-	cmd := exec.Command("grep", "-Eaho", "https?://[^/ ]+", "--", path.Join(app.OutDir(), "classes.dex"))
+	cmd := exec.Command("strings", "-n", "11", path.Join(app.OutDir(), "classes.dex"))
 
 	out, err := cmd.Output()
 	if err != nil {
 		return []string{}, err
 	}
-	urls := strings.Split(string(out), "\n")
+	matches := hostregex.FindAllSubmatch(out, -1)
+	urls := make([]string, 0, len(matches))
+	for _, v := range matches {
+		if len(v[1]) > 3 {
+			urls = append(urls, string(v[1]))
+		}
+	}
 
 	// var appTrackers []string
 

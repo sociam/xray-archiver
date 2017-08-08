@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"time"
 )
 
 // Unit for maps in data.go
@@ -94,6 +95,14 @@ func (app *App) Unpack() error {
 			return err
 		}
 		return fmt.Errorf("couldn't open apk %s: %s", apkPath, err.Error())
+	}
+
+	if err := os.MkdirAll(path.Dir(outDir), 0755); err != nil {
+		return os.ErrPermission
+	}
+	now := time.Now()
+	if err := os.Chtimes(path.Dir(outDir), now, now); err != nil {
+		return os.ErrPermission
 	}
 
 	cmd := exec.Command("apktool", "d", "-s", apkPath, "-o", outDir, "-f")

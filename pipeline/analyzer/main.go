@@ -31,8 +31,11 @@ func analyze(app *util.App) error {
 		if os.IsNotExist(err) {
 			err := db.UnsetDownloaded(app.DBID)
 			if err != nil {
-				fmt.Printf("Failed to set %d not downloaded: %s", app.DBID, err.Error())
+				fmt.Printf("Failed to set %d not downloaded: %s\n", app.DBID, err.Error())
 			}
+		}
+		if err != os.ErrPermission {
+			fmt.Printf("Probably failed to unpack because of a crap app: %s\n", app.ID)
 		}
 		return fmt.Errorf("Error unpacking apk: %s", err.Error())
 	}
