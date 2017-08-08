@@ -353,9 +353,7 @@ func init() {
 func main() {
 	http.Handle("/", http.FileServer(http.Dir(util.Cfg.AppDir)))
 
-	http.HandleFunc("/api/apps", appsEndpoint)
-
-	//http.HandleFunc("/api/apps/", gatherApp) //specific app can be grabed here including the logo
+	http.HandleFunc("/api/apps/", appsEndpoint)
 
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
