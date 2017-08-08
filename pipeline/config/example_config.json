@@ -39,5 +39,11 @@
             "user": "apiserv",
             "password": ""
         }
+    },
+    "suggester": {
+      "db": {
+            "user": "suggester",
+            "password": ""
+        }
     }
 }

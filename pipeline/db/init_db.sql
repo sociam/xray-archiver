@@ -106,6 +106,7 @@ create user retriever;
 create user downloader;
 create user analyzer;
 create user apiserv;
+create user suggester;
 
 grant insert, select on search_terms to explorer;
 
@@ -123,7 +124,6 @@ grant select  on playstore_apps to analyzer;
 grant select, insert, update on app_perms to analyzer;
 grant select, insert on app_hosts to analyzer;
 grant select  on companies to analyzer;
-grant select, insert, update on alt_apps to analyzer;
 
 grant select on apps to apiserv;
 grant select on app_versions to apiserv;
@@ -134,3 +134,6 @@ grant select on app_hosts to apiserv;
 grant select on companies to apiserv;
 grant select on hosts to apiserv;
 grant select on alt_apps to apiserv;
+
+grant select, update, insert on alt_apps to suggester;
+grant select on app_versions to suggester;

@@ -35,6 +35,12 @@ type AppVersion struct {
 	Packages    []string  `json:"packages"`
 }
 
+// Alternative App title and playstore url.
+type AltApp struct {
+	Title string `json:"title"`
+	Url   string `json:"url"`
+}
+
 // StoreInfo represents the information contained about an app in its respective
 // store
 type StoreInfo interface{}

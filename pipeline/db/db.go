@@ -416,6 +416,29 @@ func GetLatestApps(num, start int) ([]App, error) {
 	return ret, nil
 }
 
+// Function takes an app's DB ID and returns a collection of
+// alternative apps for the specified app
+func GetAltApps(appID string) ([]AltApp, error) {
+	rows, err := db.Query("SELECT * FROM alt_apps alt WHERE alt.id = $1", appID)
+	if rows != nil {
+		defer rows.close()
+	}
+	if err != nil {
+		return []AltApps{}, err
+	}
+	var result []AltApps
+	for i := 0; rows.Next(); i++ {
+		var altApp AltApp
+		row.scan(&altApp.Title, &altApp.Url)
+	}
+
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+		fmt.Println("Database err", rows.Err())
+	}
+
+	return result, nil
+}
+
 // precentifyArray produces a Postgres compatable 'like any' string intended
 // to be used as part of a larger query.
 func percentifyArray(arr []string) string {
@@ -565,7 +588,6 @@ func QuickQuery(
 
 			appData.StoreInfo = playInf
 
-			fmt.Println("Hosts: ", appData.Hosts)
 			result = append(result, appData)
 		}
 	}
