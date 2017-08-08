@@ -416,7 +416,7 @@ func GetLatestApps(num, start int) ([]App, error) {
 	return ret, nil
 }
 
-// Function takes an app's DB ID and returns a collection of
+// GetAltApps takes an app's DB ID and returns a collection of
 // alternative apps for the specified app
 func GetAltApps(appID string) ([]AltApp, error) {
 	rows, err := db.Query("SELECT a* FROM alt_apps alt WHERE alt.id = $1", appID)
@@ -429,7 +429,7 @@ func GetAltApps(appID string) ([]AltApp, error) {
 	var result []AltApp
 	for i := 0; rows.Next(); i++ {
 		var altApp AltApp
-		rows.Scan(&altApp.ID, &altApp.Title, &altApp.Url)
+		rows.Scan(&altApp.ID, &altApp.Title, &altApp.URL)
 		result = append(result, altApp)
 	}
 

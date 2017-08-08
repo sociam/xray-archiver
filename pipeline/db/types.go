@@ -35,11 +35,11 @@ type AppVersion struct {
 	Packages    []string  `json:"packages"`
 }
 
-// Alternative App title and playstore url. Used in API
+// AltApp represents Alternative App title and playstore url. Used in API
 type AltApp struct {
 	ID    string `json:"id"`
 	Title string `json:"title"`
-	Url   string `json:"url"`
+	URL   string `json:"url"`
 }
 
 // StoreInfo represents the information contained about an app in its respective
