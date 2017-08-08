@@ -89,8 +89,18 @@ async function main() {
             }
 
             try {
-                if (fs.existsSync(path.join(appSavePath, app.app + '.apk'))) {
-                    await db.updateDownloadedApp(app);
+                let apkPath = path.join(appSavePath, app.app + '.apk');
+
+                if (fs.existsSync(apkPath)) {
+                    //Perform a check on apk size
+                    await fs.stat(apkPath, async function(err,stats) {
+                        if(stats.size == 0 || stats.size == undefined) {
+                            await fs.rmdir(appSavePath).catch(logger.warning);
+                            return Promise.reject('File did not successfully download and is a empty size');
+                        }
+
+                        await db.updateDownloadedApp(app);
+                    });
                 }
             } catch (err) {
                 // TODO: Maybe do something else? Destroying process as we have apks that don't exist in db...
