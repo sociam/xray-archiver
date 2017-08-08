@@ -111,8 +111,8 @@ func runServer() {
 		wg := sync.WaitGroup{}
 		wg.Add(len(apps))
 		for _, dbApp := range apps {
+			app := dbApp.UtilApp()
 			go func() {
-				app := dbApp.UtilApp()
 				fmt.Printf("Got app %v\n", app)
 				analyze(app)
 				wg.Done()
