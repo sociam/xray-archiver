@@ -165,9 +165,9 @@ func checkReflect(app *util.App) error {
 	out, err := cmd.Output()
 	if err != nil && strings.TrimSpace(string(out)) == "" {
 		return err
-	} else {
-		app.UsesReflect = err == nil
 	}
+
+	app.UsesReflect = err == nil
 
 	return nil
 }
