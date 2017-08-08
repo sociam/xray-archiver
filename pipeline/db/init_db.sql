@@ -119,10 +119,10 @@ grant select, update on app_versions to downloader;
 
 grant select, update, insert on apps to analyzer;
 grant select, update, insert on app_versions to analyzer;
-grant select on playstore_apps to analyzer;
+grant select  on playstore_apps to analyzer;
 grant select, insert, update on app_perms to analyzer;
 grant select, insert on app_hosts to analyzer;
-grant select on companies to analyzer;
+grant select  on companies to analyzer;
 grant select, insert, update on alt_apps to analyzer;
 
 grant select on apps to apiserv;
