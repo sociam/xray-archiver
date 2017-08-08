@@ -238,7 +238,6 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 				stubs[i].App = result.App
 			}
 
-			// util.WriteJSON(w, stubs)
 			writeData(w, mime, http.StatusOK, stubs)
 		} else {
 			writeData(w, mime, http.StatusOK, results)
@@ -247,10 +246,6 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 	} else {
 		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
 	}
-
-}
-
-func logoEndpoint(w http.ResponseWriter, r *http.Request) {
 
 }
 

@@ -415,16 +415,6 @@ func GetLatestApps(num, start int) ([]App, error) {
 	return ret, nil
 }
 
-func GetIconPath(appID string) (string, error) {
-	var appPath string
-	fmt.Println("Selecting icon path:", appID)
-	err := db.QueryRow("SELECT icon FROM app_versions where app = $1", appID).Scan(&appPath)
-	if err != nil {
-		return "", err
-	}
-	return appPath, nil
-}
-
 // precentifyArray produces a Postgres compatable 'like any' string intended
 // to be used as part of a larger query.
 func percentifyArray(arr []string) string {
