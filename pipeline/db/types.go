@@ -82,8 +82,8 @@ type Developer struct {
 // it is formed of only the title given to the app by the developer
 // and the App ID that it can be uniquely identified as.
 type AppStub struct {
-	Title string
-	App   string
+	Title string `json:"title"`
+	App   string `json:"app"`
 }
 
 // Company represents a company from the database
