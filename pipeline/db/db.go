@@ -43,6 +43,7 @@ func SetLastAnalyzeAttempt(id int64) error {
 	if err != nil {
 		return err
 	}
+	return nil
 }
 
 // AddPackages is a function that allows you to add packages to the Xray DB. The
@@ -625,7 +626,7 @@ func QuickQuery(
 // GetAppsToAnalyze returns a list of up to 10 apps that have analyzed=False and
 // downloaded=True for the analyzer.
 func GetAppsToAnalyze() ([]AppVersion, error) {
-	rows, err := db.Query("SELECT id, app, store, region, version, screen_flags, icon FROM app_versions WHERE analyzed = False AND downloaded = True LIMIT 10")
+	rows, err := db.Query("SELECT id, app, store, region, version, screen_flags, icon FROM app_versions WHERE analyzed = False AND downloaded = True LIMIT 10 ORDER BY last_analyze_attempt")
 	if rows != nil {
 		defer rows.Close()
 	}

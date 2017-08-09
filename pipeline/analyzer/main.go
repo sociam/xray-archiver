@@ -25,8 +25,7 @@ func analyze(app *util.App) error {
 
 	err = db.SetLastAnalyzeAttempt(app.DBID)
 	if err != nil {
-		fmt.Println("le cri (failed to set last_analyze_attempt, is the db set up properly?)")
-		return
+		return fmt.Errorf("le cri (failed to set last_analyze_attempt, is the db set up properly?)")
 	}
 
 	err = app.Unpack()
