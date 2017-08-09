@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/sociam/xray-archiver/pipeline/db"
 	"github.com/sociam/xray-archiver/pipeline/util"
@@ -242,6 +243,35 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// altAppsEndpoint allows for external entities to query for alternative apps based on app ID.
+func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
+	mime := r.Header.Get("Accept")
+	if r.Method == "POST" || r.Method == "GET" {
+		if _, ok := supportedMimes[mime]; !ok {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "Yo Dawg, we deal with json only son.")
+			return
+		}
+
+		split := strings.Split(r.URL.Path, "/")
+
+		if len(split) < 3 {
+			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Bad app slashes specified")
+			return
+		}
+
+		appID := split[3]
+
+		alts, err := db.GetAltApps(appID)
+
+		if err != nil {
+			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Seems like we couldn't find your app... Probs means that we don't have any alts")
+			return
+		}
+
+		writeData(w, mime, http.StatusOK, alts)
+	}
+}
+
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
 var port = flag.Uint("port", 8118, "Port to serve on.")
 
@@ -254,6 +284,7 @@ func main() {
 	http.HandleFunc("/", hello)
 
 	http.HandleFunc("/api/apps/", gatherAppsEndpoint)
+	http.HandleFunc("/api/alt/", altAppsEndpoint)
 
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
