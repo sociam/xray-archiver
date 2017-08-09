@@ -32,8 +32,8 @@ function fetchAlternatives(urlString) {
         // Initialising Variables and Loading HTML into Cheerio
         var $ = cheerio.load(html);
         var altIDs = [];
-        var altTitles = [];
-        var altURLs = [];
+        var altApps = [];
+
 
         // Selecting All Alternative App ID's from the DOM
         $('ul#alternativeList').find('li').each((i, elem) => {
@@ -55,10 +55,17 @@ function fetchAlternatives(urlString) {
         _.forEach(altIDs, (altID) => {
             //logger.debug(altID);
             var aTag = $('#' + altID).find('h3').find('a').first();
-            altTitles.push(aTag.text());
-            altURLs.push(aTag.attr('href'));
+            altApps.push({
+                'title': aTag.text(),
+                'AltToURL': aTag.attr('href')
+            });
         });
-        logger.debug(altURLs);
+        logger.debug(altApps);
+
+        // if no titles or URLs wer found.
+        if(!altApps) {
+            return 'No Alternative App links/Titles could be found. Bailing!';
+        }
 
     });
 }
