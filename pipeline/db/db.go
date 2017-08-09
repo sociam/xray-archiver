@@ -33,7 +33,7 @@ func Open(cfg util.Config, enable bool) error {
 
 //TODO: make Add* functions take a db id and what to add instead of a util.App
 
-// SetLastAnalyzedAttempt sets the last_analyzed_attempt of an app to the
+// SetLastAnalyzeAttempt sets the last_analyzed_attempt of an app to the
 // current time.
 func SetLastAnalyzeAttempt(id int64) error {
 	rows, err := db.Query("UPDATE app_versions SET last_analyze_attempt = $1 WHERE id = $2", time.Now(), id)
