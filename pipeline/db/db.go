@@ -115,7 +115,7 @@ func AddPerms(app *util.App) error {
 		}
 	} else {
 		bothPerms := util.UniqAppend(sPerms, dbPerms)
-		rows, err := db.Query("UPDATE app_perms SET perms = $1 WHERE id = $2",
+		rows, err := db.Query("UPDATE app_perms SET permissions = $1 WHERE id = $2",
 			pq.Array(&bothPerms), app.DBID)
 		if rows != nil {
 			rows.Close()
