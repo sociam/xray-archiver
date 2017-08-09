@@ -48,7 +48,13 @@ func parseManifest(app *util.App) (manifest *AndroidManifest, gotIcon bool, err 
 	}
 
 	split := strings.SplitN(manifest.Application.Icon, "/", 2)
+	if len(split) != 2 {
+		return manifest, false, nil
+	}
 	locn, name := split[0], split[1]
+	if len(locn) < 1 {
+		return manifest, false, nil
+	}
 	locn = path.Join(app.OutDir(), "res", locn[1:]) // /tmp/<outdir>/res/{mipmap,drawable}
 	name = name + ".png"                            // icon_katana.png
 
