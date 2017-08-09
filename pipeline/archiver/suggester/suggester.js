@@ -39,6 +39,7 @@ function fetchAlternatives(urlString) {
         $('ul#alternativeList').find('li').each((i, elem) => {
             // Each alt app has an ID for the app title.
             var val = $(elem).attr('id');
+            // if the element exists on the page.
             if (val) {
                 altIDs.push(val);
             }
