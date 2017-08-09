@@ -3,9 +3,10 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"time"
+
 	"github.com/lib/pq"
 	"github.com/sociam/xray-archiver/pipeline/util"
-	"time"
 )
 
 type xrayDb struct {
@@ -561,6 +562,7 @@ func QuickQuery(
 		var genre sql.NullString
 		var famGenre sql.NullString
 		var video sql.NullString
+		var icon sql.NullString
 		//var perms []string
 		//var packages []string
 
@@ -588,7 +590,7 @@ func QuickQuery(
 			&appData.Store,
 			&appData.Region,
 			&appData.Ver,
-			&appData.Icon,
+			&icon, //&appData.Icon,
 			pq.Array(&appData.Dev.Emails),
 			&appData.Dev.Name,
 			&appData.Dev.StoreSite,
@@ -609,7 +611,7 @@ func QuickQuery(
 			playInf.Genre = genre.String
 			playInf.Video = video.String
 			playInf.FamilyGenre = famGenre.String
-
+			appData.Icon = icon.String
 			appData.StoreInfo = playInf
 
 			result = append(result, appData)
