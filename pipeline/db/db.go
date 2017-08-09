@@ -363,7 +363,6 @@ func GetApp(id string) (App, error) {
 	if err != nil {
 		return App{}, err
 	}
-
 	return app, nil
 }
 
@@ -499,6 +498,7 @@ func QuickQuery(
 		"v.store," +
 		"v.region," +
 		"v.version," +
+		"v.icon," +
 		"d.email," +
 		"d.name," +
 		"d.store_site," +
@@ -575,6 +575,7 @@ func QuickQuery(
 			&appData.Store,
 			&appData.Region,
 			&appData.Ver,
+			&appData.Icon,
 			pq.Array(&appData.Dev.Emails),
 			&appData.Dev.Name,
 			&appData.Dev.StoreSite,

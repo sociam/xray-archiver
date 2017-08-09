@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -55,7 +54,7 @@ func writeData(w http.ResponseWriter, mime string, status int, data interface{})
 		err1 = util.WriteJSON(w, data)
 	}
 	if err1 != nil {
-		log.Println(err1)
+		fmt.Println(err1)
 	}
 }
 
@@ -69,7 +68,6 @@ var dbIDRe = regexp.MustCompile("^\\d+$")
 var appIDRe = regexp.MustCompile("^[[:alpha:]][\\w$]*(\\.[[:alpha:]][\\w$]*)*$")
 
 func parseNumCheck(num string) (val int, oops string, err error) {
-	//oops error
 	val, err = strconv.Atoi(num)
 
 	if err != nil {
@@ -122,13 +120,7 @@ func parseOffset(num string) (val string, oops string, err error) {
 	return num, "", err
 }
 
-// func validGenre(gen string ) (val string, error) {
-// 	//TODO: Check against genre constnats
-// 	return gen
-// }
-
-func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 	//Check input
 	if r.Method == "POST" || r.Method == "GET" {
@@ -231,10 +223,9 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 				stubs[i].App = result.App
 			}
 
-			util.WriteJSON(w, stubs)
-
+			writeData(w, mime, http.StatusOK, stubs)
 		} else {
-			util.WriteJSON(w, results)
+			writeData(w, mime, http.StatusOK, results)
 		}
 
 	} else {
@@ -281,9 +272,9 @@ func init() {
 }
 
 func main() {
-	http.HandleFunc("/", hello)
+	http.Handle("/", http.FileServer(http.Dir(util.Cfg.AppDir)))
 
-	http.HandleFunc("/api/apps/", gatherAppsEndpoint)
+	http.HandleFunc("/api/apps/", appsEndpoint)
 	http.HandleFunc("/api/alt/", altAppsEndpoint)
 
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
