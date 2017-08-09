@@ -42,17 +42,17 @@ func writeData(w http.ResponseWriter, mime string, status int, data interface{})
 	var err1 error
 	w.Header().Set("Content-Type", mime)
 	switch mime {
-		
+
 	case "application/nahmate":
 		err1 = util.WriteDEAN(w, data)
-		
+
 	case "text/plain":
 		_, err1 = w.Write(toBytes(data))
 
 	default:
 		w.Header().Set("Content-Type", "application/json")
 		fallthrough
-		
+
 	case "application/json":
 		err1 = util.WriteJSON(w, data)
 	}

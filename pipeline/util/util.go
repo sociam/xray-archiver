@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"time"
 )
 
 // Unit for maps in data.go
@@ -25,6 +26,7 @@ type App struct {
 	Hosts                  []string
 	Packages               []string
 	Icon                   string
+	UsesReflect            bool
 }
 
 // Permission Struct represents the permission information found
@@ -92,13 +94,21 @@ func (app *App) Unpack() error {
 		if os.IsNotExist(err) {
 			return err
 		}
-		return fmt.Errorf("Failed to open apk %s: %s", apkPath, err.Error())
+		return fmt.Errorf("couldn't open apk %s: %s", apkPath, err.Error())
 	}
 
-	cmd := exec.Command("apktool", "d", apkPath, "-o", outDir, "-f")
+	if err := os.MkdirAll(path.Dir(outDir), 0755); err != nil {
+		return os.ErrPermission
+	}
+	now := time.Now()
+	if err := os.Chtimes(path.Dir(outDir), now, now); err != nil {
+		return os.ErrPermission
+	}
+
+	cmd := exec.Command("apktool", "d", "-s", apkPath, "-o", outDir, "-f")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("Error '%s' unpacking apk; output below:\n%s",
+		return fmt.Errorf("%s unpacking apk; output below:\n%s",
 			err.Error(), string(out))
 	}
 	return nil
