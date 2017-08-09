@@ -1,5 +1,4 @@
 var gplay = require('google-play-scraper');
-const alphabet = require('alphabet');
 const _ = require('lodash');
 const fs = require('fs-extra');
 const Promise = require('bluebird');
@@ -74,8 +73,8 @@ function cartesianProductChars() {
 /**
  * Creates a file of suggestions made by Google play when passing
  * the start of strings, eg. 'a', 'b', 'aa', 'ab' ...
- * 
- * @param {*The list of words used to get autocompletes} startingWords 
+ *
+ * @param {*The list of words used to get autocompletes} startingWords
  */
 // TODO: Store scraped word to the Database not txt
 function scrapeSuggestedWords(startingWords) {
@@ -91,7 +90,11 @@ function scrapeSuggestedWords(startingWords) {
     });
 }
 
-// TODO this stuff needs moving somewhere...
+var alphabet = ['a','b','c','d','e','f','g',
+                'h','i','k','l','m','n','o',
+                'p','q','r','s','t','u','v',
+                'w','x','y','z', ' '];
+
 var single = alphabet.lower;
 var double = cartesianProductChars(alphabet.lower, alphabet.lower);
 var triple = cartesianProductChars(alphabet.lower, alphabet.lower, alphabet.lower);
