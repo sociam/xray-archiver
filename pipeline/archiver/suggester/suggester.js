@@ -58,7 +58,6 @@ function scrapePageForAlts(URLString) {
             var aTag = $('#' + altID).find('h3').find('a').first();
             return {'title': aTag.text(), 'AltToURL': aTag.attr('href')};
         });
-        logger.debug(altApps);
 
         // if no titles or URLs wer found.
         if(!altApps) {
@@ -67,7 +66,7 @@ function scrapePageForAlts(URLString) {
 
         _.forEach(altApps, (altApp) => {
             var url = 'http://alternativeto.net' + altApp.AltToURL;
-            scrapeAltAppPage(url);
+            logger.debug(scrapeAltAppPage(url));
         });
 
     });
@@ -80,7 +79,7 @@ function scrapePageForAlts(URLString) {
  * Alternative To URL for the page.
  */
 function scrapeAltAppPage(URLString) {
-    request(URLString, (err, res, html) => {
+    return request(URLString, (err, res, html) => {
 
         // if there wasn't an err with the request.
         if (err) {
@@ -90,7 +89,23 @@ function scrapeAltAppPage(URLString) {
 
         // Initialising Variables and Loading HTML into Cheerio
         var $ = cheerio.load(html);
-        logger.debug(URLString);
+        var URL = $('a[data-link-action="AppStores Link"]').attr('href');
+
+        // Check if theres No GPlay link.
+        if (!URL) {
+            logger.debug('No Google Play Store Link - Looking for Official Site.');
+            URL = $('a[data-link-action="Official Website Button"]').attr('href');
+        }
+
+        // Check if theres no official Website link
+        if (!URL) {
+            logger.debug('No Official site link');
+            URL = URLString;
+        }
+
+        return URL;
+        
+        //logger.debug(URLString);
     });
 }
 
