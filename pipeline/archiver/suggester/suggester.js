@@ -66,7 +66,7 @@ function scrapePageForAlts(URLString) {
 
         _.forEach(altApps, (altApp) => {
             var url = 'http://alternativeto.net' + altApp.AltToURL;
-            logger.debug(scrapeAltAppPage(url));
+            scrapeAltAppPage(url);
         });
 
     });
