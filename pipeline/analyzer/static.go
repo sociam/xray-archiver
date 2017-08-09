@@ -177,6 +177,7 @@ func checkReflect(app *util.App) error {
 
 	out, err := cmd.Output()
 	if err != nil && strings.TrimSpace(string(out)) == "" {
+		fmt.Printf("Error checking for reflection: output below\n%s\n\n", string(out))
 		return err
 	}
 
