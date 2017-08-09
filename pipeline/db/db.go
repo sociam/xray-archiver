@@ -60,7 +60,7 @@ func AddPackages(app *util.App) error {
 	} else {
 		// The app already exists, only add new packages for that app.
 		bothPkgs := util.UniqAppend(app.Packages, dbPkgs)
-		rows, err := db.Query("UPDATE app_packages SET perms = $1 WHERE id = $2",
+		rows, err := db.Query("UPDATE app_packages SET packages = $1 WHERE id = $2",
 			pq.Array(&bothPkgs), app.DBID)
 		if rows != nil {
 			rows.Close()
@@ -163,6 +163,15 @@ func AddHosts(app *util.App, hosts []string) error {
 	}
 
 	return nil
+}
+
+// SetReflect sets the value of uses_reflect for an app version
+func SetReflect(id int64, val bool) error {
+	rows, err := db.Query("UPDATE app_versions SET uses_reflect = $1 WHERE id = $2", val, id)
+	if rows != nil {
+		rows.Close()
+	}
+	return err
 }
 
 // GetAppVersion gets an app version from the database. The argument app is the
