@@ -92,16 +92,16 @@ func analyze(app *util.App) error {
 		}
 	}
 
-	app.Packages, err = findPackages(app)
-	if err != nil {
-		fmt.Println("Error finding packages: ", err.Error())
-	} else {
-		fmt.Println("Packages found: ", app.Packages)
-		err = db.AddPackages(app)
-		if err != nil {
-			fmt.Printf("Error writing packages to DB: %s\n", err.Error())
-		}
-	}
+	// app.Packages, err = findPackages(app)
+	// if err != nil {
+	// 	fmt.Println("Error finding packages: ", err.Error())
+	// } else {
+	// 	fmt.Println("Packages found: ", app.Packages)
+	// 	err = db.AddPackages(app)
+	// 	if err != nil {
+	// 		fmt.Printf("Error writing packages to DB: %s\n", err.Error())
+	// 	}
+	// }
 
 	err = db.SetAnalyzed(app.DBID)
 	if err != nil {
