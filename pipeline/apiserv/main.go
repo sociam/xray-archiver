@@ -123,7 +123,9 @@ func parseOffset(num string) (val string, oops string, err error) {
 func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 
+	// DONT DELETE DEAN.
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	// DEAN... DONT DELETE.
 
 	//Check input
 	if r.Method == "POST" || r.Method == "GET" {
