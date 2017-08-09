@@ -25,6 +25,13 @@ create table developers(
   site         text
 );
 
+create table alt_apps(
+   id            text             references apps(id) not null,
+   title         text                                 not null,
+   url           text                                         ,
+   primary key (id, title)
+)
+
 create table playstore_apps(
   id                      int primary key references app_versions(id) not null,
   title                  text                                         not null,
@@ -100,6 +107,7 @@ create user retriever;
 create user downloader;
 create user analyzer;
 create user apiserv;
+create user suggester;
 
 grant insert, select on search_terms to explorer;
 
@@ -113,10 +121,15 @@ grant select, update on app_versions to downloader;
 
 grant select, update, insert on apps to analyzer;
 grant select, update, insert on app_versions to analyzer;
-grant select on playstore_apps to analyzer;
+grant select  on playstore_apps to analyzer;
 grant select, insert, update on app_perms to analyzer;
 grant select, insert on app_hosts to analyzer;
+<<<<<<< HEAD
+grant select  on companies to analyzer;
+=======
 grant select on companies to analyzer;
+grant select, insert, update on alt_apps to analyzer;
+>>>>>>> Added table to init_db.sql
 
 grant select on apps to apiserv;
 grant select on app_versions to apiserv;
@@ -126,3 +139,10 @@ grant select on app_perms to apiserv;
 grant select on app_hosts to apiserv;
 grant select on companies to apiserv;
 grant select on hosts to apiserv;
+grant select on alt_apps to apiserv;
+<<<<<<< HEAD
+
+grant select, update, insert on alt_apps to suggester;
+grant select on app_versions to suggester;
+=======
+>>>>>>> Added table to init_db.sql
