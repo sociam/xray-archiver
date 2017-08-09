@@ -99,7 +99,7 @@ func AddPerms(app *util.App) error {
 	}
 
 	var dbPerms []string
-	err := db.QueryRow("SELECT perms FROM app_perms WHERE id = $1", app.DBID).
+	err := db.QueryRow("SELECT permissions FROM app_perms WHERE id = $1", app.DBID).
 		Scan(pq.Array(&dbPerms))
 	if err != nil {
 		if err != sql.ErrNoRows {
@@ -165,7 +165,7 @@ func AddHosts(app *util.App, hosts []string) error {
 		}
 	} else {
 		bothHosts := util.UniqAppend(hosts, dbHosts)
-		rows, err := db.Query("UPDATE app_host SET hosts = $1 WHERE id = $2",
+		rows, err := db.Query("UPDATE app_hosts SET hosts = $1 WHERE id = $2",
 			pq.Array(&bothHosts), app.DBID)
 		if rows != nil {
 			rows.Close()
