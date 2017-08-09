@@ -48,7 +48,13 @@ func parseManifest(app *util.App) (manifest *AndroidManifest, gotIcon bool, err 
 	}
 
 	split := strings.SplitN(manifest.Application.Icon, "/", 2)
+	if len(split) != 2 {
+		return manifest, false, nil
+	}
 	locn, name := split[0], split[1]
+	if len(locn) < 1 {
+		return manifest, false, nil
+	}
 	locn = path.Join(app.OutDir(), "res", locn[1:]) // /tmp/<outdir>/res/{mipmap,drawable}
 	name = name + ".png"                            // icon_katana.png
 
@@ -94,7 +100,7 @@ type company struct {
 	Description  string   `json:"description"`
 }
 
-var hostregex = regexp.MustCompile(".https?://([^/]+)")
+var hostregex = regexp.MustCompile(".https?://([^!/:>[:cntrl:][:space:]]+)")
 
 func simpleAnalyze(app *util.App) ([]string, error) {
 	//TODO: fix error handling
@@ -145,6 +151,8 @@ func simpleAnalyze(app *util.App) ([]string, error) {
 		}
 	}
 
+	urls = util.Dedup(urls)
+
 	// var appTrackers []string
 
 	// irrelevant := []string{"app", "identity", "n/a", "other", "", "library"}
@@ -169,10 +177,13 @@ func simpleAnalyze(app *util.App) ([]string, error) {
 }
 
 func checkReflect(app *util.App) error {
-	cmd := exec.Command("grep", "-Paqh", "\x00\x00\x00.Ljava/lang/reflect[/a-zA-Z]*;\x00\x00\x00", "--", path.Join(app.OutDir(), "classes.dex"))
+	cmd := exec.Command("grep", "-Paqh",
+		"\\x00\\x00\\x00.Ljava/lang/reflect[/a-zA-Z]*;\\x00\\x00\\x00",
+		"--", path.Join(app.OutDir(), "classes.dex"))
 
 	out, err := cmd.Output()
-	if err != nil && strings.TrimSpace(string(out)) == "" {
+	if err != nil && strings.TrimSpace(string(out)) != "" {
+		fmt.Printf("Error checking for reflection: output below\n%s\n\n", string(out))
 		return err
 	}
 

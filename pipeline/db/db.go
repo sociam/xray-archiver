@@ -3,9 +3,9 @@ package db
 import (
 	"database/sql"
 	"fmt"
-
 	"github.com/lib/pq"
 	"github.com/sociam/xray-archiver/pipeline/util"
+	"time"
 )
 
 type xrayDb struct {
@@ -32,6 +32,19 @@ func Open(cfg util.Config, enable bool) error {
 }
 
 //TODO: make Add* functions take a db id and what to add instead of a util.App
+
+// SetLastAnalyzeAttempt sets the last_analyzed_attempt of an app to the
+// current time.
+func SetLastAnalyzeAttempt(id int64) error {
+	rows, err := db.Query("UPDATE app_versions SET last_analyze_attempt = $1 WHERE id = $2", time.Now(), id)
+	if rows != nil {
+		rows.Close()
+	}
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 // AddPackages is a function that allows you to add packages to the Xray DB. The
 // argument app must contain a DB ID and an array of package names.
@@ -86,7 +99,7 @@ func AddPerms(app *util.App) error {
 	}
 
 	var dbPerms []string
-	err := db.QueryRow("SELECT perms FROM app_perms WHERE id = $1", app.DBID).
+	err := db.QueryRow("SELECT permissions FROM app_perms WHERE id = $1", app.DBID).
 		Scan(pq.Array(&dbPerms))
 	if err != nil {
 		if err != sql.ErrNoRows {
@@ -102,7 +115,7 @@ func AddPerms(app *util.App) error {
 		}
 	} else {
 		bothPerms := util.UniqAppend(sPerms, dbPerms)
-		rows, err := db.Query("UPDATE app_perms SET perms = $1 WHERE id = $2",
+		rows, err := db.Query("UPDATE app_perms SET permissions = $1 WHERE id = $2",
 			pq.Array(&bothPerms), app.DBID)
 		if rows != nil {
 			rows.Close()
@@ -152,7 +165,7 @@ func AddHosts(app *util.App, hosts []string) error {
 		}
 	} else {
 		bothHosts := util.UniqAppend(hosts, dbHosts)
-		rows, err := db.Query("UPDATE app_host SET hosts = $1 WHERE id = $2",
+		rows, err := db.Query("UPDATE app_hosts SET hosts = $1 WHERE id = $2",
 			pq.Array(&bothHosts), app.DBID)
 		if rows != nil {
 			rows.Close()
@@ -614,7 +627,7 @@ func QuickQuery(
 // GetAppsToAnalyze returns a list of up to 10 apps that have analyzed=False and
 // downloaded=True for the analyzer.
 func GetAppsToAnalyze() ([]AppVersion, error) {
-	rows, err := db.Query("SELECT id, app, store, region, version, screen_flags, icon FROM app_versions WHERE analyzed = False AND downloaded = True LIMIT 10")
+	rows, err := db.Query("SELECT v.id, v.app,v.store, v.region, v.version, v.screen_flags, v.icon FROM app_versions v FULL OUTER JOIN playstore_apps p ON (v.id = p.id) WHERE v.analyzed = False AND v.downloaded = True ORDER BY v.last_analyze_attempt NULLS FIRST, p.max_installs USING> LIMIT 10")
 	if rows != nil {
 		defer rows.Close()
 	}

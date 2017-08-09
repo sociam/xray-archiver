@@ -23,7 +23,11 @@ func analyze(app *util.App) error {
 	// 	}
 	// }
 
-	fmt.Print("Unpacking... ")
+	err = db.SetLastAnalyzeAttempt(app.DBID)
+	if err != nil {
+		return fmt.Errorf("le cri (failed to set last_analyze_attempt, is the db set up properly?)")
+	}
+
 	err = app.Unpack()
 	if err != nil {
 		fmt.Println()
@@ -39,7 +43,7 @@ func analyze(app *util.App) error {
 		}
 		return fmt.Errorf("Error unpacking apk: %s", err.Error())
 	}
-	fmt.Println("done.")
+	fmt.Printf("Unpacked app %s version %s\n", app.ID, app.Ver)
 
 	fmt.Println("Getting permissions...")
 	manifest, gotIcon, err := parseManifest(app)
@@ -88,16 +92,16 @@ func analyze(app *util.App) error {
 		}
 	}
 
-	app.Packages, err = findPackages(app)
-	if err != nil {
-		fmt.Println("Error finding packages: ", err.Error())
-	} else {
-		fmt.Println("Packages found: ", app.Packages)
-		err = db.AddPackages(app)
-		if err != nil {
-			fmt.Printf("Error writing packages to DB: %s\n", err.Error())
-		}
-	}
+	// app.Packages, err = findPackages(app)
+	// if err != nil {
+	// 	fmt.Println("Error finding packages: ", err.Error())
+	// } else {
+	// 	fmt.Println("Packages found: ", app.Packages)
+	// 	err = db.AddPackages(app)
+	// 	if err != nil {
+	// 		fmt.Printf("Error writing packages to DB: %s\n", err.Error())
+	// 	}
+	// }
 
 	err = db.SetAnalyzed(app.DBID)
 	if err != nil {
