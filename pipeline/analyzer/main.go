@@ -23,7 +23,12 @@ func analyze(app *util.App) error {
 	// 	}
 	// }
 
-	fmt.Print("Unpacking... ")
+	err = db.SetLastAnalyzeAttempt(app.DBID)
+	if err != nil {
+		fmt.Println("le cri (failed to set last_analyze_attempt, is the db set up properly?)")
+		return
+	}
+
 	err = app.Unpack()
 	if err != nil {
 		fmt.Println()
@@ -39,7 +44,7 @@ func analyze(app *util.App) error {
 		}
 		return fmt.Errorf("Error unpacking apk: %s", err.Error())
 	}
-	fmt.Println("done.")
+	fmt.Printf("Unpacked app %s version %s\n", app.ID, app.Ver)
 
 	fmt.Println("Getting permissions...")
 	manifest, gotIcon, err := parseManifest(app)

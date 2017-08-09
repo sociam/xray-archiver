@@ -169,7 +169,9 @@ func simpleAnalyze(app *util.App) ([]string, error) {
 }
 
 func checkReflect(app *util.App) error {
-	cmd := exec.Command("grep", "-Paqh", "\x00\x00\x00.Ljava/lang/reflect[/a-zA-Z]*;\x00\x00\x00", "--", path.Join(app.OutDir(), "classes.dex"))
+	cmd := exec.Command("grep", "-Paqh",
+		"\x00\x00\x00.Ljava/lang/reflect[/a-zA-Z]*;\x00\x00\x00",
+		"--", path.Join(app.OutDir(), "classes.dex"))
 
 	out, err := cmd.Output()
 	if err != nil && strings.TrimSpace(string(out)) == "" {

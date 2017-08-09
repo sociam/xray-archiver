@@ -4,17 +4,18 @@ create table apps(
 );
 
 create table app_versions(
-  id                 serial         primary key not null,
-  app                  text references apps(id) not null,
-  store                text                     not null,
-  region               text                     not null,
-  version              text                     not null,
-  screen_flags          int                             ,
-  downloaded           bool                     not null,
-  analyzed             bool                     not null,
-  last_dl_attempt timestamp                     not null,
-  icon                 text                             ,
-  uses_reflect         bool
+  id                      serial         primary key not null,
+  app                       text references apps(id) not null,
+  store                     text                     not null,
+  region                    text                     not null,
+  version                   text                     not null,
+  screen_flags               int                             ,
+  downloaded                bool                     not null,
+  analyzed                  bool                     not null,
+  last_dl_attempt      timestamp                             ,
+  icon                      text                             ,
+  uses_reflect              bool                             ,
+  last_analyze_attempt timestamp
 );
 
 create table developers(

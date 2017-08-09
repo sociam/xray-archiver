@@ -3,9 +3,9 @@ package db
 import (
 	"database/sql"
 	"fmt"
-
 	"github.com/lib/pq"
 	"github.com/sociam/xray-archiver/pipeline/util"
+	"time"
 )
 
 type xrayDb struct {
@@ -32,6 +32,18 @@ func Open(cfg util.Config, enable bool) error {
 }
 
 //TODO: make Add* functions take a db id and what to add instead of a util.App
+
+// SetLastAnalyzedAttempt sets the last_analyzed_attempt of an app to the
+// current time.
+func SetLastAnalyzeAttempt(id int64) error {
+	rows, err := db.Query("UPDATE app_versions SET last_analyze_attempt = $1 WHERE id = $2", time.Now(), id)
+	if rows != nil {
+		rows.Close()
+	}
+	if err != nil {
+		return err
+	}
+}
 
 // AddPackages is a function that allows you to add packages to the Xray DB. The
 // argument app must contain a DB ID and an array of package names.
