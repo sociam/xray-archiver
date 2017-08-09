@@ -79,7 +79,7 @@ function scrapePageForAlts(URLString) {
  * Alternative To URL for the page.
  */
 function scrapeAltAppPage(URLString) {
-    return request(URLString, (err, res, html) => {
+    request(URLString, (err, res, html) => {
 
         // if there wasn't an err with the request.
         if (err) {
