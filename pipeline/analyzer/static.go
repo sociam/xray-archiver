@@ -100,7 +100,7 @@ type company struct {
 	Description  string   `json:"description"`
 }
 
-var hostregex = regexp.MustCompile(".https?://([^!/:>[:cntrl:][:space:]]+)")
+var hostregex = regexp.MustCompile(".?https?://([^!/:>[:cntrl:][:space:]]+)")
 
 func simpleAnalyze(app *util.App) ([]string, error) {
 	//TODO: fix error handling
