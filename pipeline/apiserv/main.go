@@ -58,6 +58,17 @@ func writeData(w http.ResponseWriter, mime string, status int, data interface{})
 	}
 }
 
+func mimeCheck(mime string) string {
+	mimes := strings.Split(mime, ",")
+	for _, mime := range mimes {
+		mime = strings.TrimSpace(mime)
+		if _, ok := supportedMimes[mime]; ok {
+			return mime
+		}
+	}
+	return ""
+}
+
 func hello(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Got spurious request on " + r.URL.Path)
 	writeErr(w, r.Header.Get("Accept"), http.StatusNotFound, "not_found", "Nah mate!")
@@ -129,7 +140,10 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	//Check input
 	if r.Method == "POST" || r.Method == "GET" {
-		if _, ok := supportedMimes[mime]; !ok {
+
+		mime := mimeCheck(mime)
+
+		if mime == "" {
 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
 			return
 		}
@@ -141,7 +155,6 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		mime := r.Header.Get("Accept")
 		//Default apps
 
 		limit := "10"
