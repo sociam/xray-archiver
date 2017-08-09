@@ -180,6 +180,22 @@ func uniqAppend(a []interface{}, b []interface{}) []interface{} {
 }
 */
 
+// Dedup deduplicates a slice
+func Dedup(a []string) []string {
+	length := len(a) - 1
+	for i := 0; i < length; i++ {
+		for j := i + 1; j <= length; j++ {
+			if a[i] == a[j] {
+				a[j] = a[length]
+				a = a[:length]
+				length--
+				j--
+			}
+		}
+	}
+	return a
+}
+
 // Combine puts together two maps of string keys and unit values.
 func Combine(a, b map[string]Unit) map[string]Unit {
 	ret := a

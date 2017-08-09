@@ -94,7 +94,7 @@ type company struct {
 	Description  string   `json:"description"`
 }
 
-var hostregex = regexp.MustCompile(".https?://([^/]+)")
+var hostregex = regexp.MustCompile(".https?://([^!/:>[:cntrl:][:space:]]+)")
 
 func simpleAnalyze(app *util.App) ([]string, error) {
 	//TODO: fix error handling
@@ -145,6 +145,8 @@ func simpleAnalyze(app *util.App) ([]string, error) {
 		}
 	}
 
+	urls = util.Dedup(urls)
+
 	// var appTrackers []string
 
 	// irrelevant := []string{"app", "identity", "n/a", "other", "", "library"}
@@ -170,7 +172,7 @@ func simpleAnalyze(app *util.App) ([]string, error) {
 
 func checkReflect(app *util.App) error {
 	cmd := exec.Command("grep", "-Paqh",
-		"\x00\x00\x00.Ljava/lang/reflect[/a-zA-Z]*;\x00\x00\x00",
+		"\\x00\\x00\\x00.Ljava/lang/reflect[/a-zA-Z]*;\\x00\\x00\\x00",
 		"--", path.Join(app.OutDir(), "classes.dex"))
 
 	out, err := cmd.Output()
