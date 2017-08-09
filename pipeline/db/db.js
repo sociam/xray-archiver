@@ -44,6 +44,15 @@ class DB {
         return ret;
     }
 
+    async insertAltApp(appID, altTitle, altURL) {
+        try {
+            await this.query('INSERT INTO alt_apps(id, title, url) VALUES ($1, $2, $3)', [appID, altTitle, altURL]);
+        }
+        catch (err) {
+            logger.err(err);
+        }
+    }
+
     async insertDev(dev) {
         try {
             var res = await this.query('SELECT id FROM developers WHERE $1 = ANY(email)', [dev.email]);
