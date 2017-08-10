@@ -563,6 +563,7 @@ func QuickQuery(
 		var famGenre sql.NullString
 		var video sql.NullString
 		var icon sql.NullString
+		devStoreSite, devSite := sql.NullString{}, sql.NullString{}
 		//var perms []string
 		//var packages []string
 		hosts, perms, pkgs := []sql.NullString{}, []sql.NullString{}, []sql.NullString{}
@@ -593,8 +594,8 @@ func QuickQuery(
 			&icon, //&appData.Icon,
 			pq.Array(&appData.Dev.Emails),
 			&appData.Dev.Name,
-			&appData.Dev.StoreSite,
-			&appData.Dev.Site,
+			&devStoreSite,    //&appData.Dev.StoreSite,
+			&devSite,         //&appData.Dev.Site,
 			pq.Array(&hosts), //pq.Array(&appData.Hosts),
 			pq.Array(&perms), //pq.Array(&appData.Perms),
 			pq.Array(&pkgs))  //pq.Array(&appData.Packages))
@@ -611,6 +612,8 @@ func QuickQuery(
 			playInf.FamilyGenre = famGenre.String
 			appData.Icon = icon.String
 			appData.StoreInfo = playInf
+			appData.Dev.StoreSite = devStoreSite.String
+			appData.Dev.Site = devSite.String
 
 			for _, host := range hosts {
 				appData.Hosts = append(appData.Hosts, host.String)
