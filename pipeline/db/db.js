@@ -67,7 +67,7 @@ class DB {
         var res = await this.query('SELECT ID FROM apps WHERE id NOT IN (SELECT app_id AS id FROM alt_apps)');
 
         if (res.rowCount <= 0 ) {
-            return Promise.reject('No apps need alternatives to be searched for. Or something has screwed up');
+            logger.debug('No apps need alternatives to be searched for. Or something has screwed up');
         }
 
         logger.info(res.rowCount, 'Apps need alternatives to be scraped.');

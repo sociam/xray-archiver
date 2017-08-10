@@ -417,7 +417,7 @@ func GetLatestApps(num, start int) ([]App, error) {
 }
 
 // GetAltApps takes an app's DB ID and returns a collection of
-// alternative apps for the specified app
+// alternative apps for the specified app - For the API
 func GetAltApps(appID string) ([]AltApp, error) {
 	rows, err := db.Query("SELECT * FROM alt_apps alt WHERE alt.app_id = $1", appID)
 	if rows != nil {
@@ -430,14 +430,30 @@ func GetAltApps(appID string) ([]AltApp, error) {
 	for i := 0; rows.Next(); i++ {
 		var altApp AltApp
 
+		// initialising nullable strings for populating from database
+		AltAppTitle := sql.NullString{}
+		GPlayURL := sql.NullString{}
+		GPlayID := sql.NullString{}
+		IconURL := sql.NullString{}
+		OfficialSiteURL := sql.NullString{}
+
+		// Scanning from database into alt app object / nullable strings
 		rows.Scan(
 			&altApp.AppID,
-			&altApp.AltAppTitle,
-			&altApp.GPlayURL,
-			&altApp.GPlayID,
-			&altApp.IconURL,
-			&altApp.OfficialSiteURL,
+			&AltAppTitle,
+			&GPlayURL,
+			&GPlayID,
+			&IconURL,
+			&OfficialSiteURL,
 			&altApp.IsAnalysed)
+
+		// putting nullable strings into alt app object.
+		altApp.AltAppTitle = AltAppTitle.String
+		altApp.GPlayURL = GPlayURL.String
+		altApp.GPlayID = GPlayID.String
+		altApp.IconURL = IconURL.String
+		altApp.OfficialSiteURL = OfficialSiteURL.String
+
 		result = append(result, altApp)
 	}
 

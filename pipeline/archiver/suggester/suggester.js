@@ -148,7 +148,10 @@ function scrapeAltAppPage(altApp) {
 }
 
 db.getAppsToFindAltsForThatHaventYetHadThemFound()
-
+    .then((rows) => {
+        logger.debug(rows.length);
+    })
+    .catch((err)=>logger.err(err));
 
 
 scrapePageForAlts('http://alternativeto.net/browse/search/?license=free&platform=android&q=facebook');
