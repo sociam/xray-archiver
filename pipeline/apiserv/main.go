@@ -164,7 +164,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 		permissions := []string{""}
 		appIDs := []string{""}
 
-		fmt.Printf("Parsing app form parameters, params size  %s", fmt.Sprint(len(r.Form)))
+		fmt.Printf("Parsing app form parameters, params size %s", fmt.Sprint(len(r.Form)))
 
 		for name, val := range r.Form {
 			oops := ""
