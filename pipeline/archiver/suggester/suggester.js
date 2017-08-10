@@ -21,7 +21,7 @@ var db = new Database('suggester');
 function scrapePageForAlts(URLString, appID) {
 
     // Request the page from the Site.
-    request(URLString, (err, res, html) => {
+    return request(URLString, (err, res, html) => {
 
         // if there wasn't an err with the request.
         if (err) {
@@ -61,7 +61,7 @@ function scrapePageForAlts(URLString, appID) {
                 'altAppIconURL': '',
                 'gPlayURL': '',
                 'gPlayAppID': '',
-                'officalSiteURL': '',
+                'officialSiteURL': '',
                 'appID': appID
             };
         });
@@ -74,7 +74,7 @@ function scrapePageForAlts(URLString, appID) {
         _.forEach(altApps, (altApp) => {
             scrapeAltAppPage(altApp);
         });
-
+        return 'Apps Scraped';
     });
 }
 
@@ -103,7 +103,7 @@ function addOfficialSiteURL(altApp, URL) {
         return altApp;
     }
 
-    altApp.officalSiteURL = URL;
+    altApp.officialSiteURL = URL;
     return altApp;
 
 }
@@ -122,7 +122,7 @@ at it will just return
  *  App's GPlayStore ID.
  */
 function scrapeAltAppPage(altApp) {
-    request(altApp.altToURL, (err, res, html) => {
+    return request(altApp.altToURL, (err, res, html) => {
 
         // if there wasn't an err with the request.
         if (err) {
@@ -145,14 +145,14 @@ function scrapeAltAppPage(altApp) {
 
         altApp.altAppIconURL = $('#appHeader').find('img').first().attr('data-src-retina');
 
-        db.insertAltApp(altApp);
+        return db.insertAltApp(altApp);
     });
 }
 
 
 function findAppAltPage(URLString, appID) {
     // Request the page from the Site.
-    request(URLString, (err, res, html) => {
+    return request(URLString, (err, res, html) => {
 
         // if there wasn't an err with the request.
         if (err) {
@@ -172,20 +172,20 @@ function findAppAltPage(URLString, appID) {
             URLString = 'http://alternativeto.net' + resHref; 
         }
 
-        scrapePageForAlts(URLString, appID);
-
+        return scrapePageForAlts(URLString, appID);
     });
 }
 
-db.getAppsToFindAltsForThatHaventYetHadThemFound(4)
-    .then((rows) => {
-        _.forEach(rows, (row) => {
-            var encodedURI = encodeURIComponent(row.title);
-            encodedURI = encodedURI.replace(new RegExp('%20', 'g'), '+');
-            findAppAltPage(
-                'http://alternativeto.net/browse/search/?license=free&platform=android&q=' + encodedURI,
-                row.app
-            );
-        });
-    })
-    .catch((err)=>logger.err(err));
+(async() => {
+    var rows = await db.getAppsToFindAltsForThatHaventYetHadThemFound(10);
+
+    await _.forEach(rows, async (row) => {
+        var encodedURI = encodeURIComponent(row.title);
+        encodedURI = encodedURI.replace(new RegExp('%20', 'g'), '+');
+        findAppAltPage(
+            'http://alternativeto.net/browse/search/?license=free&platform=android&q=' + encodedURI,
+            row.app
+        );
+    });
+
+})();

@@ -68,7 +68,7 @@ class DB {
         var isCollected = false;
         
         if (altApp.gPlayID != '') {
-            var analysedRes = this.query('SELECT analyzed from app_versions where app = $1 ', [altApp.gPlayID])
+            var analysedRes = await this.query('SELECT analyzed from app_versions where app = $1 ', [altApp.gPlayAppID]);
             if (analysedRes.rowCount > 0) {
                 isCollected = true;
             }
@@ -77,10 +77,12 @@ class DB {
         var client = await this.connect();
         logger.debug('Connected');
 
-        var checkRes = client.lquery(
-            'SELECT * FROM alt_apps WHERE title = $1 and app_id = $2',
+        var checkRes = await client.lquery(
+            'SELECT * FROM alt_apps WHERE alt_app_title = $1 and app_id = $2',
             [altApp.title, altApp.appID]
         );
+        
+        logger.debug(checkRes.rowCount);
 
         if (checkRes.rowCount == 0) {
             try {
@@ -94,8 +96,8 @@ class DB {
                         altApp.title,
                         altApp.altToURL,
                         altApp.gPlayURL,
-                        altApp.gPlayID,
-                        altApp.iconURL,
+                        altApp.gPlayAppID,
+                        altApp.altAppIconURL,
                         altApp.officialSiteURL,
                         isCollected
                     ]);
@@ -236,9 +238,9 @@ class DB {
         var appExists = false,
             verExists = false;
         var verId;
-        var res = await this.query('SELECT * FROM apps WHERE id = $1', [app.appId]);
+        var res = await this.query('SELECT * FROM apps WHERE id = $1', [app.gPlayAppID]);
 
-        if (res.rowCount > 0) {
+        if (res.rowCount != 0) {
             appExists = true;
             // app exists in database, check if version does as well
             var res1 = await this.query(
