@@ -19,11 +19,11 @@ EOF
 PREFIX="/usr/local"
 while [[ $# > 2 ]]; do
   case "$1" in
-    -h|--help) usage; exit 0;;
+    -h|--help)     usage; exit 0;;
     -d|--data-dir) DATA_DIR="$2"; shift ;;
-    -p|--prefix) PREFIX="$2"; shift ;;
-    --) shift; break;;
-    *)  usage; exit 64 ;;
+    -p|--prefix)   PREFIX="$2"; shift ;;
+    --)            shift; break;;
+    *)             usage; exit 64 ;;
   esac
   shift
 done
@@ -70,12 +70,13 @@ if ! id -u xray &> /dev/null; then
 fi
 
 install -o xray -Ddm775 "$DATA_DIR/apk_archive"
+install -dm755 "$PREFIX/lib/xray/"
 
 install -Dm755 analyzer/analyzer "$PREFIX/bin/analyzer"
 install -Dm755 apiserv/apiserv "$PREFIX/bin/apiserv"
 
 # package.json
-install -Dm644 package.json package-lock.json "$PREFIX/lib/xray/"
+install -Dm644 package.json package-lock.json -t "$PREFIX/lib/xray/"
 
 # Downloader
 install -Dm644 archiver/downloader/downloader.js -t "$PREFIX/lib/xray/archiver/downloader"
@@ -99,6 +100,13 @@ install -Dm644\
         archiver/retriever/xray-retriever.service\
         archiver/explorer/xray-explorer.service\
         -t "$PREFIX/lib/systemd/system/"
+
+cd "$PREFIX/lib/systemd/system"
+for f in \
+  "xray-apiserv.service" "xray-analyzer.service" "xray-explorer.service"\
+  "xray-downloader.service" "xray-retriever.service"; do
+  sed -i -e "s:<<<PREFIX>>>:$PREFIX:g" "$f"
+done
 
 systemctl daemon-reload
 
