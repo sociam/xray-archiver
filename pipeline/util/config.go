@@ -78,7 +78,7 @@ func LoadCfg(cfgFile string, requester int) error {
 		Cfg.EDIHostname = "edi.sociam.org"
 	}
 	if Cfg.DataDir == "" {
-		Cfg.DataDir = "/usr/local/var/xray"
+		Cfg.DataDir = "/var/xray"
 	}
 	Cfg.AppDir = path.Join(Cfg.DataDir, "apps")
 	if Cfg.UnpackDir == "" {
