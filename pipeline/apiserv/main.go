@@ -134,9 +134,7 @@ func parseOffset(num string) (val string, oops string, err error) {
 func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 
-	// DONT DELETE DEAN.
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	// DEAN... DONT DELETE.
 
 	//Check input
 	if r.Method == "POST" || r.Method == "GET" {
@@ -159,6 +157,8 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		offset := "0"
 		isFull := false
+		isAnalyzed := false
+		store := "playstore_apps"
 
 		titles := []string{""}
 		developers := []string{""}
@@ -197,6 +197,14 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
+			case "isAnalyzed":
+				var err error
+				isAnalyzed, err = strconv.ParseBool(val[0])
+				if err != nil {
+					writeErr(w, mime, http.StatusBadRequest, "bad_form", "isFull needs to be a boolean value, true or false")
+					return
+				}
+
 			case "title":
 				fmt.Println("titles:", len(val))
 				titles = val
@@ -223,7 +231,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Println("Gathering full details")
 
-		results, err := db.QuickQuery(isFull, "playstore_apps", limit, offset, developers, genres, permissions, appIDs, titles)
+		results, err := db.QuickQuery(isFull, isAnalyzed, store, limit, offset, developers, genres, permissions, appIDs, titles)
 
 		if err != nil {
 			fmt.Println("Error querying database: ", err.Error())
