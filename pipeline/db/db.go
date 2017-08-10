@@ -3,9 +3,10 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"time"
+
 	"github.com/lib/pq"
 	"github.com/sociam/xray-archiver/pipeline/util"
-	"time"
 )
 
 type xrayDb struct {
@@ -556,16 +557,10 @@ func QuickQuery(
 		var playInf PlayStoreInfo
 
 		//Potential null values
-		var summ sql.NullString
-		var desc sql.NullString
-		var genre sql.NullString
-		var famGenre sql.NullString
-		var video sql.NullString
-		var icon sql.NullString
-		devStoreSite, devSite := sql.NullString{}, sql.NullString{}
+		var summ, desc, genre, famGenre, video, icon, devStoreSite, devSite sql.NullString
 		//var perms []string
 		//var packages []string
-		hosts, perms, pkgs := []sql.NullString{}, []sql.NullString{}, []sql.NullString{}
+		hosts, perms, pkgs, recentChanges := []sql.NullString{}, []sql.NullString{}, []sql.NullString{}, []sql.NullString{}
 		var err error
 		//Cannot just cast straight into types because of the postgre type conversion
 		err = rows.Scan(
@@ -585,7 +580,7 @@ func QuickQuery(
 			&playInf.Updated,
 			&playInf.AndroidVer,
 			&playInf.ContentRating,
-			pq.Array(&playInf.RecentChanges),
+			pq.Array(&recentChanges),
 			&appData.App,
 			&appData.Store,
 			&appData.Region,
@@ -622,6 +617,9 @@ func QuickQuery(
 			}
 			for _, pkg := range pkgs {
 				appData.Packages = append(appData.Packages, pkg.String)
+			}
+			for _, change := range recentChanges {
+				playInf.RecentChanges = append(playInf.RecentChanges, change.String)
 			}
 			result = append(result, appData)
 		}
