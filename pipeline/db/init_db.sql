@@ -27,6 +27,7 @@ create table developers(
 create table alt_apps(
    app_id                text             references apps(id) not null,
    alt_app_title         text                                 not null,
+   alt_to_url            text                                 not null,
    g_play_url            text                                         ,
    g_play_id             text                                         ,
    icon_url              text                                         ,
@@ -49,7 +50,7 @@ create table playstore_apps(
   family_genre           text                                                 ,
   min_installs         bigint                                                 ,
   max_installs         bigint                                                 ,
-  developer               int               references developers(id) not null,
+  developer               int               referenc s developers(id) not null,
   updated                date                                         not null,
   android_ver            text                                         not null,
   content_rating         text                                                 ,

@@ -61,7 +61,8 @@ function scrapePageForAlts(URLString, appID) {
                 'altAppIconURL': '',
                 'gPlayURL': '',
                 'gPlayAppID': '',
-                'officalSiteURL': ''
+                'officalSiteURL': '',
+                'appID': appID
             };
         });
 
@@ -71,7 +72,7 @@ function scrapePageForAlts(URLString, appID) {
         }
 
         _.forEach(altApps, (altApp) => {
-            scrapeAltAppPage(altApp, appID);
+            scrapeAltAppPage(altApp);
         });
 
     });
@@ -120,7 +121,7 @@ at it will just return
  *  App's Icon URL
  *  App's GPlayStore ID.
  */
-function scrapeAltAppPage(altApp, appID) {
+function scrapeAltAppPage(altApp) {
     request(altApp.altToURL, (err, res, html) => {
 
         // if there wasn't an err with the request.
@@ -144,7 +145,7 @@ function scrapeAltAppPage(altApp, appID) {
 
         altApp.altAppIconURL = $('#appHeader').find('img').first().attr('data-src-retina');
 
-        db.insertAltApp(altApp, appID);
+        db.insertAltApp(altApp);
     });
 }
 

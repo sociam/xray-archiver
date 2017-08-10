@@ -63,6 +63,56 @@ class DB {
         return res.rows[0].id;
     }
 
+    async insertAltApp(altApp) {
+        // check if the current alt app exists in the db and has been analysed.
+        var isCollected = false;
+        
+        if (altApp.gPlayID != '') {
+            var analysedRes = this.query('SELECT analyzed from app_versions where app = $1 ', [altApp.gPlayID])
+            if (analysedRes.rowCount > 0) {
+                isCollected = true;
+            }
+        }
+
+        var client = await this.connect();
+        logger.debug('Connected');
+
+        var checkRes = client.lquery(
+            'SELECT * FROM alt_apps WHERE title = $1 and app_id = $2',
+            [altApp.title, altApp.appID]
+        );
+
+        if (checkRes.rowCount == 0) {
+            try {
+                await client.lquery('BEGIN');
+                await client.lquery(
+                    'INSERT INTO alt_apps( \
+                        app_id, alt_app_title, alt_to_url, g_play_url, g_play_id, icon_url, official_site_url, is_analysed) \
+                            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)'
+                    , [
+                        altApp.appID,
+                        altApp.title,
+                        altApp.altToURL,
+                        altApp.gPlayURL,
+                        altApp.gPlayID,
+                        altApp.iconURL,
+                        altApp.officialSiteURL,
+                        isCollected
+                    ]);
+                logger.debug(altApp.title + ' added to DB');
+                await client.lquery('COMMIT');
+            } catch (err) {
+                logger.err('Error with previous query:', err);
+                await client.lquery('ROLLBACK');
+            } finally {
+                client.release();
+            }
+        } else {
+            logger.debug('%s already exists, skipping.', altApp.title);
+            client.release();
+        }
+    }
+
     async getAppsToFindAltsForThatHaventYetHadThemFound(limit) {
         var res = await this.query(
             'SELECT a.title, v.app FROM app_versions v FULL OUTER JOIN playstore_apps a \
