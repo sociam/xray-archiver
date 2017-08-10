@@ -55,6 +55,16 @@ if [[ ! -x analyzer/analyzer ]]; then
 	cd -
 fi
 
+if [[ ! -x apiserv/apiserv ]]; then
+	if ! type go &> /dev/null; then
+		echo "apiserv binary doesn't exist and go is not installed!"
+		exit 5
+	fi
+	cd apiserv
+	go build
+	cd -
+fi
+
 if ! id -u xray &> /dev/null; then
 	useradd xray -r -d "$DATA_DIR"
 fi
@@ -62,6 +72,7 @@ fi
 install -o xray -Ddm775 "$DATA_DIR/apk_archive"
 
 install -Dm755 analyzer/analyzer "$PREFIX/bin/analyzer"
+install -Dm755 apiserv/apiserv "$PREFIX/bin/apiserv"
 
 # Downloader
 install -Dm644 archiver/downloader/downloader.js -t "$PREFIX/lib/xray/archiver/downloader"
@@ -82,10 +93,12 @@ install -Dm644 util/logger.js -t "$PREFIX/lib/xray/util"
 install -Dm644 archiver/{package.json,package-lock.json} -t "$PREFIX/lib/xray/archiver"
 
 
-install -Dm644 analyzer/xray-analyzer.service\
-		 archiver/downloader/xray-downloader.service\
-		 archiver/retriever/xray-retriever.service\
-		 archiver/explorer/xray-explorer.service\
+install -Dm644\
+        analyzer/xray-analyzer.service\
+        apiserv/xray-apiserv.service\
+        archiver/downloader/xray-downloader.service\
+        archiver/retriever/xray-retriever.service\
+        archiver/explorer/xray-explorer.service\
         -t "$PREFIX/lib/systemd/system/"
 
 systemctl daemon-reload
