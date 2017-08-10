@@ -18,9 +18,8 @@ var db = new Database('suggester');
  * The urls collected here will point towards another alternativeTo Page
  * that will have a store link (hopefully)
  */
-function scrapePageForAlts(URLString) {
+function scrapePageForAlts(URLString, appID) {
 
-    //TODO: Check that page is an app page.
     // Request the page from the Site.
     request(URLString, (err, res, html) => {
 
@@ -35,7 +34,7 @@ function scrapePageForAlts(URLString) {
         var altIDs = [];
         var altApps = [];
 
-
+        
         // Selecting All Alternative App ID's from the DOM
         $('ul#alternativeList').find('li').each((i, elem) => {
             // Each alt app has an ID for the app title.
@@ -72,7 +71,7 @@ function scrapePageForAlts(URLString) {
         }
 
         _.forEach(altApps, (altApp) => {
-            scrapeAltAppPage(altApp);
+            scrapeAltAppPage(altApp, appID);
         });
 
     });
@@ -121,7 +120,7 @@ at it will just return
  *  App's Icon URL
  *  App's GPlayStore ID.
  */
-function scrapeAltAppPage(altApp) {
+function scrapeAltAppPage(altApp, appID) {
     request(altApp.altToURL, (err, res, html) => {
 
         // if there wasn't an err with the request.
@@ -132,6 +131,7 @@ function scrapeAltAppPage(altApp) {
 
         // Initialising Variables and Loading HTML into Cheerio
         var $ = cheerio.load(html);
+
         altApp = addGPlayURL(
             altApp,
             $('a[data-link-action="AppStores Link"]:contains("Google")').attr('href')
@@ -144,7 +144,35 @@ function scrapeAltAppPage(altApp) {
 
         altApp.altAppIconURL = $('#appHeader').find('img').first().attr('data-src-retina');
 
-        logger.debug(altApp);
+        db.insertAltApp(altApp, appID);
+    });
+}
+
+
+function findAppAltPage(URLString, appID) {
+    // Request the page from the Site.
+    request(URLString, (err, res, html) => {
+
+        // if there wasn't an err with the request.
+        if (err) {
+            logger.err('Failed to fetch HTML: ' + err);
+            return err;
+        }
+
+        // Initialising Variables and Loading HTML into Cheerio
+        var $ = cheerio.load(html);
+        // check if direct link to page was found or it gave searhc results.
+
+        var titleString = $('title').text().split(' - ')[1];
+        logger.debug(titleString);
+        if (titleString == 'Search on AlternativeTo.net') {
+            var firstRes = $('.app-list').first().find('h3').first().find('a').first();
+            var resHref = firstRes.attr('href');
+            URLString = 'http://alternativeto.net' + resHref; 
+        }
+
+        scrapePageForAlts(URLString, appID);
+
     });
 }
 
@@ -153,7 +181,10 @@ db.getAppsToFindAltsForThatHaventYetHadThemFound(4)
         _.forEach(rows, (row) => {
             var encodedURI = encodeURIComponent(row.title);
             encodedURI = encodedURI.replace(new RegExp('%20', 'g'), '+');
-            scrapePageForAlts('http://alternativeto.net/browse/search/?license=free&platform=android&q=' + encodedURI);
+            findAppAltPage(
+                'http://alternativeto.net/browse/search/?license=free&platform=android&q=' + encodedURI,
+                row.app
+            );
         });
     })
     .catch((err)=>logger.err(err));
