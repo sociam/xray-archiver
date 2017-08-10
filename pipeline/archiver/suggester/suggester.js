@@ -111,7 +111,8 @@ function addOfficialSiteURL(altApp, URL) {
 /**
  * Give a URL to a specific suggested Alternative App page's URL
  * this function will scrape the Playstore URL or failing that
- * the Developers Website page. Failing that it will just return
+ * the Developers Website page. Failing th
+at it will just return
  * Alternative To URL for the page.
  * 
  * Scrapes for:
@@ -147,11 +148,12 @@ function scrapeAltAppPage(altApp) {
     });
 }
 
-db.getAppsToFindAltsForThatHaventYetHadThemFound()
+db.getAppsToFindAltsForThatHaventYetHadThemFound(4)
     .then((rows) => {
-        logger.debug(rows.length);
+        _.forEach(rows, (row) => {
+            var encodedURI = encodeURIComponent(row.title);
+            encodedURI = encodedURI.replace(new RegExp('%20', 'g'), '+');
+            scrapePageForAlts('http://alternativeto.net/browse/search/?license=free&platform=android&q=' + encodedURI);
+        });
     })
     .catch((err)=>logger.err(err));
-
-
-scrapePageForAlts('http://alternativeto.net/browse/search/?license=free&platform=android&q=facebook');

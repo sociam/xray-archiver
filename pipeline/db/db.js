@@ -63,8 +63,12 @@ class DB {
         return res.rows[0].id;
     }
 
-    async getAppsToFindAltsForThatHaventYetHadThemFound() {
-        var res = await this.query('SELECT ID FROM apps WHERE id NOT IN (SELECT app_id AS id FROM alt_apps)');
+    async getAppsToFindAltsForThatHaventYetHadThemFound(limit) {
+        var res = await this.query(
+            'SELECT a.title, v.app FROM app_versions v FULL OUTER JOIN playstore_apps a \
+                ON (a.id = v.id) \
+                    WHERE v.app NOT IN (SELECT app_id AS app FROM alt_apps) \
+                         LIMIT $1', [limit]);
 
         if (res.rowCount <= 0 ) {
             logger.debug('No apps need alternatives to be searched for. Or something has screwed up');
