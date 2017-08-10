@@ -419,7 +419,7 @@ func GetLatestApps(num, start int) ([]App, error) {
 // GetAltApps takes an app's DB ID and returns a collection of
 // alternative apps for the specified app
 func GetAltApps(appID string) ([]AltApp, error) {
-	rows, err := db.Query("SELECT a* FROM alt_apps alt WHERE alt.id = $1", appID)
+	rows, err := db.Query("SELECT * FROM alt_apps alt WHERE alt.app_id = $1", appID)
 	if rows != nil {
 		defer rows.Close()
 	}
@@ -429,7 +429,15 @@ func GetAltApps(appID string) ([]AltApp, error) {
 	var result []AltApp
 	for i := 0; rows.Next(); i++ {
 		var altApp AltApp
-		rows.Scan(&altApp.ID, &altApp.Title, &altApp.URL)
+
+		rows.Scan(
+			&altApp.AppID,
+			&altApp.AltAppTitle,
+			&altApp.GPlayURL,
+			&altApp.GPlayID,
+			&altApp.IconURL,
+			&altApp.OfficialSiteURL,
+			&altApp.IsAnalysed)
 		result = append(result, altApp)
 	}
 

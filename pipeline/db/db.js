@@ -44,15 +44,6 @@ class DB {
         return ret;
     }
 
-    async insertAltApp(appID, altTitle, altURL) {
-        try {
-            await this.query('INSERT INTO alt_apps(id, title, url) VALUES ($1, $2, $3)', [appID, altTitle, altURL]);
-        }
-        catch (err) {
-            logger.err(err);
-        }
-    }
-
     async insertDev(dev) {
         try {
             var res = await this.query('SELECT id FROM developers WHERE $1 = ANY(email)', [dev.email]);
@@ -70,6 +61,17 @@ class DB {
             ]);
         } catch (err) { logger.err(err); }
         return res.rows[0].id;
+    }
+
+    async getAppsToFindAltsForThatHaventYetHadThemFound() {
+        var res = await this.query('SELECT ID FROM apps WHERE id NOT IN (SELECT app_id AS id FROM alt_apps)');
+
+        if (res.rowCount <= 0 ) {
+            return Promise.reject('No apps need alternatives to be searched for. Or something has screwed up');
+        }
+
+        logger.info(res.rowCount, 'Apps need alternatives to be scraped.');
+        return res.rows;
     }
 
     async queryAppsToDownload(batch) {

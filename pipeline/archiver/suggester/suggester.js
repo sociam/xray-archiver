@@ -56,7 +56,14 @@ function scrapePageForAlts(URLString) {
         altApps = _.map(altIDs, (altID) => {
             //logger.debug(altID);
             var aTag = $('#' + altID).find('h3').find('a').first();
-            return {'title': aTag.text(), 'AltToURL': aTag.attr('href')};
+            return {
+                'title': aTag.text(),
+                'altToURL': 'http://alternativeto.net' + aTag.attr('href'),
+                'altAppIconURL': '',
+                'gPlayURL': '',
+                'gPlayAppID': '',
+                'officalSiteURL': ''
+            };
         });
 
         // if no titles or URLs wer found.
@@ -65,11 +72,40 @@ function scrapePageForAlts(URLString) {
         }
 
         _.forEach(altApps, (altApp) => {
-            var url = 'http://alternativeto.net' + altApp.AltToURL;
-            scrapeAltAppPage(url);
+            scrapeAltAppPage(altApp);
         });
 
     });
+}
+
+/**
+ * Given an alt app and a URL this functino adds the URL
+ * to the gPlayURL field in the JSON.
+ */
+function addGPlayURL(altApp, URL) {
+    if (!URL) {
+        logger.debug('No Google Play Store Link');
+        return altApp;
+    }
+    altApp.gPlayURL = URL;
+    altApp.gPlayAppID = URL.split('id=')[1]; // TODO: cut App ID from string.
+    
+    return altApp;
+}
+
+/**
+ * Give an AltApp and a URL this function adds the URL to
+ * the official site field in the json.
+ */
+function addOfficialSiteURL(altApp, URL) {
+    if (!URL) {
+        logger.debug('No Official site link');
+        return altApp;
+    }
+
+    altApp.officalSiteURL = URL;
+    return altApp;
+
 }
 
 /**
@@ -77,9 +113,15 @@ function scrapePageForAlts(URLString) {
  * this function will scrape the Playstore URL or failing that
  * the Developers Website page. Failing that it will just return
  * Alternative To URL for the page.
+ * 
+ * Scrapes for:
+ *  GPlayAppStore
+ *  OfficialAppSite
+ *  App's Icon URL
+ *  App's GPlayStore ID.
  */
-function scrapeAltAppPage(URLString) {
-    request(URLString, (err, res, html) => {
+function scrapeAltAppPage(altApp) {
+    request(altApp.altToURL, (err, res, html) => {
 
         // if there wasn't an err with the request.
         if (err) {
@@ -89,24 +131,24 @@ function scrapeAltAppPage(URLString) {
 
         // Initialising Variables and Loading HTML into Cheerio
         var $ = cheerio.load(html);
-        var URL = $('a[data-link-action="AppStores Link"]').attr('href');
+        altApp = addGPlayURL(
+            altApp,
+            $('a[data-link-action="AppStores Link"]:contains("Google")').attr('href')
+        );
 
-        // Check if theres No GPlay link.
-        if (!URL) {
-            logger.debug('No Google Play Store Link - Looking for Official Site.');
-            URL = $('a[data-link-action="Official Website Button"]').attr('href');
-        }
+        altApp = addOfficialSiteURL(
+            altApp,
+            $('a[data-link-action="Official Website Button"]').attr('href')
+        );
 
-        // Check if theres no official Website link
-        if (!URL) {
-            logger.debug('No Official site link');
-            URL = URLString;
-        }
+        altApp.altAppIconURL = $('#appHeader').find('img').first().attr('data-src-retina');
 
-        return URL;
-        
-        //logger.debug(URLString);
+        logger.debug(altApp);
     });
 }
+
+db.getAppsToFindAltsForThatHaventYetHadThemFound()
+
+
 
 scrapePageForAlts('http://alternativeto.net/browse/search/?license=free&platform=android&q=facebook');
