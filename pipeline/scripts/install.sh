@@ -74,6 +74,9 @@ install -o xray -Ddm775 "$DATA_DIR/apk_archive"
 install -Dm755 analyzer/analyzer "$PREFIX/bin/analyzer"
 install -Dm755 apiserv/apiserv "$PREFIX/bin/apiserv"
 
+# package.json
+install -Dm644 package.json package-lock.json "$PREFIX/lib/xray/"
+
 # Downloader
 install -Dm644 archiver/downloader/downloader.js -t "$PREFIX/lib/xray/archiver/downloader"
 
@@ -84,14 +87,10 @@ install -Dm644 archiver/retriever/retriever.js -t "$PREFIX/lib/xray/archiver/ret
 install -Dm644 archiver/explorer/explorer.js -t "$PREFIX/lib/xray/archiver/explorer"
 
 # db
-install -Dm644 db/{db.js,package.json} -t "$PREFIX/lib/xray/db"
+install -Dm644 db/db.js -t "$PREFIX/lib/xray/db"
 
 # util
 install -Dm644 util/logger.js -t "$PREFIX/lib/xray/util"
-
-# packages
-install -Dm644 archiver/{package.json,package-lock.json} -t "$PREFIX/lib/xray/archiver"
-
 
 install -Dm644\
         analyzer/xray-analyzer.service\
@@ -103,10 +102,7 @@ install -Dm644\
 
 systemctl daemon-reload
 
-cd "$PREFIX/lib/xray/archiver"
-npm install
-
-cd "$PREFIX/lib/xray/db"
+cd "$PREFIX/lib/xray/"
 npm install
 
 exit 0
