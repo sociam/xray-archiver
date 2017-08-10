@@ -561,9 +561,11 @@ func QuickQuery(
 		var genre sql.NullString
 		var famGenre sql.NullString
 		var video sql.NullString
+		var icon sql.NullString
+		devStoreSite, devSite := sql.NullString{}, sql.NullString{}
 		//var perms []string
 		//var packages []string
-
+		hosts, perms, pkgs := []sql.NullString{}, []sql.NullString{}, []sql.NullString{}
 		var err error
 		//Cannot just cast straight into types because of the postgre type conversion
 		err = rows.Scan(
@@ -588,16 +590,14 @@ func QuickQuery(
 			&appData.Store,
 			&appData.Region,
 			&appData.Ver,
-			&appData.Icon,
+			&icon, //&appData.Icon,
 			pq.Array(&appData.Dev.Emails),
 			&appData.Dev.Name,
-			&appData.Dev.StoreSite,
-			&appData.Dev.Site,
-			pq.Array(&appData.Hosts),
-			pq.Array(&appData.Perms),
-			pq.Array(&appData.Packages))
-		// pq.Array(&perms),
-		// pq.Array(&packages)) //XX X: icon should be there, right? right?
+			&devStoreSite,    //&appData.Dev.StoreSite,
+			&devSite,         //&appData.Dev.Site,
+			pq.Array(&hosts), //pq.Array(&appData.Hosts),
+			pq.Array(&perms), //pq.Array(&appData.Perms),
+			pq.Array(&pkgs))  //pq.Array(&appData.Packages))
 		if err != nil {
 			fmt.Println("Database Query", err)
 		} else {
@@ -609,9 +609,20 @@ func QuickQuery(
 			playInf.Genre = genre.String
 			playInf.Video = video.String
 			playInf.FamilyGenre = famGenre.String
-
+			appData.Icon = icon.String
 			appData.StoreInfo = playInf
+			appData.Dev.StoreSite = devStoreSite.String
+			appData.Dev.Site = devSite.String
 
+			for _, host := range hosts {
+				appData.Hosts = append(appData.Hosts, host.String)
+			}
+			for _, perm := range perms {
+				appData.Perms = append(appData.Perms, perm.String)
+			}
+			for _, pkg := range pkgs {
+				appData.Packages = append(appData.Packages, pkg.String)
+			}
 			result = append(result, appData)
 		}
 	}
