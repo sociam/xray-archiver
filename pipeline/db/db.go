@@ -557,20 +557,10 @@ func QuickQuery(
 		var playInf PlayStoreInfo
 
 		//Potential null values
-		var summ sql.NullString
-		var desc sql.NullString
-		var genre sql.NullString
-		var famGenre sql.NullString
-		var video sql.NullString
-		var icon sql.NullString
-		app := sql.NullString{}
-		store := sql.NullString{}
-		region := sql.NullString{}
-		ver := sql.NullString{}
-		devStoreSite, devSite := sql.NullString{}, sql.NullString{}
+		var summ, desc, genre, famGenre, video, icon, devStoreSite, devSite sql.NullString
 		//var perms []string
 		//var packages []string
-		hosts, perms, pkgs := []sql.NullString{}, []sql.NullString{}, []sql.NullString{}
+		hosts, perms, pkgs, recentChanges := []sql.NullString{}, []sql.NullString{}, []sql.NullString{}, []sql.NullString{}
 		var err error
 		//Cannot just cast straight into types because of the postgre type conversion
 		err = rows.Scan(
@@ -590,7 +580,7 @@ func QuickQuery(
 			&playInf.Updated,
 			&playInf.AndroidVer,
 			&playInf.ContentRating,
-			pq.Array(&playInf.RecentChanges),
+			pq.Array(&recentChanges),
 			&app,
 			&store,
 			&region,
@@ -618,10 +608,6 @@ func QuickQuery(
 			appData.StoreInfo = playInf
 			appData.Dev.StoreSite = devStoreSite.String
 			appData.Dev.Site = devSite.String
-			appData.App = app.String
-			appData.Store = store.String
-			appData.Region = region.String
-			appData.Ver = ver.String
 			for _, host := range hosts {
 				appData.Hosts = append(appData.Hosts, host.String)
 			}
@@ -630,6 +616,9 @@ func QuickQuery(
 			}
 			for _, pkg := range pkgs {
 				appData.Packages = append(appData.Packages, pkg.String)
+			}
+			for _, change := range recentChanges {
+				playInf.RecentChanges = append(playInf.RecentChanges, change.String)
 			}
 			result = append(result, appData)
 		}
