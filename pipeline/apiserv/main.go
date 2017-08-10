@@ -255,12 +255,15 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 // altAppsEndpoint allows for external entities to query for alternative apps based on app ID.
 func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
-	// DEAN DON'T DELETE THIS EITHER
+
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	// DEAN
+
 	if r.Method == "POST" || r.Method == "GET" {
-		if _, ok := supportedMimes[mime]; !ok {
-			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "Yo Dawg, we deal with json only son.")
+
+		mime := mimeCheck(mime)
+
+		if mime == "" {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
 			return
 		}
 
