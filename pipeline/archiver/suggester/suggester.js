@@ -90,6 +90,9 @@ function addGPlayURL(altApp, URL) {
     altApp.gPlayURL = URL;
     altApp.gPlayAppID = URL.split('id=')[1]; // TODO: cut App ID from string.
     
+    if(!altApp.gPlayAppID) {
+        altApp.gPlayAppID = '';
+    }
     return altApp;
 }
 
@@ -144,6 +147,12 @@ function scrapeAltAppPage(altApp) {
         );
 
         altApp.altAppIconURL = $('#appHeader').find('img').first().attr('data-src-retina');
+        if (altApp.altAppIconURL) {
+            altApp.altAppIconURL = altApp.altAppIconURL.substr(2);
+        }
+        else {
+            altApp.altAppIconURL = '';
+        }
 
         return db.insertAltApp(altApp);
     });
