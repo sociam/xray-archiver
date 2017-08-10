@@ -3,9 +3,10 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"time"
+
 	"github.com/lib/pq"
 	"github.com/sociam/xray-archiver/pipeline/util"
-	"time"
 )
 
 type xrayDb struct {
@@ -562,6 +563,10 @@ func QuickQuery(
 		var famGenre sql.NullString
 		var video sql.NullString
 		var icon sql.NullString
+		app := sql.NullString{}
+		store := sql.NullString{}
+		region := sql.NullString{}
+		ver := sql.NullString{}
 		devStoreSite, devSite := sql.NullString{}, sql.NullString{}
 		//var perms []string
 		//var packages []string
@@ -586,10 +591,10 @@ func QuickQuery(
 			&playInf.AndroidVer,
 			&playInf.ContentRating,
 			pq.Array(&playInf.RecentChanges),
-			&appData.App,
-			&appData.Store,
-			&appData.Region,
-			&appData.Ver,
+			&app,
+			&store,
+			&region,
+			&ver,
 			&icon, //&appData.Icon,
 			pq.Array(&appData.Dev.Emails),
 			&appData.Dev.Name,
@@ -613,7 +618,10 @@ func QuickQuery(
 			appData.StoreInfo = playInf
 			appData.Dev.StoreSite = devStoreSite.String
 			appData.Dev.Site = devSite.String
-
+			appData.App = app.String
+			appData.Store = store.String
+			appData.Region = region.String
+			appData.Ver = ver.String
 			for _, host := range hosts {
 				appData.Hosts = append(appData.Hosts, host.String)
 			}
