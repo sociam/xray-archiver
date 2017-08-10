@@ -608,6 +608,7 @@ func QuickQuery(
 			appData.StoreInfo = playInf
 			appData.Dev.StoreSite = devStoreSite.String
 			appData.Dev.Site = devSite.String
+
 			for _, host := range hosts {
 				appData.Hosts = append(appData.Hosts, host.String)
 			}
