@@ -54,7 +54,7 @@ func writeData(w http.ResponseWriter, mime string, status int, data interface{})
 		err1 = util.WriteJSON(w, data)
 	}
 	if err1 != nil {
-		fmt.Println(err1)
+		util.Log.ERR("error writing data", err1)
 	}
 }
 
@@ -70,7 +70,7 @@ func mimeCheck(mime string) string {
 }
 
 func hello(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Got spurious request on " + r.URL.Path)
+	util.Log.WARNING("Got spurious request on " + r.URL.Path)
 	writeErr(w, r.Header.Get("Accept"), http.StatusNotFound, "not_found", "Nah mate!")
 }
 
@@ -165,16 +165,16 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 		permissions := []string{""}
 		appIDs := []string{""}
 
-		fmt.Printf("Parsing app form parameters, params size %s", fmt.Sprint(len(r.Form)))
+		util.Log.Info("Parsing app form parameters, params size %s", fmt.Sprint(len(r.Form)))
 
 		for name, val := range r.Form {
 			oops := ""
 
 			switch name {
 			case "limit":
-				fmt.Println("Got range of limits", val)
+				util.Log.DEBUG("Got range of limits", val)
 				limit, oops, _ = parseLimit(val[0])
-				fmt.Println("Limit Value = ", limit)
+				util.Log.DEBUG("Limit Value = ", limit)
 				if oops != "" {
 					writeErr(w, mime, http.StatusBadRequest, "bad_form", oops)
 					return
@@ -204,7 +204,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 				}
 
 			case "title":
-				fmt.Println("titles:", len(val))
+				util.Log.DEBUG("titles:", len(val))
 				titles = val
 
 			case "developer":
@@ -227,12 +227,12 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 			developers = []string{}
 		}
 
-		fmt.Println("Gathering full details")
+		util.Log.DEBUG("Gathering full details")
 
 		results, err := db.QuickQuery(onlyAnalyzed, store, limit, offset, developers, genres, permissions, appIDs, titles)
 
 		if err != nil {
-			fmt.Println("Error querying database: ", err.Error())
+			util.Log.ERR("Error querying database: ", err.Error())
 			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
 			return
 		}
@@ -240,7 +240,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 		if !isFull {
 			stubs := make([]db.AppStub, len(results), len(results))
 			for i, result := range results {
-				fmt.Println(result.App)
+				util.Log.INFO(result.App)
 				stubs[i].Title = result.StoreInfo.(db.PlayStoreInfo).Title
 				stubs[i].App = result.App
 			}

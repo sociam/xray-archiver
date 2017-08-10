@@ -396,14 +396,14 @@ func GetApps(num, start int) ([]App, error) {
 			&app.ID,
 			pq.Array(&app.Vers))
 		if err != nil {
-			fmt.Println("Database err:", err)
+			util.Log.ERR("Database err:", err)
 		} else {
 			ret = append(ret, app)
 		}
 	}
 
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
-		fmt.Println("Databse err", rows.Err())
+		util.Log.ERR("Databse err", rows.Err())
 		return []App{}, rows.Err()
 	}
 
@@ -431,7 +431,7 @@ func GetLatestApps(num, start int) ([]App, error) {
 	}
 
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
-		fmt.Println("Databse err", rows.Err())
+		util.Log.ERR("Databse err", rows.Err())
 		return []App{}, rows.Err()
 	}
 
@@ -456,7 +456,7 @@ func GetAltApps(appID string) ([]AltApp, error) {
 	}
 
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
-		fmt.Println("Database err", rows.Err())
+		util.Log.ERR("Database err", rows.Err())
 	}
 
 	return result, nil
@@ -604,7 +604,7 @@ func QuickQuery(
 			pq.Array(&perms), //pq.Array(&appData.Perms),
 			pq.Array(&pkgs))  //pq.Array(&appData.Packages))
 		if err != nil {
-			fmt.Println("Database Query", err)
+			util.Log.ERR("Database Query", err)
 		} else {
 
 			//info.FamilyGenre = famGenre.Valid ? famGenre.String : ""
@@ -636,7 +636,7 @@ func QuickQuery(
 	}
 
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
-		fmt.Println("Database err", rows.Err())
+		util.Log.ERR("Database err", rows.Err())
 	}
 
 	return result, nil
@@ -663,7 +663,7 @@ func GetAppsToAnalyze() ([]AppVersion, error) {
 		cur.Icon = icon.String
 
 		if err != nil {
-			fmt.Println(err)
+			util.Log.ERR("Getting apps to analyzed errors", err)
 		} else {
 			ret = append(ret, cur)
 		}
