@@ -95,7 +95,7 @@ func parseLimit(num string) (val string, oops string, err error) {
 	}
 
 	if realNum > 1000000 {
-		return num, "Limit to high. Please slow down. Chunk the request using the offset", nil
+		return num, "Limit too high. Please slow down. Chunk the request using the offset", nil
 	}
 
 	return num, "", err
