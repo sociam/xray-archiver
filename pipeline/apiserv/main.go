@@ -156,7 +156,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 		offset := "0"
 		isFull := false
 		onlyAnalyzed := true //Default is true as most desire is for analyzed apps
-		store := "playstore_apps"
+		store := "play"
 
 		titles := []string{""}
 		developers := []string{""}

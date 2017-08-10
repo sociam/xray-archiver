@@ -481,6 +481,10 @@ func percentifyArray(arr []string) string {
 	return partQuery
 }
 
+var appStoreTable = map[string]string{
+	"play": "playstore_app",
+}
+
 // QuickQuery depricates all of dean's queries.
 func QuickQuery(
 	onlyAnalyzed bool, appStore string, limit string, offset string, developers []string,
@@ -520,7 +524,7 @@ func QuickQuery(
 		"pkg.packages"
 
 	tableQuery := " FROM " +
-		appStore +
+		appStoreTable[appStore] +
 		" a FULL OUTER JOIN app_versions v ON (a.id = v.id) " +
 		" FULL OUTER JOIN developers d ON (a.developer = d.id) " +
 		" FULL OUTER JOIN app_hosts h ON (a.id = h.id) " +
