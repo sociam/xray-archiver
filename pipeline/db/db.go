@@ -3,10 +3,9 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"time"
-
 	"github.com/lib/pq"
 	"github.com/sociam/xray-archiver/pipeline/util"
+	"time"
 )
 
 type xrayDb struct {
