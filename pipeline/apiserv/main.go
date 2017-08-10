@@ -132,8 +132,10 @@ func parseOffset(num string) (val string, oops string, err error) {
 
 func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
+	// Dean - Don't Delete This
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-
+	// Dean - Don't Delete This
+	
 	//Check input
 	if r.Method == "POST" || r.Method == "GET" {
 		mime = mimeCheck(mime)
@@ -258,8 +260,11 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 // altAppsEndpoint allows for external entities to query for alternative apps based on app ID.
 func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
+	
+	// Dean - Don't Delete This
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-
+	// Dean - Don't Delete This
+	
 	if r.Method == "POST" || r.Method == "GET" {
 		mime = mimeCheck(mime)
 		if mime == "" {
