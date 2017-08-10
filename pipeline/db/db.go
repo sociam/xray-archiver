@@ -483,7 +483,7 @@ func percentifyArray(arr []string) string {
 
 // QuickQuery depricates all of dean's queries.
 func QuickQuery(
-	isAnalyzed bool, appStore string, limit string, offset string, developers []string,
+	onlyAnalyzed bool, appStore string, limit string, offset string, developers []string,
 	genres []string, permissions []string, appIDs []string, titles []string,
 ) ([]AppVersion, error) {
 
@@ -529,7 +529,7 @@ func QuickQuery(
 
 	shouldAnalyze := ""
 
-	if isAnalyzed {
+	if onlyAnalyzed {
 		shouldAnalyze = "AND a.analyzed = true"
 	} else {
 		shouldAnalyze = "AND a.analyzed = false"

@@ -157,7 +157,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		offset := "0"
 		isFull := false
-		isAnalyzed := true //Default is true as most desire is for analyzed apps
+		onlyAnalyzed := true //Default is true as most desire is for analyzed apps
 		store := "playstore_apps"
 
 		titles := []string{""}
@@ -198,7 +198,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 			case "isAnalyzed":
 				var err error
-				isAnalyzed, err = strconv.ParseBool(val[0])
+				onlyAnalyzed, err = strconv.ParseBool(val[0])
 				if err != nil {
 					writeErr(w, mime, http.StatusBadRequest, "bad_form", "isAnalyzed needs to be a boolean value, true or false")
 					return
@@ -230,7 +230,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Println("Gathering full details")
 
-		results, err := db.QuickQuery(isAnalyzed, store, limit, offset, developers, genres, permissions, appIDs, titles)
+		results, err := db.QuickQuery(onlyAnalyzed, store, limit, offset, developers, genres, permissions, appIDs, titles)
 
 		if err != nil {
 			fmt.Println("Error querying database: ", err.Error())
