@@ -196,11 +196,11 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-			case "isAnalyzed":
+			case "onlyAnalyzed":
 				var err error
 				onlyAnalyzed, err = strconv.ParseBool(val[0])
 				if err != nil {
-					writeErr(w, mime, http.StatusBadRequest, "bad_form", "isAnalyzed needs to be a boolean value, true or false")
+					writeErr(w, mime, http.StatusBadRequest, "bad_form", "onlyAnalyzed needs to be a boolean value, true or false")
 					return
 				}
 
