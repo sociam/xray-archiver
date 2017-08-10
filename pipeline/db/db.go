@@ -530,9 +530,9 @@ func QuickQuery(
 	shouldAnalyze := ""
 
 	if onlyAnalyzed {
-		shouldAnalyze = "AND a.analyzed = true"
+		shouldAnalyze = "AND a.analyzed = true  "
 	} else {
-		shouldAnalyze = "AND a.analyzed = false"
+		shouldAnalyze = "AND a.analyzed = false  "
 	}
 
 	//Table Join Appends
