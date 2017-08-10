@@ -157,7 +157,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		offset := "0"
 		isFull := false
-		isAnalyzed := false
+		isAnalyzed := true //Default is true as most desire is for analyzed apps
 		store := "playstore_apps"
 
 		titles := []string{""}
@@ -167,7 +167,6 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 		appIDs := []string{""}
 
 		fmt.Printf("Parsing app form parameters, params size %s", fmt.Sprint(len(r.Form)))
-		//Should not complain if form is 0...
 
 		for name, val := range r.Form {
 			oops := ""
@@ -201,7 +200,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 				var err error
 				isAnalyzed, err = strconv.ParseBool(val[0])
 				if err != nil {
-					writeErr(w, mime, http.StatusBadRequest, "bad_form", "isFull needs to be a boolean value, true or false")
+					writeErr(w, mime, http.StatusBadRequest, "bad_form", "isAnalyzed needs to be a boolean value, true or false")
 					return
 				}
 

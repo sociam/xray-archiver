@@ -485,7 +485,7 @@ func percentifyArray(arr []string) string {
 //
 //
 func QuickQuery(
-	fullDetails bool, appStore string, limit string, offset string, developers []string,
+	fullDetails bool, isAnalyzed bool, appStore string, limit string, offset string, developers []string,
 	genres []string, permissions []string, appIDs []string, titles []string,
 ) ([]AppVersion, error) {
 
@@ -530,6 +530,14 @@ func QuickQuery(
 		" FULL OUTER JOIN app_perms p ON (a.id = p.id) " +
 		" FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) "
 
+	shouldAnalyze := ""
+
+	if isAnalyzed {
+		shouldAnalyze = "AND a.analyzed = false"
+	} else {
+		shouldAnalyze = "AND a.analyzed = false"
+	}
+
 	//Table Join Appends
 	//+ "NATURAL JOIN app_perms " + "NATURAL JOIN app_packages"
 	structuredQuery := storestart + tableQuery +
@@ -538,6 +546,7 @@ func QuickQuery(
 		" AND LOWER(a.genre) LIKE any " + percentifyArray(genres) +
 		//" AND LOWER(app_perms.permissions) like any " + percentifyArray(permissions) + //TODO: s a array so need to check the arrays...
 		" AND LOWER(v.app) LIKE any " + percentifyArray(appIDs) +
+		shouldAnalyze +
 		" LIMIT " + limit + " OFFSET " + offset
 
 	println(structuredQuery)
