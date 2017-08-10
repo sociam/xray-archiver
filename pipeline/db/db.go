@@ -482,10 +482,8 @@ func percentifyArray(arr []string) string {
 }
 
 // QuickQuery depricates all of dean's queries.
-//
-//
 func QuickQuery(
-	fullDetails bool, isAnalyzed bool, appStore string, limit string, offset string, developers []string,
+	isAnalyzed bool, appStore string, limit string, offset string, developers []string,
 	genres []string, permissions []string, appIDs []string, titles []string,
 ) ([]AppVersion, error) {
 
@@ -520,7 +518,6 @@ func QuickQuery(
 		"h.hosts," +
 		"p.permissions," +
 		"pkg.packages"
-		//"app_perms.permissions," + "packages" +
 
 	tableQuery := " FROM " +
 		appStore +
@@ -533,7 +530,7 @@ func QuickQuery(
 	shouldAnalyze := ""
 
 	if isAnalyzed {
-		shouldAnalyze = "AND a.analyzed = false"
+		shouldAnalyze = "AND a.analyzed = true"
 	} else {
 		shouldAnalyze = "AND a.analyzed = false"
 	}

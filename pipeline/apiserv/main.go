@@ -166,7 +166,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 		permissions := []string{""}
 		appIDs := []string{""}
 
-		fmt.Printf("Parsing app form parameters, params size %s", fmt.Sprint(len(r.Form)))
+		fmt.Printf("Parsing app form parameters, params size  %s", fmt.Sprint(len(r.Form)))
 
 		for name, val := range r.Form {
 			oops := ""
@@ -230,7 +230,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Println("Gathering full details")
 
-		results, err := db.QuickQuery(isFull, isAnalyzed, store, limit, offset, developers, genres, permissions, appIDs, titles)
+		results, err := db.QuickQuery(isAnalyzed, store, limit, offset, developers, genres, permissions, appIDs, titles)
 
 		if err != nil {
 			fmt.Println("Error querying database: ", err.Error())
