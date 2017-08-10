@@ -93,7 +93,6 @@ func parseNumCheck(num string) (val int, oops string, err error) {
 }
 
 func parseLimit(num string) (val string, oops string, err error) {
-
 	if len(val) > 1 {
 		return "", "num must have a single value", nil
 	}
@@ -133,7 +132,6 @@ func parseOffset(num string) (val string, oops string, err error) {
 
 func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
-
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	//Check input
