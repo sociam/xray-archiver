@@ -1,0 +1,12 @@
+[Unit]
+Description=The API server for the XRay project
+
+[Service]
+ExecStart=<<<PREFIX>>>/bin/apiserv
+User=xray
+Group=xray
+Restart=always
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
