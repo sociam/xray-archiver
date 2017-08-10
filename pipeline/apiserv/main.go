@@ -140,9 +140,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	//Check input
 	if r.Method == "POST" || r.Method == "GET" {
-
-		mime := mimeCheck(mime)
-
+		mime = mimeCheck(mime)
 		if mime == "" {
 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
 			return
@@ -259,9 +257,7 @@ func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	if r.Method == "POST" || r.Method == "GET" {
-
-		mime := mimeCheck(mime)
-
+		mime = mimeCheck(mime)
 		if mime == "" {
 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
 			return
