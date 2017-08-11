@@ -1,19 +1,23 @@
+begin;
+
 create table apps(
   id        text primary key not null,
   versions int[]
 );
 
 create table app_versions(
-  id                 serial         primary key not null,
-  app                  text references apps(id) not null,
-  store                text                     not null,
-  region               text                     not null,
-  version              text                     not null,
-  screen_flags          int                             ,
-  downloaded           bool                     not null,
-  analyzed             bool                     not null,
-  last_dl_attempt timestamp                     not null,
-  icon                 text
+  id                      serial         primary key not null,
+  app                       text references apps(id) not null,
+  store                     text                     not null,
+  region                    text                     not null,
+  version                   text                     not null,
+  screen_flags               int                             ,
+  downloaded                bool                     not null,
+  analyzed                  bool                     not null,
+  last_dl_attempt      timestamp                             ,
+  icon                      text                             ,
+  uses_reflect              bool                             ,
+  last_analyze_attempt timestamp
 );
 
 create table developers(
@@ -127,8 +131,14 @@ grant select, update, insert on apps to analyzer;
 grant select, update, insert on app_versions to analyzer;
 grant select  on playstore_apps to analyzer;
 grant select, insert, update on app_perms to analyzer;
+<<<<<<< HEAD
 grant select, insert on app_hosts to analyzer;
 grant select  on companies to analyzer;
+=======
+grant select, insert, update on app_hosts to analyzer;
+grant select on companies to analyzer;
+grant select, insert, update on alt_apps to analyzer;
+>>>>>>> develop
 
 grant select on apps to apiserv;
 grant select on app_versions to apiserv;
@@ -142,5 +152,10 @@ grant select on alt_apps to apiserv;
 
 grant select, update, insert on alt_apps to suggester;
 grant select on app_versions to suggester;
+<<<<<<< HEAD
 grant select on playstore_apps to suggester;
 
+=======
+
+commit;
+>>>>>>> develop

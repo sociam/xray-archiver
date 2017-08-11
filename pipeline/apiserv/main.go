@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -55,8 +54,19 @@ func writeData(w http.ResponseWriter, mime string, status int, data interface{})
 		err1 = util.WriteJSON(w, data)
 	}
 	if err1 != nil {
-		log.Println(err1)
+		fmt.Println(err1)
 	}
+}
+
+func mimeCheck(mime string) string {
+	mimes := strings.Split(mime, ",")
+	for _, mime := range mimes {
+		mime = strings.TrimSpace(mime)
+		if _, ok := supportedMimes[mime]; ok {
+			return mime
+		}
+	}
+	return ""
 }
 
 func hello(w http.ResponseWriter, r *http.Request) {
@@ -69,7 +79,6 @@ var dbIDRe = regexp.MustCompile("^\\d+$")
 var appIDRe = regexp.MustCompile("^[[:alpha:]][\\w$]*(\\.[[:alpha:]][\\w$]*)*$")
 
 func parseNumCheck(num string) (val int, oops string, err error) {
-	//oops error
 	val, err = strconv.Atoi(num)
 
 	if err != nil {
@@ -84,7 +93,6 @@ func parseNumCheck(num string) (val int, oops string, err error) {
 }
 
 func parseLimit(num string) (val string, oops string, err error) {
-
 	if len(val) > 1 {
 		return "", "num must have a single value", nil
 	}
@@ -97,7 +105,7 @@ func parseLimit(num string) (val string, oops string, err error) {
 	}
 
 	if realNum > 1000000 {
-		return num, "Limit to high. Please slow down. Chunk the request using the offset", nil
+		return num, "Limit too high. Please slow down. Chunk the request using the offset", nil
 	}
 
 	return num, "", err
@@ -122,17 +130,14 @@ func parseOffset(num string) (val string, oops string, err error) {
 	return num, "", err
 }
 
-// func validGenre(gen string ) (val string, error) {
-// 	//TODO: Check against genre constnats
-// 	return gen
-// }
-
-func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	//Check input
 	if r.Method == "POST" || r.Method == "GET" {
-		if _, ok := supportedMimes[mime]; !ok {
+		mime = mimeCheck(mime)
+		if mime == "" {
 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
 			return
 		}
@@ -144,13 +149,14 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		mime := r.Header.Get("Accept")
 		//Default apps
 
 		limit := "10"
 
 		offset := "0"
 		isFull := false
+		onlyAnalyzed := true //Default is true as most desire is for analyzed apps
+		store := "play"
 
 		titles := []string{""}
 		developers := []string{""}
@@ -159,7 +165,6 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 		appIDs := []string{""}
 
 		fmt.Printf("Parsing app form parameters, params size %s", fmt.Sprint(len(r.Form)))
-		//Should not complain if form is 0...
 
 		for name, val := range r.Form {
 			oops := ""
@@ -189,6 +194,14 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
+			case "onlyAnalyzed":
+				var err error
+				onlyAnalyzed, err = strconv.ParseBool(val[0])
+				if err != nil {
+					writeErr(w, mime, http.StatusBadRequest, "bad_form", "onlyAnalyzed needs to be a boolean value, true or false")
+					return
+				}
+
 			case "title":
 				fmt.Println("titles:", len(val))
 				titles = val
@@ -215,7 +228,7 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Println("Gathering full details")
 
-		results, err := db.QuickQuery(isFull, "playstore_apps", limit, offset, developers, genres, permissions, appIDs, titles)
+		results, err := db.QuickQuery(onlyAnalyzed, store, limit, offset, developers, genres, permissions, appIDs, titles)
 
 		if err != nil {
 			fmt.Println("Error querying database: ", err.Error())
@@ -231,10 +244,9 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 				stubs[i].App = result.App
 			}
 
-			util.WriteJSON(w, stubs)
-
+			writeData(w, mime, http.StatusOK, stubs)
 		} else {
-			util.WriteJSON(w, results)
+			writeData(w, mime, http.StatusOK, results)
 		}
 
 	} else {
@@ -246,9 +258,12 @@ func gatherAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 // altAppsEndpoint allows for external entities to query for alternative apps based on app ID.
 func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	if r.Method == "POST" || r.Method == "GET" {
-		if _, ok := supportedMimes[mime]; !ok {
-			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "Yo Dawg, we deal with json only son.")
+		mime = mimeCheck(mime)
+		if mime == "" {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
 			return
 		}
 
@@ -281,9 +296,9 @@ func init() {
 }
 
 func main() {
-	http.HandleFunc("/", hello)
+	http.Handle("/", http.FileServer(http.Dir(util.Cfg.AppDir)))
 
-	http.HandleFunc("/api/apps/", gatherAppsEndpoint)
+	http.HandleFunc("/api/apps/", appsEndpoint)
 	http.HandleFunc("/api/alt/", altAppsEndpoint)
 
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))

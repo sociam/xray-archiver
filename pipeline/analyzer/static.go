@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	// "encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/sociam/xray-archiver/pipeline/util"
@@ -47,7 +48,13 @@ func parseManifest(app *util.App) (manifest *AndroidManifest, gotIcon bool, err 
 	}
 
 	split := strings.SplitN(manifest.Application.Icon, "/", 2)
+	if len(split) != 2 {
+		return manifest, false, nil
+	}
 	locn, name := split[0], split[1]
+	if len(locn) < 1 {
+		return manifest, false, nil
+	}
 	locn = path.Join(app.OutDir(), "res", locn[1:]) // /tmp/<outdir>/res/{mipmap,drawable}
 	name = name + ".png"                            // icon_katana.png
 
@@ -93,29 +100,31 @@ type company struct {
 	Description  string   `json:"description"`
 }
 
+var hostregex = regexp.MustCompile(".?https?://([^!/:>[:cntrl:][:space:]]+)")
+
 func simpleAnalyze(app *util.App) ([]string, error) {
 	//TODO: fix error handling
 
-	//TODO: replace with DB calls
-	var companies map[string]company
-	companyFile, err := os.Open(path.Join(util.Cfg.DataDir, "company_details.json"))
-	if err != nil {
-		return []string{}, err
-	}
-	bytes, err := ioutil.ReadAll(companyFile)
-	if err != nil {
-		return []string{}, err
-	}
-	err = json.Unmarshal(bytes, &companies)
-	if err != nil {
-		return []string{}, err
-	}
+	// //TODO: replace with DB calls
+	// var companies map[string]company
+	// companyFile, err := os.Open(path.Join(util.Cfg.DataDir, "company_details.json"))
+	// if err != nil {
+	// 	return []string{}, err
+	// }
+	// bytes, err := ioutil.ReadAll(companyFile)
+	// if err != nil {
+	// 	return []string{}, err
+	// }
+	// err = json.Unmarshal(bytes, &companies)
+	// if err != nil {
+	// 	return []string{}, err
+	// }
 
-	for name := range companies {
-		if _, ok := trackers[name]; !ok {
-			delete(companies, name)
-		}
-	}
+	// for name := range companies {
+	// 	if _, ok := trackers[name]; !ok {
+	// 		delete(companies, name)
+	// 	}
+	// }
 
 	// getDomainCo := func(host string) *string {
 	// 	for _, company := range companies {
@@ -128,13 +137,21 @@ func simpleAnalyze(app *util.App) ([]string, error) {
 	// 	return nil
 	// }
 
-	cmd := exec.Command("sh", "-c", "grep", "-Erho", "\"https?://[^ >]+\"", "--", path.Join(app.OutDir(), "smali/**/*.smali"))
+	cmd := exec.Command("strings", "-n", "11", path.Join(app.OutDir(), "classes.dex"))
 
 	out, err := cmd.Output()
 	if err != nil {
 		return []string{}, err
 	}
-	urls := strings.Split(string(out), "\n")
+	matches := hostregex.FindAllSubmatch(out, -1)
+	urls := make([]string, 0, len(matches))
+	for _, v := range matches {
+		if len(v[1]) > 3 {
+			urls = append(urls, string(v[1]))
+		}
+	}
+
+	urls = util.Dedup(urls)
 
 	// var appTrackers []string
 
@@ -157,6 +174,22 @@ func simpleAnalyze(app *util.App) ([]string, error) {
 	// }
 
 	return urls, nil
+}
+
+func checkReflect(app *util.App) error {
+	cmd := exec.Command("grep", "-Paqh",
+		"\\x00\\x00\\x00.Ljava/lang/reflect[/a-zA-Z]*;\\x00\\x00\\x00",
+		"--", path.Join(app.OutDir(), "classes.dex"))
+
+	out, err := cmd.Output()
+	if err != nil && strings.TrimSpace(string(out)) != "" {
+		fmt.Printf("Error checking for reflection: output below\n%s\n\n", string(out))
+		return err
+	}
+
+	app.UsesReflect = err == nil
+
+	return nil
 }
 
 func findPackages(app *util.App) ([]string, error) {

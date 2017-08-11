@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/lib/pq"
 	"github.com/sociam/xray-archiver/pipeline/util"
@@ -33,6 +34,19 @@ func Open(cfg util.Config, enable bool) error {
 
 //TODO: make Add* functions take a db id and what to add instead of a util.App
 
+// SetLastAnalyzeAttempt sets the last_analyzed_attempt of an app to the
+// current time.
+func SetLastAnalyzeAttempt(id int64) error {
+	rows, err := db.Query("UPDATE app_versions SET last_analyze_attempt = $1 WHERE id = $2", time.Now(), id)
+	if rows != nil {
+		rows.Close()
+	}
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // AddPackages is a function that allows you to add packages to the Xray DB. The
 // argument app must contain a DB ID and an array of package names.
 func AddPackages(app *util.App) error {
@@ -60,7 +74,7 @@ func AddPackages(app *util.App) error {
 	} else {
 		// The app already exists, only add new packages for that app.
 		bothPkgs := util.UniqAppend(app.Packages, dbPkgs)
-		rows, err := db.Query("UPDATE app_packages SET perms = $1 WHERE id = $2",
+		rows, err := db.Query("UPDATE app_packages SET packages = $1 WHERE id = $2",
 			pq.Array(&bothPkgs), app.DBID)
 		if rows != nil {
 			rows.Close()
@@ -86,7 +100,7 @@ func AddPerms(app *util.App) error {
 	}
 
 	var dbPerms []string
-	err := db.QueryRow("SELECT perms FROM app_perms WHERE id = $1", app.DBID).
+	err := db.QueryRow("SELECT permissions FROM app_perms WHERE id = $1", app.DBID).
 		Scan(pq.Array(&dbPerms))
 	if err != nil {
 		if err != sql.ErrNoRows {
@@ -102,7 +116,7 @@ func AddPerms(app *util.App) error {
 		}
 	} else {
 		bothPerms := util.UniqAppend(sPerms, dbPerms)
-		rows, err := db.Query("UPDATE app_perms SET perms = $1 WHERE id = $2",
+		rows, err := db.Query("UPDATE app_perms SET permissions = $1 WHERE id = $2",
 			pq.Array(&bothPerms), app.DBID)
 		if rows != nil {
 			rows.Close()
@@ -152,7 +166,7 @@ func AddHosts(app *util.App, hosts []string) error {
 		}
 	} else {
 		bothHosts := util.UniqAppend(hosts, dbHosts)
-		rows, err := db.Query("UPDATE app_host SET hosts = $1 WHERE id = $2",
+		rows, err := db.Query("UPDATE app_hosts SET hosts = $1 WHERE id = $2",
 			pq.Array(&bothHosts), app.DBID)
 		if rows != nil {
 			rows.Close()
@@ -163,6 +177,15 @@ func AddHosts(app *util.App, hosts []string) error {
 	}
 
 	return nil
+}
+
+// SetReflect sets the value of uses_reflect for an app version
+func SetReflect(id int64, val bool) error {
+	rows, err := db.Query("UPDATE app_versions SET uses_reflect = $1 WHERE id = $2", val, id)
+	if rows != nil {
+		rows.Close()
+	}
+	return err
 }
 
 // GetAppVersion gets an app version from the database. The argument app is the
@@ -354,7 +377,6 @@ func GetApp(id string) (App, error) {
 	if err != nil {
 		return App{}, err
 	}
-
 	return app, nil
 }
 
@@ -485,11 +507,13 @@ func percentifyArray(arr []string) string {
 	return partQuery
 }
 
+var appStoreTable = map[string]string{
+	"play": "playstore_app",
+}
+
 // QuickQuery depricates all of dean's queries.
-//
-//
 func QuickQuery(
-	fullDetails bool, appStore string, limit string, offset string, developers []string,
+	onlyAnalyzed bool, appStore string, limit string, offset string, developers []string,
 	genres []string, permissions []string, appIDs []string, titles []string,
 ) ([]AppVersion, error) {
 
@@ -516,6 +540,7 @@ func QuickQuery(
 		"v.store," +
 		"v.region," +
 		"v.version," +
+		"v.icon," +
 		"d.email," +
 		"d.name," +
 		"d.store_site," +
@@ -523,15 +548,22 @@ func QuickQuery(
 		"h.hosts," +
 		"p.permissions," +
 		"pkg.packages"
-		//"app_perms.permissions," + "packages" +
 
 	tableQuery := " FROM " +
-		appStore +
+		appStoreTable[appStore] +
 		" a FULL OUTER JOIN app_versions v ON (a.id = v.id) " +
 		" FULL OUTER JOIN developers d ON (a.developer = d.id) " +
 		" FULL OUTER JOIN app_hosts h ON (a.id = h.id) " +
 		" FULL OUTER JOIN app_perms p ON (a.id = p.id) " +
 		" FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) "
+
+	shouldAnalyze := ""
+
+	if onlyAnalyzed {
+		shouldAnalyze = "AND a.analyzed = true  "
+	} else {
+		shouldAnalyze = "AND a.analyzed = false  "
+	}
 
 	//Table Join Appends
 	//+ "NATURAL JOIN app_perms " + "NATURAL JOIN app_packages"
@@ -541,6 +573,7 @@ func QuickQuery(
 		" AND LOWER(a.genre) LIKE any " + percentifyArray(genres) +
 		//" AND LOWER(app_perms.permissions) like any " + percentifyArray(permissions) + //TODO: s a array so need to check the arrays...
 		" AND LOWER(v.app) LIKE any " + percentifyArray(appIDs) +
+		shouldAnalyze +
 		" LIMIT " + limit + " OFFSET " + offset
 
 	println(structuredQuery)
@@ -560,14 +593,10 @@ func QuickQuery(
 		var playInf PlayStoreInfo
 
 		//Potential null values
-		var summ sql.NullString
-		var desc sql.NullString
-		var genre sql.NullString
-		var famGenre sql.NullString
-		var video sql.NullString
+		var summ, desc, genre, famGenre, video, icon, devStoreSite, devSite sql.NullString
 		//var perms []string
 		//var packages []string
-
+		hosts, perms, pkgs, recentChanges := []sql.NullString{}, []sql.NullString{}, []sql.NullString{}, []sql.NullString{}
 		var err error
 		//Cannot just cast straight into types because of the postgre type conversion
 		err = rows.Scan(
@@ -587,20 +616,19 @@ func QuickQuery(
 			&playInf.Updated,
 			&playInf.AndroidVer,
 			&playInf.ContentRating,
-			pq.Array(&playInf.RecentChanges),
+			pq.Array(&recentChanges),
 			&appData.App,
 			&appData.Store,
 			&appData.Region,
 			&appData.Ver,
+			&icon, //&appData.Icon,
 			pq.Array(&appData.Dev.Emails),
 			&appData.Dev.Name,
-			&appData.Dev.StoreSite,
-			&appData.Dev.Site,
-			pq.Array(&appData.Hosts),
-			pq.Array(&appData.Perms),
-			pq.Array(&appData.Packages))
-		// pq.Array(&perms),
-		// pq.Array(&packages)) //XX X: icon should be there, right? right?
+			&devStoreSite,    //&appData.Dev.StoreSite,
+			&devSite,         //&appData.Dev.Site,
+			pq.Array(&hosts), //pq.Array(&appData.Hosts),
+			pq.Array(&perms), //pq.Array(&appData.Perms),
+			pq.Array(&pkgs))  //pq.Array(&appData.Packages))
 		if err != nil {
 			fmt.Println("Database Query", err)
 		} else {
@@ -612,9 +640,23 @@ func QuickQuery(
 			playInf.Genre = genre.String
 			playInf.Video = video.String
 			playInf.FamilyGenre = famGenre.String
-
+			appData.Icon = icon.String
 			appData.StoreInfo = playInf
+			appData.Dev.StoreSite = devStoreSite.String
+			appData.Dev.Site = devSite.String
 
+			for _, host := range hosts {
+				appData.Hosts = append(appData.Hosts, host.String)
+			}
+			for _, perm := range perms {
+				appData.Perms = append(appData.Perms, perm.String)
+			}
+			for _, pkg := range pkgs {
+				appData.Packages = append(appData.Packages, pkg.String)
+			}
+			for _, change := range recentChanges {
+				playInf.RecentChanges = append(playInf.RecentChanges, change.String)
+			}
 			result = append(result, appData)
 		}
 	}
@@ -630,7 +672,7 @@ func QuickQuery(
 // GetAppsToAnalyze returns a list of up to 10 apps that have analyzed=False and
 // downloaded=True for the analyzer.
 func GetAppsToAnalyze() ([]AppVersion, error) {
-	rows, err := db.Query("SELECT id, app, store, region, version, screen_flags, icon FROM app_versions WHERE analyzed = False AND downloaded = True LIMIT 10")
+	rows, err := db.Query("SELECT v.id, v.app,v.store, v.region, v.version, v.screen_flags, v.icon FROM app_versions v FULL OUTER JOIN playstore_apps p ON (v.id = p.id) WHERE v.analyzed = False AND v.downloaded = True ORDER BY v.last_analyze_attempt NULLS FIRST, p.max_installs USING> LIMIT 10")
 	if rows != nil {
 		defer rows.Close()
 	}

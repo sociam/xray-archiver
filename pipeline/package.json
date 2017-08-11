@@ -9,6 +9,7 @@
   "author": "SOCIAM",
   "license": "BSD",
   "dependencies": {
+    "lodash": "^4.17.4",
     "bluebird": "^3.5.0",
     "child-process-promise": "^2.2.1",
     "csv-parse": "^1.2.0",

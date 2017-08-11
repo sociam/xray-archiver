@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/sociam/xray-archiver/pipeline/db"
@@ -22,7 +23,11 @@ func analyze(app *util.App) error {
 	// 	}
 	// }
 
-	fmt.Print("Unpacking... ")
+	err = db.SetLastAnalyzeAttempt(app.DBID)
+	if err != nil {
+		return fmt.Errorf("le cri (failed to set last_analyze_attempt, is the db set up properly?)")
+	}
+
 	err = app.Unpack()
 	if err != nil {
 		fmt.Println()
@@ -30,12 +35,15 @@ func analyze(app *util.App) error {
 		if os.IsNotExist(err) {
 			err := db.UnsetDownloaded(app.DBID)
 			if err != nil {
-				fmt.Printf("Failed to set %d not downloaded: %s", app.DBID, err.Error())
+				fmt.Printf("Failed to set %d not downloaded: %s\n", app.DBID, err.Error())
 			}
+		}
+		if err != os.ErrPermission {
+			fmt.Printf("Probably failed to unpack because of a crap app: %s\n", app.ID)
 		}
 		return fmt.Errorf("Error unpacking apk: %s", err.Error())
 	}
-	fmt.Println("done.")
+	fmt.Printf("Unpacked app %s version %s\n", app.ID, app.Ver)
 
 	fmt.Println("Getting permissions...")
 	manifest, gotIcon, err := parseManifest(app)
@@ -63,24 +71,37 @@ func analyze(app *util.App) error {
 	app.Hosts, err = simpleAnalyze(app)
 	if err != nil {
 		fmt.Printf("Error getting hosts: %s\n", err.Error())
-	}
-	fmt.Printf("Hosts found: %v\n\n", app.Hosts)
-
-	err = db.AddHosts(app, app.Hosts)
-	if err != nil {
-		fmt.Printf("Error writing hosts to DB: %s\n", err.Error())
-	}
-
-	app.Packages, err = findPackages(app)
-	if err != nil {
-		fmt.Println("Error finding packages: ", err.Error())
 	} else {
-		fmt.Println("Packages found: ", app.Packages)
-		err = db.AddPackages(app)
+		fmt.Printf("Hosts found: %v\n\n", app.Hosts)
+
+		err = db.AddHosts(app, app.Hosts)
 		if err != nil {
-			fmt.Printf("Error writing packages to DB: %s\n", err.Error())
+			fmt.Printf("Error writing hosts to DB: %s\n", err.Error())
 		}
 	}
+
+	err = checkReflect(app)
+	if err != nil {
+		fmt.Printf("Error checking for reflect usage: %s\n", err.Error())
+	} else {
+		fmt.Printf("App uses reflect: %v\n", app.UsesReflect)
+
+		err = db.SetReflect(app.DBID, app.UsesReflect)
+		if err != nil {
+			fmt.Printf("Error writing reflect usage to DB: %s\n", err.Error())
+		}
+	}
+
+	// app.Packages, err = findPackages(app)
+	// if err != nil {
+	// 	fmt.Println("Error finding packages: ", err.Error())
+	// } else {
+	// 	fmt.Println("Packages found: ", app.Packages)
+	// 	err = db.AddPackages(app)
+	// 	if err != nil {
+	// 		fmt.Printf("Error writing packages to DB: %s\n", err.Error())
+	// 	}
+	// }
 
 	err = db.SetAnalyzed(app.DBID)
 	if err != nil {
@@ -107,11 +128,17 @@ func runServer() {
 			time.Sleep(30 * time.Second)
 		}
 
+		wg := sync.WaitGroup{}
+		wg.Add(len(apps))
 		for _, dbApp := range apps {
 			app := dbApp.UtilApp()
-			fmt.Printf("Got app %v\n", app)
-			analyze(app)
+			go func() {
+				fmt.Printf("Got app %v\n", app)
+				analyze(app)
+				wg.Done()
+			}()
 		}
+		wg.Wait()
 	}
 }
 
