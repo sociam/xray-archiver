@@ -31,56 +31,56 @@ jobs:
       - run: sudo -u postgres psql -c 'CREATE DATABASE xraydb;'
       - run: sudo -u postgres psql xraydb -f pipeline/db/init_db.sql
       - run: cat <<EOF > /etc/xray/config.json
-        {
-          "edihost": "edi.sociam.org",
-          "datadir": "/usr/local/var/xray",
-          "unpackdir": "/tmp/unpacked_apks",
-          "sockpath": "/var/run/xray/apks",
-          "credDownload": "/etc/xray/credentials.conf",
-          "wordStashDir": "/etc/xray/wordStashDir",
-          "db": {
-            "database": "xraydb",
-            "host": "localhost",
-            "port": 5432
-          },
-          "retriever": {
+          {
+            "edihost": "edi.sociam.org",
+            "datadir": "/usr/local/var/xray",
+            "unpackdir": "/tmp/unpacked_apks",
+            "sockpath": "/var/run/xray/apks",
+            "credDownload": "/etc/xray/credentials.conf",
+            "wordStashDir": "/etc/xray/wordStashDir",
             "db": {
-              "user": "retriever",
-              "password": ""
-            }
-          },
-          "explorer": {
-            "db": {
-              "user": "explorer",
-              "password": ""
-            }
-          },
-          "downloader": {
-            "db": {
-              "user": "downloader",
-              "password": ""
-            }
-          },
-          "analyzer": {
-            "db": {
-              "user": "analyzer",
-              "password": ""
-            }
-          },
-          "apiserv": {
-            "db": {
-              "user": "apiserv",
-              "password": ""
-            }
-          },
-          "suggester": {
-            "db": {
-              "user": "suggester",
-              "password": ""
+              "database": "xraydb",
+              "host": "localhost",
+              "port": 5432
+            },
+            "retriever": {
+              "db": {
+                "user": "retriever",
+                "password": ""
+              }
+            },
+            "explorer": {
+              "db": {
+                "user": "explorer",
+                "password": ""
+              }
+            },
+            "downloader": {
+              "db": {
+                "user": "downloader",
+                "password": ""
+              }
+            },
+            "analyzer": {
+              "db": {
+                "user": "analyzer",
+                "password": ""
+              }
+            },
+            "apiserv": {
+              "db": {
+                "user": "apiserv",
+                "password": ""
+              }
+            },
+            "suggester": {
+              "db": {
+                "user": "suggester",
+                "password": ""
+              }
             }
           }
-        }
-        EOF
+          EOF
 
       - save_cache:
           paths:
@@ -91,7 +91,7 @@ jobs:
       - run: cd pipeline && node_modules/eslint/bin/eslint.js **/*.js --ignore-pattern dbexampleCSV.js
       #- run: cd pipeline && yarn test
 
-  build:
+  golang:
     docker:
       # specify the version you desire here
       - image: circleci/golang:1.8
