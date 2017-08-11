@@ -9,6 +9,7 @@ let xraypkg = (pkgs.callPackage ./default.nix {}); in
   services.postgresql.package = pkgs.postgresql;
 
   networking.nameservers = [ "8.8.8.8" "8.8.4.4" ];
+  networking.firewall.enable = false;
 
   environment.systemPackages = with pkgs; [
     apktool

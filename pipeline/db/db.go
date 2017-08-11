@@ -493,25 +493,14 @@ func GetAltApps(appID string) ([]AltApp, error) {
 
 // precentifyArray produces a Postgres compatable 'like any' string intended
 // to be used as part of a larger query.
-func percentifyArray(arr []string) string {
-
-	partQuery := " (Array[ "
-
-	for i, param := range arr {
-		partQuery += "LOWER('%" + param + "%')"
-		if i < len(arr)-1 {
-			partQuery += ","
-		}
-
+func percentifyArray(arr *[]string) {
+	for i, v := range *arr {
+		(*arr)[i] = "%" + v + "%"
 	}
-
-	partQuery += "])"
-
-	return partQuery
 }
 
 var appStoreTable = map[string]string{
-	"play": "playstore_app",
+	"play": "playstore_apps",
 }
 
 // QuickQuery depricates all of dean's queries.
@@ -520,70 +509,52 @@ func QuickQuery(
 	genres []string, permissions []string, appIDs []string, titles []string,
 ) ([]AppVersion, error) {
 
-	var storestart string
-	storestart = "SELECT " +
-		"a.id," +
-		"a.title," +
-		"a.summary," +
-		"a.description," +
-		"a.store_url," +
-		"a.price," +
-		"a.free," +
-		"a.rating," +
-		"a.num_reviews," +
-		"a.genre," +
-		"a.family_genre," +
-		"a.min_installs," +
-		"a.max_installs," +
-		"a.updated," +
-		"a.android_ver," +
-		"a.content_rating," +
-		"a.recent_changes," +
-		"v.app," +
-		"v.store," +
-		"v.region," +
-		"v.version," +
-		"v.icon," +
-		"d.email," +
-		"d.name," +
-		"d.store_site," +
-		"d.site," +
-		"h.hosts," +
-		"p.permissions," +
-		"pkg.packages"
-
-	tableQuery := " FROM " +
-		appStoreTable[appStore] +
-		" a FULL OUTER JOIN app_versions v ON (a.id = v.id) " +
-		" FULL OUTER JOIN developers d ON (a.developer = d.id) " +
-		" FULL OUTER JOIN app_hosts h ON (a.id = h.id) " +
-		" FULL OUTER JOIN app_perms p ON (a.id = p.id) " +
-		" FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) "
-
-	shouldAnalyze := ""
+	var shouldAnalyze string
 
 	if onlyAnalyzed {
-		shouldAnalyze = "AND a.analyzed = true  "
+		shouldAnalyze = "AND v.analyzed = true "
 	} else {
-		shouldAnalyze = "AND a.analyzed = false  "
+		shouldAnalyze = ""
 	}
 
-	//Table Join Appends
-	//+ "NATURAL JOIN app_perms " + "NATURAL JOIN app_packages"
-	structuredQuery := storestart + tableQuery +
-		" WHERE LOWER(a.title) LIKE any " + percentifyArray(titles) +
-		" AND LOWER(d.name) LIKE any " + percentifyArray(developers) +
-		" AND LOWER(a.genre) LIKE any " + percentifyArray(genres) +
+	querystr := "SELECT " +
+		"a.id, a.title, a.summary, a.description, a.store_url, a.price, a.free, a.rating, " +
+		"a.num_reviews, a.genre, a.family_genre, a.min_installs, a.max_installs, a.updated, " +
+		"a.android_ver, a.content_rating, a.recent_changes, v.app, v.store, v.region, " +
+		"v.version, v.icon, d.email, d.name, d.store_site, d.site, h.hosts, p.permissions, " +
+		"pkg.packages " +
+		"FROM " + appStoreTable[appStore] + " a " +
+		"FULL OUTER JOIN app_versions v ON (a.id = v.id) " +
+		"FULL OUTER JOIN developers d ON (a.developer = d.id) " +
+		"FULL OUTER JOIN app_hosts h ON (a.id = h.id) " +
+		"FULL OUTER JOIN app_perms p ON (a.id = p.id) " +
+		"FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) " +
+		//Table Join Appends
+		//+ "NATURAL JOIN app_perms " + "NATURAL JOIN app_packages"
+		"WHERE a.title ILIKE ANY($1) AND d.name ILIKE ANY($2) AND a.genre ILIKE ANY($3) " +
 		//" AND LOWER(app_perms.permissions) like any " + percentifyArray(permissions) + //TODO: s a array so need to check the arrays...
-		" AND LOWER(v.app) LIKE any " + percentifyArray(appIDs) +
-		shouldAnalyze +
-		" LIMIT " + limit + " OFFSET " + offset
+		"AND v.app ILIKE ANY($4) " + shouldAnalyze + "LIMIT $5 OFFSET $6"
 
-	println(structuredQuery)
+	percentifyArray(&titles)
+	percentifyArray(&developers)
+	percentifyArray(&genres)
+	percentifyArray(&appIDs)
 
-	rows, err := db.Query(structuredQuery)
+	args := []interface{}{
+		pq.Array(&titles),
+		pq.Array(&developers),
+		pq.Array(&genres),
+		pq.Array(&appIDs),
+		limit,
+		offset,
+	}
+	fmt.Printf("%s %v\n", querystr, args)
 
-	defer rows.Close()
+	rows, err := db.Query(querystr, args...)
+
+	if rows != nil {
+		defer rows.Close()
+	}
 
 	if err != nil {
 		return []AppVersion{}, err
