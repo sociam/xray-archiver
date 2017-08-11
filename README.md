@@ -1,5 +1,7 @@
 # X-Ray Archiver
 
+![build status](https://circleci.com/gh/sociam/xray-archiver.png?circle-token=:circle-token)
+
 SOCIAM Project for the archiving of Mobile applications. Stores Application metadata
 
 ## App Data Retriever
