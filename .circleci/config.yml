@@ -4,40 +4,7 @@
 #
 version: 2
 jobs:
-  node:
-    docker:
-      # specify the version you desire here
-      - image: circleci/node:7.10
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-
-    working_directory: ~/repo
-
-    steps:
-      - checkout
-
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "pipeline/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-
-      - run: cd pipeline && yarn install
-
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "pipeline/package.json" }}
-
-
-      - run: cd pipeline && node_modules/eslint/bin/eslint.js **/*.js --ignore-pattern dbexampleCSV.js
-      #- run: cd pipeline && yarn test
-
-  golang:
+  build:
     docker:
       # specify the version you desire here
       - image: circleci/golang:1.8
@@ -46,46 +13,152 @@ jobs:
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
       # - image: circleci/mongo:3.4.4
+      - image: postgres:9.5
 
     working_directory: /go/src/github.com/sociam/xray-archiver
 
     steps:
       - checkout
+      - run:
+          name: Setup node for 8.x
+          command: curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+      - run:
+          name: Install system dependencies
+          command: sudo apt-get install -y postgresql nodejs
+      - run:
+          name: Install golint
+          command: go get -u github.com/golang/lint/golint
 
-      - run: go get -u github.com/golang/lint/golint
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "pipeline/package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
 
-      - run: cd pipeline/util && [[ -z $(gofmt -d *.go) ]]
-      - run: cd pipeline/util && go get -v -t -d ./...
-      - run: cd pipeline/util && golint -set_exit_status
-      - run: cd pipeline/util && go vet
-      - run: cd pipeline/util && go install
-      - run: cd pipeline/util && go test -v ./...
+      - run:
+          name: Install node dependencies
+          command: cd pipeline && npm install
+      - run:
+          name: Initialize DB
+          command: sudo psql -U postgres -h localhost -c 'CREATE DATABASE xraydb;' && sudo psql xraydb -U postgres -h localhost -f pipeline/db/init_db.sql
+      - run:
+          name: Initialize DB passwords
+          command: sudo psql -U postgres -h localhost -c "alter user retriever with password 'a'; alter user explorer with password 'a'; alter user downloader with password 'a'; alter user suggester with password 'a';"
+      - run:
+          name: Create config file
+          command: |
+            sudo mkdir /etc/xray
+            cat <<EOF | sudo tee /etc/xray/config.json
+            {
+              "edihost": "edi.sociam.org",
+              "datadir": "/usr/local/var/xray",
+              "unpackdir": "/tmp/unpacked_apks",
+              "sockpath": "/var/run/xray/apks",
+              "credDownload": "/etc/xray/credentials.conf",
+              "wordStashDir": "/etc/xray/wordStashDir",
+              "db": {
+                "database": "xraydb",
+                "host": "localhost",
+                "port": 5432
+              },
+              "retriever": {
+                "db": {
+                  "user": "retriever",
+                  "password": "a"
+                }
+              },
+              "explorer": {
+                "db": {
+                  "user": "explorer",
+                  "password": "a"
+                }
+              },
+              "downloader": {
+                "db": {
+                  "user": "downloader",
+                  "password": "a"
+                }
+              },
+              "analyzer": {
+                "db": {
+                  "user": "analyzer",
+                  "password": ""
+                }
+              },
+              "apiserv": {
+                "db": {
+                  "user": "apiserv",
+                  "password": ""
+                }
+              },
+              "suggester": {
+                "db": {
+                  "user": "suggester",
+                  "password": "a"
+                }
+              }
+            }
+            EOF
 
-      - run: cd pipeline/db && [[ -z $(gofmt -d *.go) ]]
-      - run: cd pipeline/db && go get -v -t -d ./...
-      - run: cd pipeline/db && golint -set_exit_status
-      - run: cd pipeline/db && go vet
-      - run: cd pipeline/db && go install
-      - run: cd pipeline/db && go test -v ./...
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "pipeline/package.json" }}
 
-      - run: cd pipeline/apiserv && [[ -z $(gofmt -d *.go) ]]
-      - run: cd pipeline/apiserv && go get -v -t -d ./...
-      - run: cd pipeline/apiserv && golint -set_exit_status
-      - run: cd pipeline/apiserv && go vet
-      - run: cd pipeline/apiserv && go install
-      - run: cd pipeline/apiserv && go test -v ./...
+      - run:
+          name: Lint node files
+          command: cd pipeline && nodejs node_modules/eslint/bin/eslint.js **/*.js --ignore-pattern dbexampleCSV.js
+      #- run: cd pipeline && npm test
 
-      - run: cd pipeline/analyzer && [[ -z $(gofmt -d *.go) ]]
-      - run: cd pipeline/analyzer && go get -v -t -d ./...
-      - run: cd pipeline/analyzer && golint -set_exit_status
-      - run: cd pipeline/analyzer && go vet
-      - run: cd pipeline/analyzer && go install
-      - run: cd pipeline/analyzer && go test -v ./...
+      - run:
+          name: Test golang util
+          command: |
+            cd pipeline/util
+            [[ -z $(gofmt -d *.go) ]]
+            go get -v -t -d ./...
+            golint -set_exit_status
+            go vet
+            go install
+            go test -v ./...
 
-workflows:
-  version: 2
+      - run:
+          name: Test golang db
+          command: |
+            cd pipeline/db
+            [[ -z $(gofmt -d *.go) ]]
+            go get -v -t -d ./...
+            golint -set_exit_status
+            go vet
+            go install
+            go test -v ./...
 
-  btd:
-    jobs:
-      - node
-      - golang
+      - run:
+          name: Test apiserv
+          command: |
+            cd pipeline/apiserv
+            [[ -z $(gofmt -d *.go) ]]
+            go get -v -t -d ./...
+            golint -set_exit_status
+            go vet
+            go install
+            go test -v ./...
+
+      - run:
+          name: Test analyzer
+          command: |
+            cd pipeline/analyzer
+            [[ -z $(gofmt -d *.go) ]]
+            go get -v -t -d ./...
+            golint -set_exit_status
+            go vet
+            go install
+            go test -v ./...
+
+# workflows:
+#   version: 2
+
+#   btd:
+#     jobs:
+#       - node
+#       - golang
