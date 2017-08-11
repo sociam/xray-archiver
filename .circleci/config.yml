@@ -24,7 +24,9 @@ jobs:
           command: sudo apt-get update -qq && sudo apt-get install -y postgresql nodejs npm
       - run:
           name: Install yarn
-          command: sudo npm install -g yarnpkg
+          command: |
+            curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+            echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
 
       # Download and cache dependencies
       - restore_cache:
