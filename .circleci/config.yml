@@ -91,7 +91,7 @@ jobs:
       - run: cd pipeline && node_modules/eslint/bin/eslint.js **/*.js --ignore-pattern dbexampleCSV.js
       #- run: cd pipeline && yarn test
 
-  golang:
+  build:
     docker:
       # specify the version you desire here
       - image: circleci/golang:1.8
