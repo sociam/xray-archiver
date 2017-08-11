@@ -54,7 +54,7 @@ func writeData(w http.ResponseWriter, mime string, status int, data interface{})
 		err1 = util.WriteJSON(w, data)
 	}
 	if err1 != nil {
-		util.Log.ERR("error writing data", err1)
+		util.Log.Err("error writing data", err1)
 	}
 }
 
@@ -70,7 +70,7 @@ func mimeCheck(mime string) string {
 }
 
 func hello(w http.ResponseWriter, r *http.Request) {
-	util.Log.WARNING("Got spurious request on " + r.URL.Path)
+	util.Log.Warning("Got spurious request on " + r.URL.Path)
 	writeErr(w, r.Header.Get("Accept"), http.StatusNotFound, "not_found", "Nah mate!")
 }
 
@@ -172,9 +172,9 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 			switch name {
 			case "limit":
-				util.Log.DEBUG("Got range of limits", val)
+				util.Log.Debug("Got range of limits", val)
 				limit, oops, _ = parseLimit(val[0])
-				util.Log.DEBUG("Limit Value = ", limit)
+				util.Log.Debug("Limit Value = ", limit)
 				if oops != "" {
 					writeErr(w, mime, http.StatusBadRequest, "bad_form", oops)
 					return
@@ -204,7 +204,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 				}
 
 			case "title":
-				util.Log.DEBUG("titles:", len(val))
+				util.Log.Debug("titles:", len(val))
 				titles = val
 
 			case "developer":
@@ -227,12 +227,12 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 			developers = []string{}
 		}
 
-		util.Log.DEBUG("Gathering full details")
+		util.Log.Debug("Gathering full details")
 
 		results, err := db.QuickQuery(onlyAnalyzed, store, limit, offset, developers, genres, permissions, appIDs, titles)
 
 		if err != nil {
-			util.Log.ERR("Error querying database: ", err.Error())
+			util.Log.Err("Error querying database: ", err.Error())
 			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
 			return
 		}
@@ -240,7 +240,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 		if !isFull {
 			stubs := make([]db.AppStub, len(results), len(results))
 			for i, result := range results {
-				util.Log.INFO(result.App)
+				util.Log.Info(result.App)
 				stubs[i].Title = result.StoreInfo.(db.PlayStoreInfo).Title
 				stubs[i].App = result.App
 			}
