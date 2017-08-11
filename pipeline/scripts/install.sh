@@ -78,7 +78,7 @@ if [[ -z $NIX ]]; then
 fi
 
 
-[[ -z $NIX ]] && install -o xray -Ddm775 "$DATA_DIR/apk_archive"
+if [[ -z $NIX ]]; then install -o xray -Ddm775 "$DATA_DIR/apk_archive"; fi
 install -dm755 "$PREFIX/lib/xray/"
 
 install -Dm755 analyzer/analyzer "$PREFIX/bin/analyzer"

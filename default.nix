@@ -47,7 +47,7 @@ stdenv.mkDerivation rec {
     export GOPATH="$NIX_BUILD_TOP/go:$GOPATH"
   '';
 
-  installPhase = ''
-    makeFlagsArray=(PREFIX="$out" INSTALLFLAGS="-n")
+  preInstall = ''
+    export makeFlagsArray=(PREFIX="$out" INSTALLFLAGS="-n")
   '';
 }
