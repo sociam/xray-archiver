@@ -449,7 +449,8 @@ func GetAltApps(appID string) ([]AltApp, error) {
 	}
 
 	if err != nil {
-		fmt.Println("Error. returning an empty Alt app.")
+		fmt.Println("Error. returning an empty Alt app. ")
+		fmt.Println(err)
 		return []AltApp{}, err
 	}
 
@@ -479,7 +480,7 @@ func GetAltApps(appID string) ([]AltApp, error) {
 		altApp.GPlayID = GPlayID.String
 		altApp.IconURL = IconURL.String
 		altApp.OfficialSiteURL = OfficialSiteURL.String
-		fmt.Println("Alt App Added to DB")
+		fmt.Println("Alt App Fetched from DB")
 		result = append(result, altApp)
 	}
 
