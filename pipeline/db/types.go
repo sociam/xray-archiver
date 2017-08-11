@@ -44,7 +44,7 @@ type AltApp struct {
 	GPlayID         string `json:"gPlayID"`
 	IconURL         string `json:"iconURL"`
 	OfficialSiteURL string `json:"officialSiteURL"`
-	IsAnalysed      bool   `json:"isAnalysed"`
+	IsScraped       bool   `json:"isScraped"`
 }
 
 // StoreInfo represents the information contained about an app in its respective

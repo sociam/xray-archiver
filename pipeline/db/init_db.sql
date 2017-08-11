@@ -36,7 +36,7 @@ create table alt_apps(
    g_play_id             text                                         ,
    icon_url              text                                         ,
    official_site_url     text                                         ,
-   is_analysed           bool                                 not null,
+   is_scraped            bool                                 not null,
    primary key (app_id, alt_app_title)
 );
 
