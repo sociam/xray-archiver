@@ -4,6 +4,15 @@
 
 let
   sources = {
+    "lodash-4.17.4" = {
+      name = "lodash";
+      packageName = "lodash";
+      version = "4.17.4";
+      src = fetchurl {
+        url = "https://registry.npmjs.org/lodash/-/lodash-4.17.4.tgz";
+        sha1 = "78203a4d1c328ae1d86dca6460e369b57f4055ae";
+      };
+    };
     "bluebird-3.5.0" = {
       name = "bluebird";
       packageName = "bluebird";
@@ -389,15 +398,6 @@ let
       src = fetchurl {
         url = "https://registry.npmjs.org/dom-serializer/-/dom-serializer-0.1.0.tgz";
         sha1 = "073c697546ce0780ce23be4a28e293e40bc30c82";
-      };
-    };
-    "lodash-4.17.4" = {
-      name = "lodash";
-      packageName = "lodash";
-      version = "4.17.4";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/lodash/-/lodash-4.17.4.tgz";
-        sha1 = "78203a4d1c328ae1d86dca6460e369b57f4055ae";
       };
     };
     "jsdom-7.2.2" = {
@@ -2495,6 +2495,7 @@ let
     version = "1.0.0";
     src = ./.;
     dependencies = [
+      sources."lodash-4.17.4"
       sources."bluebird-3.5.0"
       (sources."child-process-promise-2.2.1" // {
         dependencies = [
@@ -2602,7 +2603,6 @@ let
                   sources."domelementtype-1.1.3"
                 ];
               })
-              sources."lodash-4.17.4"
               (sources."jsdom-7.2.2" // {
                 dependencies = [
                   sources."abab-1.0.3"
@@ -3084,7 +3084,6 @@ let
               sources."type-check-0.3.2"
             ];
           })
-          sources."lodash-4.17.4"
           (sources."minimatch-3.0.4" // {
             dependencies = [
               (sources."brace-expansion-1.1.8" // {
