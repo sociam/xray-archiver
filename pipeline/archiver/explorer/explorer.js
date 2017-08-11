@@ -1,5 +1,4 @@
 var gplay = require('google-play-scraper');
-const alphabet = require('alphabet');
 const _ = require('lodash');
 const fs = require('fs-extra');
 const Promise = require('bluebird');
@@ -10,7 +9,7 @@ var db = new DB('explorer');
 
 /**
  * Wipes a file at a specified location of text
- * @param {*Location of the file to be written to...} location 
+ * @param {*Location of the file to be written to...} location
  */
 function wipeScrapedWords(location) {
     fs.writeFile(location, '', function(err) {
@@ -22,8 +21,8 @@ function wipeScrapedWords(location) {
 
 /**
  *  Writes a word to a file at a specified location
- * @param {*The word to be written to a file...} word 
- * @param {*The location of the file to be written to...} location 
+ * @param {*The word to be written to a file...} word
+ * @param {*The location of the file to be written to...} location
  */
 function writeScrapedWords(word, location) {
     fs.appendFile(location, word + '\n', function(err) {
@@ -36,7 +35,7 @@ function writeScrapedWords(word, location) {
 
 /**
  * Used returns an array where each line is a search term.
- * @param {*the location of the file that is to be read} file_location 
+ * @param {*the location of the file that is to be read} file_location
  */
 function openSearchTerms(file_location) {
     return fs.readFileSync(file_location).toString().split('\n');
@@ -44,7 +43,7 @@ function openSearchTerms(file_location) {
 
 /**
  * Parses a file of search terms, adding each line as a search term to the DB
- * @param {*Location of a file to import search terms from} file_location 
+ * @param {*Location of a file to import search terms from} file_location
  */
 function importFileTerms(file_location) {
     _.forEach(
@@ -56,7 +55,7 @@ function importFileTerms(file_location) {
 
 /**
  * Creates a cartesion product of arrays of strings.
- * 
+ *
  * Eg, ['a', 'b', 'c'] x2 => ['aa' ''ab' 'ac' 'ba' 'bb'] ...
  */
 function cartesianProductChars() {
@@ -74,8 +73,8 @@ function cartesianProductChars() {
 /**
  * Creates a file of suggestions made by Google play when passing
  * the start of strings, eg. 'a', 'b', 'aa', 'ab' ...
- * 
- * @param {*The list of words used to get autocompletes} startingWords 
+ *
+ * @param {*The list of words used to get autocompletes} startingWords
  */
 // TODO: Store scraped word to the Database not txt
 function scrapeSuggestedWords(startingWords) {
@@ -92,9 +91,9 @@ function scrapeSuggestedWords(startingWords) {
 }
 
 // TODO this stuff needs moving somewhere...
-var single = alphabet.lower;
-var double = cartesianProductChars(alphabet.lower, alphabet.lower);
-var triple = cartesianProductChars(alphabet.lower, alphabet.lower, alphabet.lower);
+var single = 'abcdefghijklmnopqrstuvwxyz '.split('');
+var double = cartesianProductChars(single, single);
+var triple = cartesianProductChars(single, single, single);
 
 var charTriples = single.concat(double).concat(triple);
 
