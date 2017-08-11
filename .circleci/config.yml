@@ -13,6 +13,7 @@ jobs:
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
       # - image: circleci/mongo:3.4.4
+      - image: postgres:9.5
 
     working_directory: ~/repo
 
@@ -27,6 +28,59 @@ jobs:
           - v1-dependencies-
 
       - run: cd pipeline && yarn install
+      - run: sudo -u postgres psql -c 'CREATE DATABASE xraydb;'
+      - run: sudo -u postgres psql xraydb -f pipeline/db/init_db.sql
+      - run: cat <<EOF > /etc/xray/config.json
+        {
+          "edihost": "edi.sociam.org",
+          "datadir": "/usr/local/var/xray",
+          "unpackdir": "/tmp/unpacked_apks",
+          "sockpath": "/var/run/xray/apks",
+          "credDownload": "/etc/xray/credentials.conf",
+          "wordStashDir": "/etc/xray/wordStashDir",
+          "db": {
+            "database": "xraydb",
+            "host": "localhost",
+            "port": 5432
+          },
+          "retriever": {
+            "db": {
+              "user": "retriever",
+              "password": ""
+            }
+          },
+          "explorer": {
+            "db": {
+              "user": "explorer",
+              "password": ""
+            }
+          },
+          "downloader": {
+            "db": {
+              "user": "downloader",
+              "password": ""
+            }
+          },
+          "analyzer": {
+            "db": {
+              "user": "analyzer",
+              "password": ""
+            }
+          },
+          "apiserv": {
+            "db": {
+              "user": "apiserv",
+              "password": ""
+            }
+          },
+          "suggester": {
+            "db": {
+              "user": "suggester",
+              "password": ""
+            }
+          }
+        }
+        EOF
 
       - save_cache:
           paths:
@@ -46,6 +100,7 @@ jobs:
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
       # - image: circleci/mongo:3.4.4
+      - image: postgres:9.5
 
     working_directory: /go/src/github.com/sociam/xray-archiver
 
