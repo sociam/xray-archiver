@@ -1,8 +1,8 @@
 { config, pkgs, ... }:
-let xraypkg = (pkgs.callPackage /home/sauyon/devel/xray/default.nix {}); in
+let xraypkg = (pkgs.callPackage ./default.nix {}); in
 {
   imports = [
-    /home/sauyon/devel/xray/module.nix
+    ./module.nix
   ];
 
   services.postgresql.enable = true;
