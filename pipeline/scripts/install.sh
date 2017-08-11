@@ -86,6 +86,7 @@ install -Dm755 apiserv/apiserv "$PREFIX/bin/apiserv"
 
 # package.json
 #install -Dm644 package.json package-lock.json -t "$PREFIX/lib/xray/"
+[[ -d node_modules ]]
 cp -dr --no-preserve='ownership' node_modules "$PREFIX/lib/xray"
 
 # Downloader
