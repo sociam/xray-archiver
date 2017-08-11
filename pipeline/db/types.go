@@ -39,11 +39,12 @@ type AppVersion struct {
 type AltApp struct {
 	AppID           string `json:"appID"`
 	AltAppTitle     string `json:"altAppTitle"`
+	AltToURL        string `json:"altToURL"`
 	GPlayURL        string `json:"gPlayURL"`
 	GPlayID         string `json:"gPlayID"`
 	IconURL         string `json:"iconURL"`
 	OfficialSiteURL string `json:"officialSiteURL"`
-	IsAnalysed      string `json:"isAnalysed"`
+	IsAnalysed      bool   `json:"isAnalysed"`
 }
 
 // StoreInfo represents the information contained about an app in its respective
