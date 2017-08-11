@@ -1,5 +1,8 @@
 { config, pkgs, ... }:
-let xraypkg = (pkgs.callPackage ./default.nix {}); in
+let 
+xraypkg = (pkgs.callPackage ./default.nix {});
+tokenspkg = (pkgs.callPackage ./tokenDispenser.nix {});
+in
 {
   imports = [
     ./module.nix
@@ -19,6 +22,7 @@ let xraypkg = (pkgs.callPackage ./default.nix {}); in
 
   services.xray.enable = true;
   services.xray.package = xraypkg;
+  services.xray.tokens = tokenspkg;
 
   environment.etc."xray/config.json".text = ''
     {

@@ -32,6 +32,14 @@ in {
         example = literalExample "pkgs.xray";
         description = "XRAY package to use.";
       };
+      
+      tokens = mkOption {
+        type = types.package;
+        default = "";
+        defaultText = "pkgs.token-dispenser";
+        example = literalExample "pkgs.token-dispenser";
+        description = "Package to use for token dispenser";
+      };
     };
   };
 
@@ -91,9 +99,22 @@ in {
         };
       };
 
+      token-dispenser = {
+        after = [ "network.target" ];
+        wantedBy = [ "multi-user.target" ];
+        serviceConfig = {
+          Restart = "always";
+          User = cfg.user;
+          Group = "nogroup";
+          ExecStart = "${pkgs.jre}/bin/java -jar ${cfg.tokens}/lib/token-dispenser/token-dispenser.jar";
+        };
+
+
+      }
+
       xray-downloader = {
-        after = [ "network.target" "postgresql.service" ];
-        requires = [ "postgresql.service" ];
+        after = [ "network.target" "postgresql.service" "token-dispenser.service" ];
+        requires = [ "postgresql.service" "token-dispenser.service" ];
         description = "XRAY explorer";
         wantedBy = [ "multi-user.target" ];
         environment = {
