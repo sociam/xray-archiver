@@ -25,6 +25,9 @@ jobs:
       - run:
           name: Install system dependencies
           command: sudo apt-get install -y postgresql nodejs
+      - run:
+          name: Install golint
+          command: go get -u github.com/golang/lint/golint
 
       # Download and cache dependencies
       - restore_cache:
