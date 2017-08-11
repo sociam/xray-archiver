@@ -5,7 +5,7 @@ test: analyzertest apiservtest
 install:
 	scripts/install.sh $(INSTALLFLAGS) --prefix $(PREFIX)
 
-analyzer/analyzer: analyzer/data.go analyzer/static.go analyzer/test.go
+analyzer/analyzer: analyzer/data.go analyzer/static.go
 	cd analyzer && go build
 
 apiserv/apiserv: analyzer/main.go
