@@ -1,5 +1,7 @@
 # X-Ray Archiver
 
+[![build status](https://circleci.com/gh/sociam/xray-archiver.png?circle-token=:circle-token)](https://circleci.com/gh/sociam/xray-archiver)
+
 SOCIAM Project for the archiving of Mobile applications. Stores Application metadata
 
 ## App Data Retriever
@@ -34,9 +36,9 @@ An API server has been developed to allow others to interface with the data coll
 *info about the init db sql file.*
 
 ## Dependencies:
-* Node 
+* Node
     * See - package.json
 * [Gplaycli] (https://github.com/matlink/gplaycli)
     * Expecting gplaycli installed to path
-* PostgreSQL 
-    * db setup to handle the app data scraped. See db/init_db.sql. 
+* PostgreSQL
+    * db setup to handle the app data scraped. See db/init_db.sql.
