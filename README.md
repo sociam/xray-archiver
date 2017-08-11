@@ -36,9 +36,9 @@ An API server has been developed to allow others to interface with the data coll
 *info about the init db sql file.*
 
 ## Dependencies:
-* Node 
+* Node
     * See - package.json
 * [Gplaycli] (https://github.com/matlink/gplaycli)
     * Expecting gplaycli installed to path
-* PostgreSQL 
-    * db setup to handle the app data scraped. See db/init_db.sql. 
+* PostgreSQL
+    * db setup to handle the app data scraped. See db/init_db.sql.
