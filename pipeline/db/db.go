@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/lib/pq"
@@ -467,12 +466,12 @@ func GetAltApps(appID string) ([]AltApp, error) {
 // to be used as part of a larger query.
 func percentifyArray(arr *[]string) {
 	for i, v := range *arr {
-		(*arr)[i] = "%" + strings.ToLower(v) + "%"
+		(*arr)[i] = "%" + v + "%"
 	}
 }
 
 var appStoreTable = map[string]string{
-	"play": "playstore_app",
+	"play": "playstore_apps",
 }
 
 // QuickQuery depricates all of dean's queries.
@@ -484,16 +483,16 @@ func QuickQuery(
 	var shouldAnalyze string
 
 	if onlyAnalyzed {
-		shouldAnalyze = "AND a.analyzed = true "
+		shouldAnalyze = "AND v.analyzed = true "
 	} else {
 		shouldAnalyze = ""
 	}
 
 	querystr := "SELECT " +
 		"a.id, a.title, a.summary, a.description, a.store_url, a.price, a.free, a.rating, " +
-		"a.num_reviews, a.genre, a.family_genre, a.min_installs, a.max_installs, a.updated," +
-		"a.android_ver, a.content_rating, a.recent_changes, v.app, v.store, v.region," +
-		"v.version, v.icon, d.email, d.name, d.store_site, d.site, h.hosts, p.permissions," +
+		"a.num_reviews, a.genre, a.family_genre, a.min_installs, a.max_installs, a.updated, " +
+		"a.android_ver, a.content_rating, a.recent_changes, v.app, v.store, v.region, " +
+		"v.version, v.icon, d.email, d.name, d.store_site, d.site, h.hosts, p.permissions, " +
 		"pkg.packages " +
 		"FROM " + appStoreTable[appStore] + " a " +
 		"FULL OUTER JOIN app_versions v ON (a.id = v.id) " +
@@ -503,10 +502,9 @@ func QuickQuery(
 		"FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) " +
 		//Table Join Appends
 		//+ "NATURAL JOIN app_perms " + "NATURAL JOIN app_packages"
-		"WHERE LOWER(a.title) LIKE any $1 AND LOWER(d.name) LIKE any $2 " +
-		"AND LOWER(a.genre) LIKE any $3 " +
+		"WHERE a.title ILIKE ANY($1) AND d.name ILIKE ANY($2) AND a.genre ILIKE ANY($3) " +
 		//" AND LOWER(app_perms.permissions) like any " + percentifyArray(permissions) + //TODO: s a array so need to check the arrays...
-		"AND LOWER(v.app) LIKE any $4 " + shouldAnalyze + "LIMIT $5 OFFSET $6"
+		"AND v.app ILIKE ANY($4) " + shouldAnalyze + "LIMIT $5 OFFSET $6"
 
 	percentifyArray(&titles)
 	percentifyArray(&developers)
@@ -521,11 +519,13 @@ func QuickQuery(
 		limit,
 		offset,
 	}
-	fmt.Printf(querystr, args)
+	fmt.Printf("%s %v\n", querystr, args)
 
 	rows, err := db.Query(querystr, args...)
 
-	defer rows.Close()
+	if rows != nil {
+		defer rows.Close()
+	}
 
 	if err != nil {
 		return []AppVersion{}, err
