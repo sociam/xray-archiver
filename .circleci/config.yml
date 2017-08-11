@@ -31,59 +31,66 @@ jobs:
           - v1-dependencies-
 
       - run: cd pipeline && yarn install
-      - run: psql circle_test -U ubuntu -h localhost -f pipeline/db/init_db.sql
-      - run: |
-          cat <<EOF > /etc/xray/config.json
-          {
-            "edihost": "edi.sociam.org",
-            "datadir": "/usr/local/var/xray",
-            "unpackdir": "/tmp/unpacked_apks",
-            "sockpath": "/var/run/xray/apks",
-            "credDownload": "/etc/xray/credentials.conf",
-            "wordStashDir": "/etc/xray/wordStashDir",
-            "db": {
-              "database": "circle_test",
-              "host": "localhost",
-              "port": 5432
-            },
-            "retriever": {
+      - run:
+          name: Initialize DB
+          command: sudo -u postgres psql circle_test -U postgres -h localhost -f pipeline/db/init_db.sql
+      - run:
+          name: Initialize DB passwords
+          command: sudo -u postgres psql -c "alter user retriever with password 'a'; alter user explorer with password 'a'; alter user downloader with password 'a'; alter user suggester with password 'a';"
+      - run:
+          name: Create config file
+          command: |
+            cat <<EOF > /etc/xray/config.json
+            {
+              "edihost": "edi.sociam.org",
+              "datadir": "/usr/local/var/xray",
+              "unpackdir": "/tmp/unpacked_apks",
+              "sockpath": "/var/run/xray/apks",
+              "credDownload": "/etc/xray/credentials.conf",
+              "wordStashDir": "/etc/xray/wordStashDir",
               "db": {
-                "user": "retriever",
-                "password": ""
-              }
-            },
-            "explorer": {
-              "db": {
-                "user": "explorer",
-                "password": ""
-              }
-            },
-            "downloader": {
-              "db": {
-                "user": "downloader",
-                "password": ""
-              }
-            },
-            "analyzer": {
-              "db": {
-                "user": "analyzer",
-                "password": ""
-              }
-            },
-            "apiserv": {
-              "db": {
-                "user": "apiserv",
-                "password": ""
-              }
-            },
-            "suggester": {
-              "db": {
-                "user": "suggester",
-                "password": ""
+                "database": "circle_test",
+                "host": "localhost",
+                "port": 5432
+              },
+              "retriever": {
+                "db": {
+                  "user": "retriever",
+                  "password": "a"
+                }
+              },
+              "explorer": {
+                "db": {
+                  "user": "explorer",
+                  "password": "a"
+                }
+              },
+              "downloader": {
+                "db": {
+                  "user": "downloader",
+                  "password": "a"
+                }
+              },
+              "analyzer": {
+                "db": {
+                  "user": "analyzer",
+                  "password": ""
+                }
+              },
+              "apiserv": {
+                "db": {
+                  "user": "apiserv",
+                  "password": ""
+                }
+              },
+              "suggester": {
+                "db": {
+                  "user": "suggester",
+                  "password": "a"
+                }
               }
             }
-          }
-          EOF
+            EOF
 
       - save_cache:
           paths:
