@@ -89,7 +89,7 @@ class DB {
                 await client.lquery('BEGIN');
                 await client.lquery(
                     'INSERT INTO alt_apps( \
-                        app_id, alt_app_title, alt_to_url, g_play_url, g_play_id, icon_url, official_site_url, is_analysed) \
+                        app_id, alt_app_title, alt_to_url, g_play_url, g_play_id, icon_url, official_site_url, is_scraped) \
                             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)'
                     , [
                         altApp.appID,
