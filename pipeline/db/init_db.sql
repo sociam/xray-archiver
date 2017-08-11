@@ -1,3 +1,5 @@
+begin;
+
 create table apps(
   id        text primary key not null,
   versions int[]
@@ -31,7 +33,7 @@ create table alt_apps(
    title         text                                 not null,
    url           text                                         ,
    primary key (id, title)
-)
+);
 
 create table playstore_apps(
   id                      int primary key references app_versions(id) not null,
@@ -140,3 +142,5 @@ grant select on alt_apps to apiserv;
 
 grant select, update, insert on alt_apps to suggester;
 grant select on app_versions to suggester;
+
+commit;
