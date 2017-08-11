@@ -19,7 +19,7 @@ prototypes/www/lib
 static/apps
 *.DS_Store*
 *~
-=======
+
 # Logs
 logs
 *.log
