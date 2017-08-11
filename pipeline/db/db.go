@@ -459,11 +459,11 @@ func GetAltApps(appID string) ([]AltApp, error) {
 	for i := 0; rows.Next(); i++ {
 		var altApp AltApp
 		// initialising nullable strings for populating from database
-		var AltAppTitle, AltToURL, GPlayURL, GPlayID, IconURL, OfficialSiteURL sql.NullString
+		var AppID, AltAppTitle, AltToURL, GPlayURL, GPlayID, IconURL, OfficialSiteURL sql.NullString
 
 		// Scanning from database into alt app object / nullable strings
 		rows.Scan(
-			&altApp.AppID,
+			&AppID,
 
 			&AltAppTitle,
 			&AltToURL,

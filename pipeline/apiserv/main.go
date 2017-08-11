@@ -293,7 +293,7 @@ func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
-var port = flag.Uint("port", 8118, "Port to serve on.")
+var port = flag.Uint("port", 8123, "Port to serve on.")
 
 func init() {
 	util.LoadCfg(*cfgFile, util.APIServ)
@@ -303,7 +303,7 @@ func init() {
 func main() {
 	http.Handle("/", http.FileServer(http.Dir(util.Cfg.AppDir)))
 
-	http.HandleFunc("/api/apps/", appsEndpoint)
+	http.HandleFunc("/api/apps", appsEndpoint)
 	http.HandleFunc("/api/alt/", altAppsEndpoint)
 
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
