@@ -29,10 +29,15 @@ create table developers(
 );
 
 create table alt_apps(
-   id            text             references apps(id) not null,
-   title         text                                 not null,
-   url           text                                         ,
-   primary key (id, title)
+   app_id                text             references apps(id) not null,
+   alt_app_title         text                                 not null,
+   alt_to_url            text                                 not null,
+   g_play_url            text                                         ,
+   g_play_id             text                                         ,
+   icon_url              text                                         ,
+   official_site_url     text                                         ,
+   is_analysed           bool                                 not null,
+   primary key (app_id, alt_app_title)
 );
 
 create table playstore_apps(
@@ -124,8 +129,9 @@ grant select, update on app_versions to downloader;
 
 grant select, update, insert on apps to analyzer;
 grant select, update, insert on app_versions to analyzer;
-grant select on playstore_apps to analyzer;
+grant select  on playstore_apps to analyzer;
 grant select, insert, update on app_perms to analyzer;
+
 grant select, insert, update on app_hosts to analyzer;
 grant select on companies to analyzer;
 grant select, insert, update on alt_apps to analyzer;
@@ -142,5 +148,6 @@ grant select on alt_apps to apiserv;
 
 grant select, update, insert on alt_apps to suggester;
 grant select on app_versions to suggester;
+grant select on playstore_apps to suggester;
 
 commit;

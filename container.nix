@@ -14,7 +14,6 @@ let xraypkg = (pkgs.callPackage ./default.nix {}); in
   environment.systemPackages = with pkgs; [
     apktool
     python27Packages.gplaycli
-    emacs
   ];
 
   services.xray.enable = true;

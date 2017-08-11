@@ -132,7 +132,6 @@ func parseOffset(num string) (val string, oops string, err error) {
 
 func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
-
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	//Check input
@@ -280,7 +279,7 @@ func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 		alts, err := db.GetAltApps(appID)
 
 		if err != nil {
-			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Seems like we couldn't find your app... Probs means that we don't have any alts")
+			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Seems like we couldn't find your app... Probs means that we don't have any alts: "+appID)
 			return
 		}
 
@@ -289,7 +288,7 @@ func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
-var port = flag.Uint("port", 8118, "Port to serve on.")
+var port = flag.Uint("port", 8123, "Port to serve on.")
 
 func init() {
 	util.LoadCfg(*cfgFile, util.APIServ)
