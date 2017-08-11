@@ -499,6 +499,12 @@ func percentifyArray(arr *[]string) {
 	}
 }
 
+func percentifyStartifyArrayify(arr *[]string) {
+	for i, v := range *arr {
+		(*arr)[i] = v + "%"
+	}
+}
+
 var appStoreTable = map[string]string{
 	"play": "playstore_apps",
 }
@@ -506,7 +512,7 @@ var appStoreTable = map[string]string{
 // QuickQuery depricates all of dean's queries.
 func QuickQuery(
 	onlyAnalyzed bool, appStore string, limit string, offset string, developers []string,
-	genres []string, permissions []string, appIDs []string, titles []string,
+	genres []string, permissions []string, appIDs []string, titles []string, startsWith []string,
 ) ([]AppVersion, error) {
 
 	var shouldAnalyze string
@@ -533,18 +539,20 @@ func QuickQuery(
 		//+ "NATURAL JOIN app_perms " + "NATURAL JOIN app_packages"
 		"WHERE a.title ILIKE ANY($1) AND d.name ILIKE ANY($2) AND a.genre ILIKE ANY($3) " +
 		//" AND LOWER(app_perms.permissions) like any " + percentifyArray(permissions) + //TODO: s a array so need to check the arrays...
-		"AND v.app ILIKE ANY($4) " + shouldAnalyze + "LIMIT $5 OFFSET $6"
+		"AND v.app ILIKE ANY($4) AND a.title ILIKE ANY($5) " + shouldAnalyze + "LIMIT $6 OFFSET $7"
 
 	percentifyArray(&titles)
 	percentifyArray(&developers)
 	percentifyArray(&genres)
 	percentifyArray(&appIDs)
+	percentifyStartifyArrayify(&startsWith)
 
 	args := []interface{}{
 		pq.Array(&titles),
 		pq.Array(&developers),
 		pq.Array(&genres),
 		pq.Array(&appIDs),
+		pq.Array(&startsWith),
 		limit,
 		offset,
 	}
