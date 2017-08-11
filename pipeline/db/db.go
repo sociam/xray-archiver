@@ -465,8 +465,8 @@ func GetAltApps(appID string) ([]AltApp, error) {
 		rows.Scan(
 			&altApp.AppID,
 
-			&AltToURL,
 			&AltAppTitle,
+			&AltToURL,
 			&GPlayURL,
 			&GPlayID,
 			&IconURL,
