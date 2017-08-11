@@ -31,7 +31,7 @@ jobs:
           - v1-dependencies-
 
       - run: cd pipeline && yarn install
-      - run: psql circle_test -f pipeline/db/init_db.sql
+      - run: psql circle_test -h localhost -f pipeline/db/init_db.sql
       - run: |
           cat <<EOF > /etc/xray/config.json
           {
