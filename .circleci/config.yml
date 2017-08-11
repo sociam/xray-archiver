@@ -33,7 +33,7 @@ jobs:
       - run: cd pipeline && yarn install
       - run:
           name: Initialize DB
-          command: sudo -u postgres psql circle_test -U postgres -h localhost -f pipeline/db/init_db.sql
+          command: sudo -u postgres psql circle_test -h localhost -f pipeline/db/init_db.sql
       - run:
           name: Initialize DB passwords
           command: sudo -u postgres psql -c "alter user retriever with password 'a'; alter user explorer with password 'a'; alter user downloader with password 'a'; alter user suggester with password 'a';"
