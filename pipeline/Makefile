@@ -8,7 +8,7 @@ install:
 analyzer/analyzer: analyzer/data.go analyzer/static.go
 	cd analyzer && go build
 
-apiserv/apiserv: analyzer/main.go
+apiserv/apiserv: apiserv/main.go
 	cd apiserv && go build
 
 analyzertest:
