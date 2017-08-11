@@ -19,6 +19,7 @@ jobs:
 
     steps:
       - checkout
+      - run: apt-get update -qq && apt-get install -y build-essential postgresql
 
       # Download and cache dependencies
       - restore_cache:
