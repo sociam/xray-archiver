@@ -28,8 +28,7 @@ jobs:
           - v1-dependencies-
 
       - run: cd pipeline && yarn install
-      - run: sudo -u postgres psql -c 'CREATE DATABASE xraydb;'
-      - run: sudo -u postgres psql xraydb -f pipeline/db/init_db.sql
+      - run: psql circle_test -f pipeline/db/init_db.sql
       - run: |
           cat <<EOF > /etc/xray/config.json
           {
@@ -40,7 +39,7 @@ jobs:
             "credDownload": "/etc/xray/credentials.conf",
             "wordStashDir": "/etc/xray/wordStashDir",
             "db": {
-              "database": "xraydb",
+              "database": "circle_test",
               "host": "localhost",
               "port": 5432
             },
