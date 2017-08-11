@@ -101,7 +101,7 @@ jobs:
           key: v1-dependencies-{{ checksum "pipeline/package.json" }}
 
 
-      - run: cd pipeline && node_modules/eslint/bin/eslint.js **/*.js --ignore-pattern dbexampleCSV.js
+      - run: cd pipeline && node node_modules/eslint/bin/eslint.js **/*.js --ignore-pattern dbexampleCSV.js
       #- run: cd pipeline && npm test
 
   golang:
