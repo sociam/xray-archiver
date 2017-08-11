@@ -19,7 +19,8 @@ jobs:
 
     steps:
       - checkout
-      - name: Install System Dependencies
+      - run:
+        name: Install System Dependencies
         command: apt-get update -qq && apt-get install -y build-essential postgresql
 
       # Download and cache dependencies
