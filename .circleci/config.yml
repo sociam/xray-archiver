@@ -21,7 +21,7 @@ jobs:
       - checkout
       - run:
           name: Install system dependencies
-          command: sudo apt-get update -qq && sudo apt-get install -y build-essential postgresql
+          command: sudo apt-get update -qq && sudo apt-get install -y postgresql
 
       # Download and cache dependencies
       - restore_cache:
@@ -31,7 +31,7 @@ jobs:
           - v1-dependencies-
 
       - run: cd pipeline && yarn install
-      - run: psql circle_test -h localhost -f pipeline/db/init_db.sql
+      - run: psql circle_test -U ubuntu -h localhost -f pipeline/db/init_db.sql
       - run: |
           cat <<EOF > /etc/xray/config.json
           {
