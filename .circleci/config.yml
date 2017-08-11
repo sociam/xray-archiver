@@ -111,42 +111,46 @@ jobs:
       - run:
           name: Test golang util
           command: |
-            cd pipeline/util && [[ -z $(gofmt -d *.go) ]]
-            cd pipeline/util && go get -v -t -d ./...
-            cd pipeline/util && golint -set_exit_status
-            cd pipeline/util && go vet
-            cd pipeline/util && go install
-            cd pipeline/util && go test -v ./...
+            cd pipeline/util
+            [[ -z $(gofmt -d *.go) ]]
+            go get -v -t -d ./...
+            golint -set_exit_status
+            go vet
+            go install
+            go test -v ./...
 
       - run:
           name: Test golang db
           command: |
-            cd pipeline/db && [[ -z $(gofmt -d *.go) ]]
-            cd pipeline/db && go get -v -t -d ./...
-            cd pipeline/db && golint -set_exit_status
-            cd pipeline/db && go vet
-            cd pipeline/db && go install
-            cd pipeline/db && go test -v ./...
+            cd pipeline/db
+            [[ -z $(gofmt -d *.go) ]]
+            go get -v -t -d ./...
+            golint -set_exit_status
+            go vet
+            go install
+            go test -v ./...
 
       - run:
           name: Test apiserv
           command: |
-            cd pipeline/apiserv && [[ -z $(gofmt -d *.go) ]]
-            cd pipeline/apiserv && go get -v -t -d ./...
-            cd pipeline/apiserv && golint -set_exit_status
-            cd pipeline/apiserv && go vet
-            cd pipeline/apiserv && go install
-            cd pipeline/apiserv && go test -v ./...
+            cd pipeline/apiserv
+            [[ -z $(gofmt -d *.go) ]]
+            go get -v -t -d ./...
+            golint -set_exit_status
+            go vet
+            go install
+            go test -v ./...
 
       - run:
           name: Test analyzer
           command: |
-            cd pipeline/analyzer && [[ -z $(gofmt -d *.go) ]]
-            cd pipeline/analyzer && go get -v -t -d ./...
-            cd pipeline/analyzer && golint -set_exit_status
-            cd pipeline/analyzer && go vet
-            cd pipeline/analyzer && go install
-            cd pipeline/analyzer && go test -v ./...
+            cd pipeline/analyzer
+            [[ -z $(gofmt -d *.go) ]]
+            go get -v -t -d ./...
+            golint -set_exit_status
+            go vet
+            go install
+            go test -v ./...
 
 # workflows:
 #   version: 2
