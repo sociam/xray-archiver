@@ -163,6 +163,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 		genres := []string{""}
 		permissions := []string{""}
 		appIDs := []string{""}
+		startsWith := []string{""}
 
 		util.Log.Info("Parsing app form parameters, params size %s", fmt.Sprint(len(r.Form)))
 
@@ -206,6 +207,10 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 				util.Log.Debug("titles:", len(val))
 				titles = val
 
+			case "startsWith":
+				fmt.Println(val)
+				startsWith = val
+
 			case "developer":
 				developers = val
 
@@ -228,7 +233,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		util.Log.Debug("Gathering full details")
 
-		results, err := db.QuickQuery(onlyAnalyzed, store, limit, offset, developers, genres, permissions, appIDs, titles)
+		results, err := db.QuickQuery(onlyAnalyzed, store, limit, offset, developers, genres, permissions, appIDs, titles, startsWith)
 
 		if err != nil {
 			util.Log.Err("Error querying database: ", err.Error())
