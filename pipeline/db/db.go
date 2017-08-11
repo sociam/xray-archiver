@@ -481,11 +481,13 @@ func percentifyArray(arr []string) string {
 	return partQuery
 }
 
+var appStoreTable = map[string]string{
+	"play": "playstore_app",
+}
+
 // QuickQuery depricates all of dean's queries.
-//
-//
 func QuickQuery(
-	fullDetails bool, appStore string, limit string, offset string, developers []string,
+	onlyAnalyzed bool, appStore string, limit string, offset string, developers []string,
 	genres []string, permissions []string, appIDs []string, titles []string,
 ) ([]AppVersion, error) {
 
@@ -520,15 +522,22 @@ func QuickQuery(
 		"h.hosts," +
 		"p.permissions," +
 		"pkg.packages"
-		//"app_perms.permissions," + "packages" +
 
 	tableQuery := " FROM " +
-		appStore +
+		appStoreTable[appStore] +
 		" a FULL OUTER JOIN app_versions v ON (a.id = v.id) " +
 		" FULL OUTER JOIN developers d ON (a.developer = d.id) " +
 		" FULL OUTER JOIN app_hosts h ON (a.id = h.id) " +
 		" FULL OUTER JOIN app_perms p ON (a.id = p.id) " +
 		" FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) "
+
+	shouldAnalyze := ""
+
+	if onlyAnalyzed {
+		shouldAnalyze = "AND a.analyzed = true  "
+	} else {
+		shouldAnalyze = "AND a.analyzed = false  "
+	}
 
 	//Table Join Appends
 	//+ "NATURAL JOIN app_perms " + "NATURAL JOIN app_packages"
@@ -538,6 +547,7 @@ func QuickQuery(
 		" AND LOWER(a.genre) LIKE any " + percentifyArray(genres) +
 		//" AND LOWER(app_perms.permissions) like any " + percentifyArray(permissions) + //TODO: s a array so need to check the arrays...
 		" AND LOWER(v.app) LIKE any " + percentifyArray(appIDs) +
+		shouldAnalyze +
 		" LIMIT " + limit + " OFFSET " + offset
 
 	println(structuredQuery)

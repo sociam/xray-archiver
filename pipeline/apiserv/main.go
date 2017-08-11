@@ -93,7 +93,6 @@ func parseNumCheck(num string) (val int, oops string, err error) {
 }
 
 func parseLimit(num string) (val string, oops string, err error) {
-
 	if len(val) > 1 {
 		return "", "num must have a single value", nil
 	}
@@ -134,9 +133,7 @@ func parseOffset(num string) (val string, oops string, err error) {
 func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 
-	// DONT DELETE DEAN.
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	// DEAN... DONT DELETE.
 
 	//Check input
 	if r.Method == "POST" || r.Method == "GET" {
@@ -159,6 +156,8 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		offset := "0"
 		isFull := false
+		onlyAnalyzed := true //Default is true as most desire is for analyzed apps
+		store := "play"
 
 		titles := []string{""}
 		developers := []string{""}
@@ -167,7 +166,6 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 		appIDs := []string{""}
 
 		fmt.Printf("Parsing app form parameters, params size %s", fmt.Sprint(len(r.Form)))
-		//Should not complain if form is 0...
 
 		for name, val := range r.Form {
 			oops := ""
@@ -197,6 +195,14 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
+			case "onlyAnalyzed":
+				var err error
+				onlyAnalyzed, err = strconv.ParseBool(val[0])
+				if err != nil {
+					writeErr(w, mime, http.StatusBadRequest, "bad_form", "onlyAnalyzed needs to be a boolean value, true or false")
+					return
+				}
+
 			case "title":
 				fmt.Println("titles:", len(val))
 				titles = val
@@ -223,7 +229,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Println("Gathering full details")
 
-		results, err := db.QuickQuery(isFull, "playstore_apps", limit, offset, developers, genres, permissions, appIDs, titles)
+		results, err := db.QuickQuery(onlyAnalyzed, store, limit, offset, developers, genres, permissions, appIDs, titles)
 
 		if err != nil {
 			fmt.Println("Error querying database: ", err.Error())
