@@ -20,16 +20,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install apt https
-          command: sudo apt-get update -qq && sudo apt-get install -y apt-transport-https
-      - run:
-          name: Add yarn repository
-          command: |
-            curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-            echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-      - run:
           name: Install system dependencies
-          command: sudo apt-get install -y postgresql nodejs yarn
+          command: sudo apt-get install -y postgresql nodejs npm
 
       # Download and cache dependencies
       - restore_cache:
@@ -40,7 +32,7 @@ jobs:
 
       - run:
           name: Install node dependencies
-          command: cd pipeline && yarn install
+          command: cd pipeline && npm install
       - run:
           name: Initialize DB
           command: sudo psql -c 'CREATE DATABASE xraydb;' -h localhost && sudo psql xraydb -U postgres -h localhost -f pipeline/db/init_db.sql
@@ -109,7 +101,7 @@ jobs:
 
 
       - run: cd pipeline && node_modules/eslint/bin/eslint.js **/*.js --ignore-pattern dbexampleCSV.js
-      #- run: cd pipeline && yarn test
+      #- run: cd pipeline && npm test
 
   golang:
     docker:
