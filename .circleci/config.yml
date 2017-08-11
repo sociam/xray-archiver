@@ -30,13 +30,15 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      - run: cd pipeline && yarn install
+      - run:
+          name: Installing node dependencies
+          command: cd pipeline && yarn install
       - run:
           name: Initialize DB
-          command: psql circle_test -U postgres -h localhost -f pipeline/db/init_db.sql
+          command: sudo psql circle_test -U postgres -h localhost -f pipeline/db/init_db.sql
       - run:
           name: Initialize DB passwords
-          command: psql -U postgres -c "alter user retriever with password 'a'; alter user explorer with password 'a'; alter user downloader with password 'a'; alter user suggester with password 'a';"
+          command: psql -U root -c "alter user retriever with password 'a'; alter user explorer with password 'a'; alter user downloader with password 'a'; alter user suggester with password 'a';"
       - run:
           name: Create config file
           command: |
