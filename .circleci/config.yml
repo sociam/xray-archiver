@@ -42,7 +42,8 @@ jobs:
       - run:
           name: Create config file
           command: |
-            cat <<EOF > /etc/xray/config.json
+            sudo mkdir /etc/xray
+            cat <<EOF | sudo tee /etc/xray/config.json
             {
               "edihost": "edi.sociam.org",
               "datadir": "/usr/local/var/xray",
