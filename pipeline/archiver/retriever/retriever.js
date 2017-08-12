@@ -43,7 +43,7 @@ async function fetchAppData(searchTerm, numberOfApps, perSecond) {
 
         let appExists = await db.doesAppExist(app_data).catch(logger.err);
         if (!appExists) {
-            return await insertAppData(app_data).catch(logger.err);
+            return await insertAppData(app_data).catch((err)=>logger.err(err));
         } else {
             logger.debug('App already existing', app_data.appId);
             return Promise.reject('App Already Exists');
