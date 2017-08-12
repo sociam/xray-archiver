@@ -163,7 +163,7 @@ func fetchIDEndpoint(w http.ResponseWriter, r *http.Request) {
 
 				if err != nil {
 					fmt.Printf("%s\n\n", err)
-					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "{'appID':'"+val[0]+"', 'status':'success'}")
+					writeErr(w, mime, http.StatusConflict, "conflict", "{'appID':'"+val[0]+"', 'status':'Couldnt fetch or app already exists'}")
 					return
 				}
 				//outStr := string(out[:])
