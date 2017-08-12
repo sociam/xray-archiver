@@ -195,6 +195,7 @@ function findAppAltPage(URLString, appID) {
             'http://alternativeto.net/browse/search/?license=free&platform=android&q=' + encodedURI,
             row.app
         );
+        db.updatedLastAltChecked(row.app);
     });
 
 })();

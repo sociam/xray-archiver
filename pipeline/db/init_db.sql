@@ -17,7 +17,8 @@ create table app_versions(
   last_dl_attempt      timestamp                             ,
   icon                      text                             ,
   uses_reflect              bool                             ,
-  last_analyze_attempt timestamp
+  last_analyze_attempt timestamp                             ,
+  last_alt_checked     timestamp
 );
 
 create table developers(

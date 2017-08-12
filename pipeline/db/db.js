@@ -63,6 +63,21 @@ class DB {
         return res.rows[0].id;
     }
 
+    async updatedLastAltChecked(appID) {
+        var client = await this.connect();
+
+        try {
+            await client.lquery('UPDATE app_versions SET last_alt_checked = CURRENT_TIMESTAMP where app = $1', [appID]);
+
+        }
+        catch(err) {
+            logger.err(err);
+        }
+        finally {
+            client.release();
+        }
+    }
+
     async insertAltApp(altApp) {
         // check if the current alt app exists in the db and has been analysed.
         var isCollected = false;
@@ -120,7 +135,7 @@ class DB {
             'SELECT a.title, v.app FROM app_versions v FULL OUTER JOIN playstore_apps a \
                 ON (a.id = v.id) \
                     WHERE v.app NOT IN (SELECT app_id AS app FROM alt_apps) \
-                         LIMIT $1', [limit]);
+                         ORDER BY last_alt_checked NULLS FIRST LIMIT $1', [limit]);
 
         if (res.rowCount <= 0 ) {
             logger.debug('No apps need alternatives to be searched for. Or something has screwed up');
