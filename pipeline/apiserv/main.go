@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -128,6 +129,42 @@ func parseOffset(num string) (val string, oops string, err error) {
 	}
 
 	return num, "", err
+}
+
+func fetchIDEndpoint(w http.ResponseWriter, r *http.Request) {
+	mime := r.Header.Get("Accept")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	//Check input
+	if r.Method == "POST" || r.Method == "GET" {
+		mime = mimeCheck(mime)
+		if mime == "" {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+			return
+		}
+
+		//XXX:Assuming all endpoints have a form to process...
+		err := r.ParseForm()
+		if err != nil {
+			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
+			return
+		}
+
+		util.Log.Debug("Parsing Form Params.")
+
+		for name, val := range r.Form {
+			switch name {
+
+			case "appID":
+				util.Log.Debug("appID form param found.")
+				util.Log.Debug("Value of appID: %s", val)
+				exec.Command("node", "/var/xray/pipeline/archiver/retriever/fetchID.js", val[0])
+			}
+
+		}
+
+	}
+
 }
 
 func appsEndpoint(w http.ResponseWriter, r *http.Request) {
@@ -293,7 +330,7 @@ func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
-var port = flag.Uint("port", 8118, "Port to serve on.")
+var port = flag.Uint("port", 8123, "Port to serve on.")
 
 func init() {
 	util.LoadCfg(*cfgFile, util.APIServ)
@@ -303,8 +340,8 @@ func init() {
 func main() {
 	http.Handle("/", http.FileServer(http.Dir(util.Cfg.AppDir)))
 
-	http.HandleFunc("/api/apps/", appsEndpoint)
+	http.HandleFunc("/api/apps", appsEndpoint)
 	http.HandleFunc("/api/alt/", altAppsEndpoint)
-
+	http.HandleFunc("/api/fetchID", fetchIDEndpoint)
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
