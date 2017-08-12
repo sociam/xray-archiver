@@ -242,6 +242,7 @@ class DB {
      */
     async insertPlayApp(app, region) {
 
+        logger.debug('Inserting Dev Information. ');
         var devId = await this.insertDev({
             name: app.developer,
             id: app.developerId,
@@ -277,7 +278,6 @@ class DB {
                 if (!appExists) {
                     await client.lquery('INSERT INTO apps VALUES ($1, $2)', [app.appId, []]);
                 }
-
                 let res = await client.lquery(
                     'INSERT INTO app_versions(app, store, region, version, downloaded, last_dl_attempt, analyzed )' +
                     'VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id', [app.appId, 'play', region, app.version, 0, 'epoch', 0]
@@ -315,6 +315,7 @@ class DB {
                 ]);
             await client.lquery('COMMIT');
         } catch (e) {
+            logger.debug(e);
             await client.lquery('ROLLBACK');
             throw e;
         } finally {
