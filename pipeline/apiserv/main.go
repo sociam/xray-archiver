@@ -353,6 +353,6 @@ func main() {
 
 	http.HandleFunc("/api/apps", appsEndpoint)
 	http.HandleFunc("/api/alt/", altAppsEndpoint)
-	http.HandleFunc("/api/fetchID", fetchIDEndpoint)
+	http.HandleFunc("/api/fetch", fetchIDEndpoint)
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
