@@ -7,7 +7,7 @@ const logger = require('../../util/logger');
 var database = require('../../db/db');
 var db = new database('retriever');
 
-const region = 'us';
+const region = 'uk';
 
 /**
  * Inserts app data into the db using db.js
