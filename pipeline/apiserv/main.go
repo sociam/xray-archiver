@@ -303,7 +303,7 @@ func init() {
 func main() {
 	http.Handle("/", http.FileServer(http.Dir(util.Cfg.AppDir)))
 
-	http.HandleFunc("/api/apps/", appsEndpoint)
+	http.HandleFunc("/api/apps", appsEndpoint)
 	http.HandleFunc("/api/alt/", altAppsEndpoint)
 
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))

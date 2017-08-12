@@ -37,7 +37,6 @@ type AppVersion struct {
 
 // AltApp represents Alternative App title and playstore url. Used in API
 type AltApp struct {
-	AppID           string `json:"appID"`
 	AltAppTitle     string `json:"altAppTitle"`
 	AltToURL        string `json:"altToURL"`
 	GPlayURL        string `json:"gPlayURL"`
