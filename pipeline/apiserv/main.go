@@ -158,19 +158,19 @@ func fetchIDEndpoint(w http.ResponseWriter, r *http.Request) {
 				util.Log.Debug("appID form param found.")
 				util.Log.Debug("Value of appID: %s", val)
 
-				out, err := exec.Command("node", "/var/xray/pipeline/archiver/retriever/idFetch.js", val[0]).Output()
+				_, err := exec.Command("node", "/var/xray/pipeline/archiver/retriever/idFetch.js", val[0]).Output()
 				//out, err := exec.Command("ls", "/var/xray/pipeline/archiver/retriever/").Output()
 
 				if err != nil {
 					fmt.Printf("%s\n\n", err)
-					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
+					writeErr(w, mime, http.StatusInternalServerError, "internal_error", "{'appID':'"+val[0]+"', 'status':'success'}")
 					return
 				}
-				outStr := string(out[:])
+				//outStr := string(out[:])
 				//fmt.Printf("%s\n\n", out)
-				fmt.Println(outStr)
+				//fmt.Println(outStr)
 				//fmt.Printf("%s\n\n", out)
-				writeData(w, mime, http.StatusOK, outStr)
+				writeData(w, mime, http.StatusOK, "{'appID':'"+val[0]+"', 'status':'success'}")
 				//wg := new(sync.WaitGroup)
 				//exeCmd("ls /var/xray/pipeline/archiver/retriever/ ", wg)
 			}
