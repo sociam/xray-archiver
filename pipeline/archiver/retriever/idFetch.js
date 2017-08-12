@@ -48,7 +48,7 @@ function fetchAppData(appID) {
         fullDetails: true
     }).then((res) => {
         //logger.debug(res);
-        insertAppData(res)
+        return insertAppData(res)
             .then((res) => {
                 return 'App inserted into the DB. Response: ' + res;
             })
@@ -64,10 +64,12 @@ function fetchAppData(appID) {
 function main() {
     var arg = processArgs();
     logger.debug(arg);
+
     var app = {
         'appId': arg
-    }
-    db.doesAppExist(app)
+    };
+
+    return db.doesAppExist(app)
         .then((res) => {
             if (res) {
                 logger.debug('App Already Exists. just going to stop it riiiight here.');
@@ -81,16 +83,14 @@ function main() {
 
             logger.debug('App ID is fine. lets get cooking! fetching: ' + arg );
 
-            fetchAppData(arg)
+            return fetchAppData(arg)
                 .then(() => {
-                    logger.debug('AppData fetched and inserted to the DB.');
+                    logger.debug('AppData fetched and inserted to the DB. We\'re Donezo');
+                    process.exit(0);
                 })
                 .catch((err) => {
                     logger.err('Error Occured. failed to insert App Data.' + err);
                 });
         });
-
-
-
 }
 main();
