@@ -80,7 +80,7 @@ function cartesianProductChars() {
 function scrapeSuggestedWords(startingWords) {
     //TODO: return array of suggested search terms
     Promise.each(startingWords, (letter) => {
-        return gplay.suggest({ term: letter, throttle: 10 })
+        return gplay.suggest({ term: letter, throttle: 10, region: 'uk'})
             .then((suggestion) => {
                 Promise.each(suggestion, async(word) => {
                     logger.debug('Inserting to DB: ' + word);
