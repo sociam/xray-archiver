@@ -158,7 +158,7 @@ func fetchIDEndpoint(w http.ResponseWriter, r *http.Request) {
 				util.Log.Debug("appID form param found.")
 				util.Log.Debug("Value of appID: %s", val)
 
-				_, err := exec.Command("node", "/var/xray/pipeline/archiver/retriever/idFetch.js", val[0]).Output()
+				_, err := exec.Command("node", "../archiver/retriever/idFetch.js", val[0]).Output()
 				//out, err := exec.Command("ls", "/var/xray/pipeline/archiver/retriever/").Output()
 
 				if err != nil {
