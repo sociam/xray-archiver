@@ -444,7 +444,6 @@ func GetAltApps(appID string) ([]AltApp, error) {
 	rows, err := db.Query("SELECT app_id, alt_app_title, alt_to_url, g_play_url, g_play_id, icon_url, official_site_url, is_scraped FROM alt_apps WHERE app_id = $1", appID)
 
 	if rows != nil {
-		fmt.Println("Rows Found")
 		defer rows.Close()
 	}
 
@@ -454,7 +453,7 @@ func GetAltApps(appID string) ([]AltApp, error) {
 		return []AltApp{}, err
 	}
 
-	var result []AltApp
+	result := []AltApp{}
 
 	for i := 0; rows.Next(); i++ {
 		var altApp AltApp
@@ -462,7 +461,7 @@ func GetAltApps(appID string) ([]AltApp, error) {
 		var AppID, AltAppTitle, AltToURL, GPlayURL, GPlayID, IconURL, OfficialSiteURL sql.NullString
 
 		// Scanning from database into alt app object / nullable strings
-		rows.Scan(
+		err = rows.Scan(
 			&AppID,
 
 			&AltAppTitle,
@@ -481,14 +480,19 @@ func GetAltApps(appID string) ([]AltApp, error) {
 		altApp.GPlayID = GPlayID.String
 		altApp.IconURL = IconURL.String
 		altApp.OfficialSiteURL = OfficialSiteURL.String
-		fmt.Println("Alt App Fetched from DB")
-		result = append(result, altApp)
+		fmt.Println("Alt App Fetched from DB: " + AltAppTitle.String)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			result = append(result, altApp)
+		}
 	}
 
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
 		util.Log.Err("Database err", rows.Err())
 	}
 
+	fmt.Println(fmt.Sprint(len(result)) + " rows found")
 	return result, nil
 }
 
