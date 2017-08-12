@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/sociam/xray-archiver/pipeline/db"
 	"github.com/sociam/xray-archiver/pipeline/util"
@@ -131,6 +132,21 @@ func parseOffset(num string) (val string, oops string, err error) {
 	return num, "", err
 }
 
+func exeCmd(cmd string, wg *sync.WaitGroup) {
+	fmt.Println("command is ", cmd)
+	// splitting head => g++ parts => rest of the command
+	parts := strings.Fields(cmd)
+	head := parts[0]
+	parts = parts[1:len(parts)]
+
+	out, err := exec.Command(head, parts...).Output()
+	if err != nil {
+		fmt.Printf("%s", err)
+	}
+	fmt.Printf("%s", out)
+	wg.Done() // Need to signal to waitgroup that this goroutine is done
+}
+
 func fetchIDEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -143,7 +159,6 @@ func fetchIDEndpoint(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		//XXX:Assuming all endpoints have a form to process...
 		err := r.ParseForm()
 		if err != nil {
 			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
@@ -158,13 +173,11 @@ func fetchIDEndpoint(w http.ResponseWriter, r *http.Request) {
 			case "appID":
 				util.Log.Debug("appID form param found.")
 				util.Log.Debug("Value of appID: %s", val)
-				exec.Command("node", "/var/xray/pipeline/archiver/retriever/fetchID.js", val[0])
+				wg := new(sync.WaitGroup)
+				exeCmd("node /var/xray/pipeline/archiver/retriever/fetchID.js "+val[0], wg)
 			}
-
 		}
-
 	}
-
 }
 
 func appsEndpoint(w http.ResponseWriter, r *http.Request) {
