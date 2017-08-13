@@ -544,7 +544,7 @@ func QuickQuery(
 		//+ "NATURAL JOIN app_perms " + "NATURAL JOIN app_packages"
 		"WHERE a.title ILIKE ANY($1) AND d.name ILIKE ANY($2) AND a.genre ILIKE ANY($3) " +
 		//" AND LOWER(app_perms.permissions) like any " + percentifyArray(permissions) + //TODO: s a array so need to check the arrays...
-		"AND v.app ILIKE ANY($4) AND a.title ILIKE ANY($5) " + shouldAnalyze + "LIMIT $6 OFFSET $7"
+		"AND v.app ILIKE ANY($4) AND a.title ILIKE ANY($5) " + shouldAnalyze + "ORDER BY a.max_installs using> LIMIT $6 OFFSET $7"
 
 	percentifyArray(&titles)
 	percentifyArray(&developers)
