@@ -628,7 +628,6 @@ func QuickQuery(
 			playInf.Video = video.String
 			playInf.FamilyGenre = famGenre.String
 			appData.Icon = icon.String
-			appData.StoreInfo = playInf
 			appData.Dev.StoreSite = devStoreSite.String
 			appData.Dev.Site = devSite.String
 
@@ -644,6 +643,9 @@ func QuickQuery(
 			for _, change := range recentChanges {
 				playInf.RecentChanges = append(playInf.RecentChanges, change.String)
 			}
+
+			appData.StoreInfo = playInf
+
 			result = append(result, appData)
 		}
 	}
