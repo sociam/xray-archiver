@@ -181,20 +181,20 @@ class DB {
      */
     async insertManualSuggestion(altPair) {
         logger.debug('Inserting - Source: ' + altPair.source + '  Alt:' + altPair.alt);
-        var client = await this.connect();
-        logger.debug('Alt App Insert Client is Connected');
 
         logger.debug('checking if ' + altPair.source + ' and ' + altPair.alt + ' exists in db.');
-        var check_res = await client.lquery('SELECT source_id, alt_id FROM manual_alts WHERE source = $1 and alt = $2', [altPair.source, altPair.alt]);
+        var check_res = await this.query('SELECT source_id, alt_id FROM manual_alts WHERE source = $1 and alt = $2', [altPair.source, altPair.alt]);
+        try {
+            logger.debug(check_res.rowCount + ' rows found for ' + altPair.source + ' and ' + altPair.alt);
 
-        logger.debug(check_res.rowCount + ' rows found for ' + altPair.source + ' and ' + altPair.alt);
-
-        if (check_res.rowCount > 0) {
-            logger.debug(altPair.source + ' and ' + altPair.alt + ' in the manual alt table');
-            var insert_res = await client.lquery('INSERT INTO manual_alts VALUES ($1, $2)', [altPair.source, altPair.alt]);
+            if (check_res.rowCount > 0) {
+                logger.debug(altPair.source + ' and ' + altPair.alt + ' in the manual alt table');
+                var insert_res = await this.query('INSERT INTO manual_alts VALUES ($1, $2)', [altPair.source, altPair.alt]);
+            }
+        } catch (err) {
+            logger.err('ERROR!!!!!' + err);
         }
 
-        client.release();
         return insert_res;
     }
 
