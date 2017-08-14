@@ -184,7 +184,7 @@ class DB {
 
         try {
 
-            logger.debug('checking if ' + altPair.source + ' and ' + altPair.alt + ' exists in db.');
+            logger.debug(' -- Checking if ' + altPair.source + ' and ' + altPair.alt + ' exists in db. -- ');
             var check_res = await this.query('SELECT source_id, alt_id FROM manual_alts WHERE source_id = $1 and alt_id = $2', [altPair.source, altPair.alt]);
             logger.debug(check_res.rowCount + ' rows found for ' + altPair.source + ' and ' + altPair.alt);
 
@@ -195,6 +195,8 @@ class DB {
             }
         } catch (err) {
             logger.err('ERROR!!!!!' + err);
+        } finally {
+            logger.debug(' -- Got To Finally -- ');
         }
     }
 
