@@ -4,7 +4,7 @@ const logger = require('../../util/logger');
 const _ = require('lodash');
 
 const DB = require('../../db/db');
-var db = new DB('retriever');
+var db = new DB('suggester');
 
 const childProcess = require('child_process');
 
