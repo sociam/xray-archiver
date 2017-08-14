@@ -20,7 +20,7 @@ function processArgs() {
     if (arg.length != 1) {
         throw 'DONEZO:\n\tExpected eactly one argument. Actually got: ' + arg.length + '.\n\tArguments passed are: ' + arg;
     }
-    
+
     return arg[0];
 }
 
@@ -73,15 +73,16 @@ function main() {
         .then((res) => {
             if (res) {
                 logger.debug('App Already Exists. just going to stop it riiiight here.');
-                return 'app_exists';
+                process.exit(0);
             }
 
             if (!validAppID(arg)) {
                 logger.debug('App ID is actually invalid. you\'re donzo!');
-                return 'invalid_id';
+                process.exit(0);
+
             }
 
-            logger.debug('App ID is fine. lets get cooking! fetching: ' + arg );
+            logger.debug('App ID is fine. lets get cooking! fetching: ' + arg);
 
             return fetchAppData(arg)
                 .then(() => {
