@@ -573,7 +573,7 @@ func QuickQuery(
 		return []AppVersion{}, err
 	}
 
-	var result []AppVersion
+	result := []AppVersion{}
 	for i := 0; rows.Next(); i++ {
 
 		var appData AppVersion
