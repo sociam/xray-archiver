@@ -78,13 +78,13 @@ function scrapeAppID(appID) {
 }
 
 function main() {
-    var alts = parseAltCSVToJSON('alt_apps.csv');
+    var alts = parseAltCSVToJSON('alt_apps.csv').then();
     logger.debug('Apps Parsed. Line Count:' + alts.length);
     var curr = '';
 
     //fs.writeFile('test.json', JSON.stringify(alts), null, 4);
 
-    alts.slice(0, alts.length).forEach((app) => {
+    alts.forEach((app) => {
         db.insertManualSuggestion(app)
             .then(() => {
                 if (curr != app.source) {
