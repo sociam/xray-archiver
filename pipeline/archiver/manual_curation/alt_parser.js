@@ -80,16 +80,18 @@ function main() {
     var alts = parseAltCSVToJSON('alt_apps.csv');
     logger.debug('Apps Parsed. Line Count:' + alts.length);
     var curr = '';
-    alts.forEach((app) => {
+    alts.forEach(async(app) => {
         if (curr != app.source) {
             scrapeAppID(app.source);
             curr = app.source;
         }
         scrapeAppID(app.alt);
-        logger.debug(' -- INSERTING INTO DATABASE -- ');
-        db.insertManualSuggestion(app)
-            .then(() => logger.debug('-- INSERTION COMPLETE -- '))
-            .catch((err) => logger.error(err));
+
+        try {
+            await db.insertManualSuggestion(app);
+        } catch (err) {
+            logger.err('ERROR!!!!' + err);
+        }
     });
 
 }
