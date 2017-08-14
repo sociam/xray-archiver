@@ -4,7 +4,7 @@ const logger = require('../../util/logger');
 const _ = require('lodash');
 
 const DB = require('../../db/db');
-var db = new DB('suggester');
+var db = new DB('retriever');
 
 const childProcess = require('child_process');
 
@@ -80,18 +80,16 @@ function main() {
     var alts = parseAltCSVToJSON('alt_apps.csv');
     logger.debug('Apps Parsed. Line Count:' + alts.length);
     var curr = '';
-    alts.forEach(async(app) => {
-        if (curr != app.source) {
-            scrapeAppID(app.source);
-            curr = app.source;
-        }
-        scrapeAppID(app.alt);
 
-        try {
-            await db.insertManualSuggestion(app);
-        } catch (err) {
-            logger.err('ERROR!!!!' + err);
-        }
+    alts.forEach(async(app) => {
+        db.insertManualSuggestion(app).then(() => {
+            if (curr != app.source) {
+                scrapeAppID(app.source);
+                curr = app.source;
+            }
+            scrapeAppID(app.alt);
+        }).catch((err) => logger.err(err));
+
     });
 
 }

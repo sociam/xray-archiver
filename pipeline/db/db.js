@@ -180,28 +180,24 @@ class DB {
      *  Insert A Manually Curated App and ID into the Database
      */
     async insertManualSuggestion(altPair) {
+        logger.debug('Inserting - Source: ' + altPair.source + '  Alt:' + altPair.alt);
 
-        var client = await this.connect();
-        logger.debug('Connected');
+        try {
 
-        logger.debug('Checking if ' + +altPair.source + ' and ' + altPair.alt + +' exists');
-        var checkRes = await client.lquery('SELECT source_id, alt_id FROM manual_alts WHERE source_id = $1 and alt_id = $2 ', [altPair.source, altPair.alt]);
-
-        if (checkRes.rowCount == 0) {
-            try {
-                await client.lquery('BEGIN');
-                await client.lquery('INSERT INTO manual_alts VALUES ($1, $2)', [altPair.source, altPair.alt]);
-                logger.debug(altPair.source + ' and ' + altPair.alt + ' added to DB');
-                await client.lquery('COMMIT');
-            } catch (err) {
-                logger.err('Error with previous query:', err);
-                await client.lquery('ROLLBACK');
-            } finally {
-                client.release();
+            logger.debug(' -- Checking if ' + altPair.source + ' and ' + altPair.alt + ' exists in db. -- ');
+            var check_res = await this.query('SELECT * FROM manual_alts WHERE source_id = $1 and alt_id = $2 limit 1', [altPair.source, altPair.alt]);
+            logger.debug(check_res.rowCount + ' rows found for ' + altPair.source + ' and ' + altPair.alt);
+            if (check_res.rowCount == 0) {
+                logger.debug(altPair.source + ' and ' + altPair.alt + ' in the manual alt table');
+                await this.query('INSERT INTO manual_alts VALUES ($1, $2)', [altPair.source, altPair.alt]);
+                logger.debug(altPair.source + ' and ' + altPair.alt + ' Added to the DB.');
+            } else {
+                logger.debug(altPair.source + ' and ' + altPair.alt + ' Already Exist!');
             }
-        } else {
-            logger.debug(altPair.source + ' and ' + altPair.alt + 'already exists, skipping');
-            client.release();
+        } catch (err) {
+            logger.err('ERROR!!!!!' + err);
+        } finally {
+            logger.debug(' -- Got To Finally -- ');
         }
     }
 
