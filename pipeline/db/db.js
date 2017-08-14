@@ -182,20 +182,20 @@ class DB {
     async insertManualSuggestion(altPair) {
         logger.debug('Inserting - Source: ' + altPair.source + '  Alt:' + altPair.alt);
 
-        logger.debug('checking if ' + altPair.source + ' and ' + altPair.alt + ' exists in db.');
-        var check_res = await this.query('SELECT source_id, alt_id FROM manual_alts WHERE source = $1 and alt = $2', [altPair.source, altPair.alt]);
         try {
+
+            logger.debug('checking if ' + altPair.source + ' and ' + altPair.alt + ' exists in db.');
+            var check_res = await this.query('SELECT source_id, alt_id FROM manual_alts WHERE source_id = $1 and alt_id = $2', [altPair.source, altPair.alt]);
             logger.debug(check_res.rowCount + ' rows found for ' + altPair.source + ' and ' + altPair.alt);
 
-            if (check_res.rowCount > 0) {
+            if (check_res.rowCount) {
                 logger.debug(altPair.source + ' and ' + altPair.alt + ' in the manual alt table');
-                var insert_res = await this.query('INSERT INTO manual_alts VALUES ($1, $2)', [altPair.source, altPair.alt]);
+                await this.query('INSERT INTO manual_alts VALUES ($1, $2)', [altPair.source, altPair.alt]);
+                logger.debug(altPair.source + ' and ' + altPair.alt + ' Added to the DB.');
             }
         } catch (err) {
             logger.err('ERROR!!!!!' + err);
         }
-
-        return insert_res;
     }
 
     /**
