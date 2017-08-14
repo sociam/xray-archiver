@@ -3,6 +3,12 @@ const fs = require('fs');
 const logger = require('../../util/logger');
 const _ = require('lodash');
 
+const DB = require('../../db/db');
+var db = new DB('suggester');
+
+const childProcess = require('child_process');
+
+
 function readCSV(path) {
     var lines = fs.readFileSync(path).toString().split('\n');
     var json = [];
@@ -46,13 +52,9 @@ function nwayAlts(alts) {
     return nway;
 }
 
-
-function main() {
-    var array = readCSV('alt_apps.csv');
-    logger.debug(array.length);
-    var subset = array.slice(0, 5);
-    logger.debug(subset[0].source);
-    array = array.concat(nwayAlts(array).map((alt) => {
+function parseAltCSVToJSON(path) {
+    var array = readCSV(path);
+    return array.concat(nwayAlts(array).map((alt) => {
         if (alt[0] != alt[1]) {
             return {
                 'source': alt[0],
@@ -60,7 +62,33 @@ function main() {
             };
         }
     }));
-    logger.debug(array);
+}
+
+function scrapeAppID(appID) {
+    logger.debug('Attempting to Scrape ' + appID);
+    childProcess.execSync('node ../retriever/idFetch.js ' + appID,
+        (error, stdout, stderr) => {
+            logger.debug('stdout: ' + stdout);
+            logger.debug('stderr: ' + stderr);
+            if (error !== null) {
+                logger.debug('exec error: ' + error);
+            }
+        });
+}
+
+function main() {
+    var alts = parseAltCSVToJSON('alt_apps.csv');
+    logger.debug('Apps Parsed. Line Count:' + alts.length);
+    var curr = '';
+    alts.forEach(async(app) => {
+        if (curr != app.source) {
+            scrapeAppID(app.source);
+            curr = app.source;
+        }
+        scrapeAppID(app.alt);
+        await db.insertManualSuggestion(app);
+    });
+
 }
 
 main();
