@@ -66,7 +66,7 @@ function parseAltCSVToJSON(path) {
 
 function scrapeAppID(appID) {
     logger.debug('Attempting to Scrape ' + appID);
-    childProcess.execSync('node ../retriever/idFetch.js ' + appID,
+    return childProcess.execSync('node ../retriever/idFetch.js ' + appID,
         (error, stdout, stderr) => {
             logger.debug('stdout: ' + stdout);
             logger.debug('stderr: ' + stderr);
@@ -74,6 +74,7 @@ function scrapeAppID(appID) {
                 logger.debug('exec error: ' + error);
             }
         });
+
 }
 
 function main() {
@@ -81,17 +82,19 @@ function main() {
     logger.debug('Apps Parsed. Line Count:' + alts.length);
     var curr = '';
 
-    alts.forEach(async(app) => {
-        db.insertManualSuggestion(app).then(() => {
-            if (curr != app.source) {
-                scrapeAppID(app.source);
-                curr = app.source;
-            }
-            scrapeAppID(app.alt);
-        }).catch((err) => logger.err(err));
+    //fs.writeFile('test.json', JSON.stringify(alts), null, 4);
 
+    alts.slice(0, alts.length).forEach((app) => {
+        db.insertManualSuggestion(app)
+            .then(() => {
+                if (curr != app.source) {
+                    scrapeAppID(app.source);
+                    curr = app.source;
+                }
+                scrapeAppID(app.alt);
+            });
+        logger.debug(' -- Winner Winner Chicken Dinner -- ');
     });
-
 }
 
 main();
