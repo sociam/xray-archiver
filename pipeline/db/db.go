@@ -438,6 +438,42 @@ func GetLatestApps(num, start int) ([]App, error) {
 	return ret, nil
 }
 
+//GetManualAltApps - Returns app ids that are logged as alternatives to the one given.
+func GetManualAltApps(appID string) ([]string, error) {
+	rows, err := db.Query("SELECT alt_id FROM manual_alts WHERE source_id = $1", appID)
+	
+	if rows != nil {
+		defer rows.Close()
+	}
+
+	if err != nil {
+		fmt.Println("Error. returning an empty Alt app. ")
+		fmt.Println(err)
+		return []string{}, err
+	}
+
+	result := []string{}
+
+	for i := 0; rows.Next(); i++ {
+		str := sql.NullString{}
+
+		err = rows.Scan(&str)
+
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			result = append(result, str.String)
+		}
+	}
+
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+		util.Log.Err("Database err", rows.Err())
+	}
+
+	fmt.Println(fmt.Sprint(len(result)) + " rows found")
+	return result, nil
+}
+
 // GetAltApps takes an app's DB ID and returns a collection of
 // alternative apps for the specified app - For the API
 func GetAltApps(appID string) ([]AltApp, error) {
@@ -528,11 +564,12 @@ func QuickQuery(
 		shouldAnalyze = ""
 	}
 
+
 	querystr := "SELECT " +
 		"a.id, a.title, a.summary, a.description, a.store_url, a.price, a.free, a.rating, " +
 		"a.num_reviews, a.genre, a.family_genre, a.min_installs, a.max_installs, a.updated, " +
 		"a.android_ver, a.content_rating, a.recent_changes, v.app, v.store, v.region, " +
-		"v.version, v.icon, d.email, d.name, d.store_site, d.site, h.hosts, p.permissions, " +
+		"v.version, v.icon, v.analyzed, d.email, d.name, d.store_site, d.site, h.hosts, p.permissions, " +
 		"pkg.packages " +
 		"FROM " + appStoreTable[appStore] + " a " +
 		"FULL OUTER JOIN app_versions v ON (a.id = v.id) " +
@@ -609,6 +646,7 @@ func QuickQuery(
 			&appData.Region,
 			&appData.Ver,
 			&icon, //&appData.Icon,
+			&appData.IsAnalyzed,
 			pq.Array(&appData.Dev.Emails),
 			&appData.Dev.Name,
 			&devStoreSite,    //&appData.Dev.StoreSite,

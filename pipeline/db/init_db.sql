@@ -88,6 +88,12 @@ create table app_hosts(
   pis    int[]
 );
 
+create table manual_alts(
+  source_id  text not null,
+  alt_id     text not null,
+  primary key (source_id, alt_id)
+);
+
 create table companies(
   id             text     primary key not null,
   name           text                 not null,
@@ -148,6 +154,7 @@ grant select on hosts to apiserv;
 grant select on alt_apps to apiserv;
 
 grant select, update, insert on alt_apps to suggester;
+grant select, update, insert on manual_alts to suggester;
 grant select, update on app_versions to suggester;
 grant select on playstore_apps to suggester;
 

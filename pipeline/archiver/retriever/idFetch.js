@@ -20,7 +20,7 @@ function processArgs() {
     if (arg.length != 1) {
         throw 'DONEZO:\n\tExpected eactly one argument. Actually got: ' + arg.length + '.\n\tArguments passed are: ' + arg;
     }
-    
+
     return arg[0];
 }
 
@@ -29,13 +29,21 @@ function validAppID(appID) {
 }
 
 function insertAppData(app_data) {
+    let formatDate = new Date().toISOString().substring(0, 10);
 
     //Checking version data - correct version to update date
+    if (!app_data.updated) {
+        logger.debug('No updated value found. Setting to todays date.');
+        app_data.updated = formatDate;
+    }
+
     if (!app_data.version || app_data.version === 'Varies with device') {
         logger.debug('Version not found defaulting too', app_data.updated);
+
         //let formatDate = app_data.updated.replace(/\s+/g, '').replace(',', '/');
         let formatDate = new Date(app_data.updated).toISOString().substring(0, 10);
         app_data.version = formatDate;
+
     }
 
     // push the app data to the DB
@@ -73,15 +81,16 @@ function main() {
         .then((res) => {
             if (res) {
                 logger.debug('App Already Exists. just going to stop it riiiight here.');
-                return 'app_exists';
+                process.exit(0);
             }
 
             if (!validAppID(arg)) {
                 logger.debug('App ID is actually invalid. you\'re donzo!');
-                return 'invalid_id';
+                process.exit(0);
+
             }
 
-            logger.debug('App ID is fine. lets get cooking! fetching: ' + arg );
+            logger.debug('App ID is fine. lets get cooking! fetching: ' + arg);
 
             return fetchAppData(arg)
                 .then(() => {
