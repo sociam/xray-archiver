@@ -6,6 +6,10 @@ import (
 
 var unit = util.Unit{}
 
+var badHosts = map[string]util.Unit{
+	"example.com": unit,
+}
+
 var mobTrackers = map[string]util.Unit{
 	"Inmobi": unit, "Mopub": unit, "Facebook": unit, "Chartboost": unit,
 	"Crashlytics": unit, "Heyzap": unit, "Applovin": unit,
