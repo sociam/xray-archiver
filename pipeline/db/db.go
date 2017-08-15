@@ -441,7 +441,7 @@ func GetLatestApps(num, start int) ([]App, error) {
 //GetManualAltApps - Returns app ids that are logged as alternatives to the one given.
 func GetManualAltApps(appID string) ([]string, error) {
 	rows, err := db.Query("SELECT alt_id FROM manual_alts WHERE source_id = $1", appID)
-	
+
 	if rows != nil {
 		defer rows.Close()
 	}
@@ -563,7 +563,6 @@ func QuickQuery(
 	} else {
 		shouldAnalyze = ""
 	}
-
 
 	querystr := "SELECT " +
 		"a.id, a.title, a.summary, a.description, a.store_url, a.price, a.free, a.rating, " +
