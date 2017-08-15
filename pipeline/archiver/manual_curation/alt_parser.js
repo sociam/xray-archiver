@@ -97,7 +97,7 @@ function main() {
     logger.debug('Apps Parsed. Line Count:' + apps.length);
     logger.debug('App-Alt Pairs Parsed: ' + alts.length);
     _.forEach(apps, (app) => {
-        scrapeAppID(app);
+        scrapeAppID(app.replace('\r', ''));
     });
 
     _.forEach(alts, (app) => {

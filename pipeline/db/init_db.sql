@@ -24,7 +24,7 @@ create table app_versions(
 create table developers(
   id         serial primary key not null,
   email      text[]             not null,
-  name         text  postgres           not null,
+  name         text             not null,
   store_site   text                     ,
   site         text
 );

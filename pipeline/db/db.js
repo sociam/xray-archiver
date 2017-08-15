@@ -262,7 +262,6 @@ class DB {
      *  Inserts App Data scraped from the google play store into the DB.
      */
     async insertPlayApp(app, region) {
-
         logger.debug('Inserting Dev Information. ');
         var devId = await this.insertDev({
             name: app.developer,
@@ -275,7 +274,7 @@ class DB {
         var appExists = false,
             verExists = false;
         var verId;
-        var res = await this.query('SELECT * FROM apps WHERE id = $1', [app.gPlayAppID]);
+        var res = await this.query('SELECT * FROM apps WHERE id = $1', [app.appId]);
 
         if (res.rowCount != 0) {
             appExists = true;
@@ -309,6 +308,10 @@ class DB {
                     [verId], app.appId
                 ]);
 
+            }
+
+            if (!app.price && app.price != 0) {
+                app.price = 0;
             }
 
             await client.lquery(
