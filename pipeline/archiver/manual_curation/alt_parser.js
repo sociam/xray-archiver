@@ -2,6 +2,7 @@
 const fs = require('fs');
 const logger = require('../../util/logger');
 const _ = require('lodash');
+const Promise = require('bluebird');
 
 const DB = require('../../db/db');
 var db = new DB('suggester');
@@ -64,6 +65,18 @@ function parseAltCSVToJSON(path) {
     }));
 }
 
+function parseAltCSVtoArray(path) {
+    var lines = fs.readFileSync(path).toString().split('\n');
+    var arr = _.flatten(_.map(lines, (line) => {
+        return line.split(',');
+
+    }));
+    return _.uniqBy(arr, (e) => {
+        return e;
+    });
+
+}
+
 function scrapeAppID(appID) {
     logger.debug('Attempting to Scrape ' + appID);
     return childProcess.execSync('node ../retriever/idFetch.js ' + appID,
@@ -78,23 +91,22 @@ function scrapeAppID(appID) {
 }
 
 function main() {
-    var alts = parseAltCSVToJSON('alt_apps.csv').then();
-    logger.debug('Apps Parsed. Line Count:' + alts.length);
-    var curr = '';
+    var alts = parseAltCSVToJSON('alt_apps.csv');
+    var apps = parseAltCSVtoArray('alt_apps.csv');
 
-    //fs.writeFile('test.json', JSON.stringify(alts), null, 4);
+    logger.debug('Apps Parsed. Line Count:' + apps.length);
+    logger.debug('App-Alt Pairs Parsed: ' + alts.length);
+    _.forEach(apps, (app) => {
+        scrapeAppID(app);
+    });
 
-    alts.forEach((app) => {
+    _.forEach(alts, (app) => {
         db.insertManualSuggestion(app)
-            .then(() => {
-                if (curr != app.source) {
-                    scrapeAppID(app.source);
-                    curr = app.source;
-                }
-                scrapeAppID(app.alt);
-            });
-        logger.debug(' -- Winner Winner Chicken Dinner -- ');
+            .then((res) => logger.debug(res))
+            .catch((err) => logger.err(err));
+
     });
 }
+
 
 main();
