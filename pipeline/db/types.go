@@ -33,7 +33,7 @@ type AppVersion struct {
 	Hosts       []string  `json:"hosts"`
 	Perms       []string  `json:"perms"`
 	Packages    []string  `json:"packages"`
-	IsAnalyzed  bool    `json:"isAnalyzed"`
+	IsAnalyzed  bool      `json:"isAnalyzed"`
 }
 
 // AltApp represents Alternative App title and playstore url. Used in API
