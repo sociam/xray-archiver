@@ -69,11 +69,9 @@ class DB {
         try {
             await client.lquery('UPDATE app_versions SET last_alt_checked = CURRENT_TIMESTAMP where app = $1', [appID]);
 
-        }
-        catch(err) {
+        } catch (err) {
             logger.err(err);
-        }
-        finally {
+        } finally {
             client.release();
         }
     }
@@ -81,7 +79,7 @@ class DB {
     async insertAltApp(altApp) {
         // check if the current alt app exists in the db and has been analysed.
         var isCollected = false;
-        
+
         if (altApp.gPlayID != '') {
             var analysedRes = await this.query('SELECT analyzed from app_versions where app = $1 ', [altApp.gPlayAppID]);
             if (analysedRes.rowCount > 0) {
@@ -93,10 +91,9 @@ class DB {
         logger.debug('Connected');
 
         var checkRes = await client.lquery(
-            'SELECT * FROM alt_apps WHERE alt_app_title = $1 and app_id = $2',
-            [altApp.title, altApp.appID]
+            'SELECT * FROM alt_apps WHERE alt_app_title = $1 and app_id = $2', [altApp.title, altApp.appID]
         );
-        
+
         logger.debug(checkRes.rowCount);
 
         if (checkRes.rowCount == 0) {
@@ -105,8 +102,7 @@ class DB {
                 await client.lquery(
                     'INSERT INTO alt_apps( \
                         app_id, alt_app_title, alt_to_url, g_play_url, g_play_id, icon_url, official_site_url, is_scraped) \
-                            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)'
-                    , [
+                            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', [
                         altApp.appID,
                         altApp.title,
                         altApp.altToURL,
@@ -137,7 +133,7 @@ class DB {
                     WHERE v.app NOT IN (SELECT app_id AS app FROM alt_apps) \
                          ORDER BY last_alt_checked NULLS FIRST LIMIT $1', [limit]);
 
-        if (res.rowCount <= 0 ) {
+        if (res.rowCount <= 0) {
             logger.debug('No apps need alternatives to be searched for. Or something has screwed up');
         }
 
@@ -178,6 +174,31 @@ class DB {
         var res = await this.query('SELECT search_term FROM search_terms WHERE age(last_searched) > interval \'1 month\'');
         logger.debug(res.rows.length + ' terms fetched');
         return res.rows;
+    }
+
+    /**
+     *  Insert A Manually Curated App and ID into the Database
+     */
+    async insertManualSuggestion(altPair) {
+        logger.debug('Inserting - Source: ' + altPair.source + '  Alt:' + altPair.alt);
+
+        try {
+
+            logger.debug(' -- Checking if ' + altPair.source + ' and ' + altPair.alt + ' exists in db. -- ');
+            var check_res = await this.query('SELECT * FROM manual_alts WHERE source_id = $1 and alt_id = $2 limit 1', [altPair.source, altPair.alt]);
+            logger.debug(check_res.rowCount + ' rows found for ' + altPair.source + ' and ' + altPair.alt);
+            if (check_res.rowCount == 0) {
+                logger.debug(altPair.source + ' and ' + altPair.alt + ' in the manual alt table');
+                await this.query('INSERT INTO manual_alts VALUES ($1, $2)', [altPair.source, altPair.alt]);
+                logger.debug(altPair.source + ' and ' + altPair.alt + ' Added to the DB.');
+            } else {
+                logger.debug(altPair.source + ' and ' + altPair.alt + ' Already Exist!');
+            }
+        } catch (err) {
+            logger.err('ERROR!!!!!' + err);
+        } finally {
+            logger.debug(' -- Got To Finally -- ');
+        }
     }
 
     /**
@@ -241,7 +262,6 @@ class DB {
      *  Inserts App Data scraped from the google play store into the DB.
      */
     async insertPlayApp(app, region) {
-
         logger.debug('Inserting Dev Information. ');
         var devId = await this.insertDev({
             name: app.developer,
@@ -254,7 +274,7 @@ class DB {
         var appExists = false,
             verExists = false;
         var verId;
-        var res = await this.query('SELECT * FROM apps WHERE id = $1', [app.gPlayAppID]);
+        var res = await this.query('SELECT * FROM apps WHERE id = $1', [app.appId]);
 
         if (res.rowCount != 0) {
             appExists = true;
@@ -288,6 +308,10 @@ class DB {
                     [verId], app.appId
                 ]);
 
+            }
+
+            if (!app.price && app.price != 0) {
+                app.price = 0;
             }
 
             await client.lquery(

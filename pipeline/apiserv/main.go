@@ -203,7 +203,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		offset := "0"
 		isFull := false
-		onlyAnalyzed := true //Default is true as most desire is for analyzed apps
+		onlyAnalyzed := false //Default is true as most desire is for analyzed apps
 		store := "play"
 
 		titles := []string{""}
@@ -329,8 +329,8 @@ func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		appID := split[3]
 
-		alts, err := db.GetAltApps(appID)
-
+		//alts, err := db.GetAltApps(appID)
+		alts, err := db.GetManualAltApps(appID)
 		if err != nil {
 			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Seems like we couldn't find your app... Probs means that we don't have any alts: "+appID)
 			return
@@ -349,6 +349,7 @@ func init() {
 }
 
 func main() {
+
 	http.Handle("/", http.FileServer(http.Dir(util.Cfg.AppDir)))
 
 	http.HandleFunc("/api/apps", appsEndpoint)
