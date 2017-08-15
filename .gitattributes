@@ -1,3 +1,4 @@
 pipeline/node-env.nix  linguist-vendored=true
 pipeline/node-packages.nix  linguist-vendored=true
 pipeline/package-lock.json  linguist-vendored=true
+*.json linguist-vendored=true
