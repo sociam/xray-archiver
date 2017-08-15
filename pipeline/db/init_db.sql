@@ -133,6 +133,7 @@ grant select, update on search_terms to retriever;
 grant select, insert, update on developers to retriever;
 
 grant select, update on app_versions to downloader;
+grant select on playstore_apps to downloader;
 
 grant select, update, insert on apps to analyzer;
 grant select, update, insert on app_versions to analyzer;
