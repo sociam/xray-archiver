@@ -2,7 +2,6 @@
 const fs = require('fs');
 const logger = require('../../util/logger');
 const _ = require('lodash');
-const Promise = require('bluebird');
 
 const DB = require('../../db/db');
 var db = new DB('suggester');
