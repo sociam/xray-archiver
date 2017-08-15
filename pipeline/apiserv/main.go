@@ -329,8 +329,8 @@ func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		appID := split[3]
 
-		alts, err := db.GetAltApps(appID)
-
+		//alts, err := db.GetAltApps(appID)
+		alts, err := db.GetManualAltApps(appID)
 		if err != nil {
 			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Seems like we couldn't find your app... Probs means that we don't have any alts: "+appID)
 			return
