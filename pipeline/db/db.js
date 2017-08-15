@@ -142,7 +142,7 @@ class DB {
     }
 
     async queryAppsToDownload(batch) {
-        var res = await this.query('SELECT * FROM (SELECT * FROM app_versions ORDER BY last_dl_attempt) AS apps WHERE downloaded = False LIMIT $1 ', [batch]);
+        var res = await this.query('SELECT * FROM (SELECT * FROM app_versions ORDER BY last_dl_attempt) AS apps WHERE downloaded = False AND free = true LIMIT $1 ', [batch]);
 
         if (res.rowCount <= 0) {
             return Promise.reject('No downloads found. Consider slowing down downloader or speeding up scraper');
