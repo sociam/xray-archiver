@@ -564,11 +564,12 @@ func QuickQuery(
 		shouldAnalyze = ""
 	}
 
+
 	querystr := "SELECT " +
 		"a.id, a.title, a.summary, a.description, a.store_url, a.price, a.free, a.rating, " +
 		"a.num_reviews, a.genre, a.family_genre, a.min_installs, a.max_installs, a.updated, " +
 		"a.android_ver, a.content_rating, a.recent_changes, v.app, v.store, v.region, " +
-		"v.version, v.icon, d.email, d.name, d.store_site, d.site, h.hosts, p.permissions, " +
+		"v.version, v.icon, v.analyzed, d.email, d.name, d.store_site, d.site, h.hosts, p.permissions, " +
 		"pkg.packages " +
 		"FROM " + appStoreTable[appStore] + " a " +
 		"FULL OUTER JOIN app_versions v ON (a.id = v.id) " +
@@ -645,6 +646,7 @@ func QuickQuery(
 			&appData.Region,
 			&appData.Ver,
 			&icon, //&appData.Icon,
+			&appData.IsAnalyzed,
 			pq.Array(&appData.Dev.Emails),
 			&appData.Dev.Name,
 			&devStoreSite,    //&appData.Dev.StoreSite,
