@@ -146,8 +146,10 @@ grant select on app_hosts to apiserv;
 grant select on companies to apiserv;
 grant select on hosts to apiserv;
 grant select on alt_apps to apiserv;
+grant select on manual_alts to apiserv;
 
 grant select, update, insert on alt_apps to suggester;
+grant select, update, insert on manual_alts to suggester;
 grant select, update on app_versions to suggester;
 grant select on playstore_apps to suggester;
 
