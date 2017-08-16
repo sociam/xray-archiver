@@ -234,6 +234,7 @@ func WriteDEAN(w io.Writer, data interface{}) error {
 	return nil
 }
 
+// GetJSON from valid url string gets json
 func GetJSON(url string, target interface{}) error {
 	client := &http.Client{Timeout: 10 * time.Second}
 	r, err := client.Get(url)
@@ -245,6 +246,7 @@ func GetJSON(url string, target interface{}) error {
 	return json.NewDecoder(r.Body).Decode(target)
 }
 
+// GeoIPInfo stores apphosts data for geolocation
 type GeoIPInfo struct {
 	IP          string  `json:"ip"`
 	CountryCode string  `json:"country_code"`
@@ -259,6 +261,7 @@ type GeoIPInfo struct {
 	MetroCode   int     `json:"metro_code"`
 }
 
+// GetHostGeoIP grabs geo location information from hostname
 func GetHostGeoIP(host string) ([]GeoIPInfo, error) {
 	hosts, err := net.LookupHost(host)
 	if err != nil {
