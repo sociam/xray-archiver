@@ -6,6 +6,9 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
+	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path"
@@ -229,4 +232,50 @@ func WriteDEAN(w io.Writer, data interface{}) error {
 	WriteJSON(w, data)
 	w.Write([]byte("mate."))
 	return nil
+}
+
+func GetJSON(url string, target interface{}) error {
+	client := &http.Client{Timeout: 10 * time.Second}
+	r, err := client.Get(url)
+	if err != nil {
+		return err
+	}
+	defer r.Body.Close()
+
+	return json.NewDecoder(r.Body).Decode(target)
+}
+
+type GeoIPInfo struct {
+	IP          string  `json:"ip"`
+	CountryCode string  `json:"country_code"`
+	CountryName string  `json:"country_name"`
+	RegionCode  string  `json:"region_code"`
+	RegionName  string  `json:"region_name"`
+	City        string  `json:"city"`
+	ZipCode     string  `json:"zip_code"`
+	TimeZone    string  `json:"time_zone"`
+	Latitude    float64 `json:"latitude"`
+	Longitude   float64 `json:"longitude"`
+	MetroCode   int     `json:"metro_code"`
+}
+
+func GetHostGeoIP(host string) ([]GeoIPInfo, error) {
+	hosts, err := net.LookupHost(host)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make([]GeoIPInfo, 0, len(hosts))
+	for _, host := range hosts {
+		var inf GeoIPInfo
+		//TODO: fix?
+		err = GetJSON("https://localhost/geoip/"+url.PathEscape(host), &inf)
+		if err != nil {
+			//TODO: better handling?
+			fmt.Printf("Couldn't lookup geoip info for %s\n", host)
+		}
+		ret = append(ret, inf)
+	}
+
+	return ret, nil
 }
