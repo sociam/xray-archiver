@@ -69,7 +69,7 @@ async function main() {
             continue;
         }
 
-        await Promise.map(collect, async (app) => {
+        await Promise.map(apps, async (app) => {
 
             logger.info('Starting download attempt for:', app.app);
             db.updatedDlAttempt(app); // Could be move to the call to DL app. but this is where the whole DL process starts.
