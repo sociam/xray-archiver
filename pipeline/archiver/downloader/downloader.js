@@ -68,45 +68,55 @@ async function main() {
             await new Promise(resolve => setTimeout(resolve, 1000));
             continue;
         }
+        const CHUNK_SIZE = 20;
+        var count = 0;
+        var collect = [];
+        apps.forEach( async (app) => {
+            collect.push(app);
+            count += 1;
 
-        await Promise.each(apps, async(app) => {
+            if (count >= CHUNK_SIZE) {
+                await Promise.each(collect, async (app) => {
 
-            logger.info('Starting download attempt for:', app.app);
-            db.updatedDlAttempt(app); // Could be move to the call to DL app. but this is where the whole DL process starts.
-            try {
-                var appSavePath = await resolveAPKDir(app);
-            } catch (err) {
-                await new Promise(resolve => setTimeout(resolve, 6000));
-                return Promise.reject('Did not have access to resolve dir', err.message);
-            }
+                    logger.info('Starting download attempt for:', app.app);
+                    db.updatedDlAttempt(app); // Could be move to the call to DL app. but this is where the whole DL process starts.
+                    try {
+                        var appSavePath = await resolveAPKDir(app);
+                    } catch (err) {
+                        await new Promise(resolve => setTimeout(resolve, 6000));
+                        return Promise.reject('Did not have access to resolve dir', err.message);
+                    }
 
-            try {
-                await downloadApp(app, appSavePath);
-            } catch (err) {
-                logger.debug('Attempting to remove created dir');
-                await fs.rmdir(appSavePath).catch(logger.warning);
-                return Promise.reject('Downloading failed with err:', err.message);
-            }
+                    try {
+                        await downloadApp(app, appSavePath);
+                    } catch (err) {
+                        logger.debug('Attempting to remove created dir');
+                        await fs.rmdir(appSavePath).catch(logger.warning);
+                        return Promise.reject('Downloading failed with err:', err.message);
+                    }
 
-            try {
-                let apkPath = path.join(appSavePath, app.app + '.apk');
+                    try {
+                        let apkPath = path.join(appSavePath, app.app + '.apk');
 
-                if (fs.existsSync(apkPath)) {
-                    //Perform a check on apk size
-                    await fs.stat(apkPath, async function(err,stats) {
-                        if(stats.size == 0 || stats.size == undefined) {
-                            await fs.rmdir(appSavePath).catch(logger.warning);
-                            return Promise.reject('File did not successfully download and is a empty size');
+                        if (fs.existsSync(apkPath)) {
+                            //Perform a check on apk size
+                            await fs.stat(apkPath, async function(err,stats) {
+                                if(stats.size == 0 || stats.size == undefined) {
+                                    await fs.rmdir(appSavePath).catch(logger.warning);
+                                    return Promise.reject('File did not successfully download and is a empty size');
+                                }
+
+                                await db.updateDownloadedApp(app);
+                            });
                         }
-
-                        await db.updateDownloadedApp(app);
-                    });
-                }
-            } catch (err) {
-                // TODO: Maybe do something else? Destroying process as we have apks that don't exist in db...
-                return Promise.reject('Err when updated the downloaded app', err);
+                    } catch (err) {
+                        // TODO: Maybe do something else? Destroying process as we have apks that don't exist in db...
+                        return Promise.reject('Err when updated the downloaded app', err);
+                    }
+                }).catch(logger.err);
+                count = 0;
             }
-        }).catch(logger.err);
+        });
     }
 }
 
