@@ -1,73 +1,72 @@
-var gplay = require('google-play-scraper');
-const _ = require('lodash');
-const fs = require('fs-extra');
+
+const gplay = require('google-play-scraper');
 const Promise = require('bluebird');
 
 const logger = require('../../util/logger');
 const DB = require('../../db/db');
-var db = new DB('explorer');
+const db = new DB('explorer');
 
 /**
  * Wipes a file at a specified location of text
  * @param {*Location of the file to be written to...} location
  */
+/*
 function wipeScrapedWords(location) {
-    fs.writeFile(location, '', function(err) {
+    fs.writeFile(location, '', (err) => {
         if (err) {
             logger.err(err.message);
         }
     });
 }
+*/
 
 /**
  *  Writes a word to a file at a specified location
  * @param {*The word to be written to a file...} word
  * @param {*The location of the file to be written to...} location
  */
+/*
 function writeScrapedWords(word, location) {
-    fs.appendFile(location, word + '\n', function(err) {
+    fs.appendFile(location, `${word}\n`, (err) => {
         if (err) {
             logger.err(err.message);
         }
     });
 }
-
+*/
 
 /**
  * Used returns an array where each line is a search term.
- * @param {*the location of the file that is to be read} file_location
+ * @param {*the location of the file that is to be read} filepath
  */
-function openSearchTerms(file_location) {
-    return fs.readFileSync(file_location).toString().split('\n');
+/*
+function openSearchTerms(filepath) {
+    return fs.readFileSync(filepath).toString().split('\n');
 }
+*/
 
 /**
  * Parses a file of search terms, adding each line as a search term to the DB
- * @param {*Location of a file to import search terms from} file_location
+ * @param {*Location of a file to import search terms from} filepath
  */
-function importFileTerms(file_location) {
-    _.forEach(
-        openSearchTerms(file_location),
-        (search_term) => db.insertSearchTerm(search_term)
-    );
+/*
+function importFileTerms(filepath) {
+    openSearchTerms(filepath).forEach((term) => db.insertSearchTerm(term));
 }
+*/
 
+function flatten(arr) {
+    return arr.reduce((a, b) => a.concat(b), []);
+}
 
 /**
  * Creates a cartesion product of arrays of strings.
  *
  * Eg, ['a', 'b', 'c'] x2 => ['aa' ''ab' 'ac' 'ba' 'bb'] ...
  */
-function cartesianProductChars() {
-    return _.reduce(arguments, function(a, b) {
-        return _.flatten(_.map(a, function(x) {
-            return _.map(b, function(y) {
-                return x + y;
-            });
-        }), true);
-    }, [
-        []
-    ]);
+function cartesianProductChars(...args) {
+    return args.reduce((prods, arr) =>
+        flatten(prods.map((prod) => arr.map((v) => prod.concat(v)))), [[]]);
 }
 
 /**
@@ -78,23 +77,24 @@ function cartesianProductChars() {
  */
 // TODO: Store scraped word to the Database not txt
 function scrapeSuggestedWords(startingWords) {
-    //TODO: return array of suggested search terms
+    // TODO: return array of suggested search terms
     Promise.each(startingWords, (letter) => {
-        return gplay.suggest({ term: letter, throttle: 10, region: 'uk'})
+        return gplay.suggest({ term: letter, throttle: 10, region: 'uk' })
             .then((suggestion) => {
-                Promise.each(suggestion, async(word) => {
-                    logger.debug('Inserting to DB: ' + word);
-                    return await db.insertSearchTerm(word).catch((err) => logger.err(err));
+                Promise.each(suggestion, (word) => {
+                    logger.debug(`Inserting to DB: ${word}`);
+                    return db.insertSearchTerm(word).catch((err) => logger.err(err));
                 }).catch(logger.err);
             }).catch(logger.err);
     });
 }
 
 // TODO this stuff needs moving somewhere...
-var single = 'abcdefghijklmnopqrstuvwxyz '.split('');
-var double = cartesianProductChars(single, single);
-var triple = cartesianProductChars(single, single, single);
+const single = 'abcdefghijklmnopqrstuvwxyz '.split('');
+const double = cartesianProductChars(single, single);
+const triple = cartesianProductChars(single, single, single);
 
-var charTriples = single.concat(double).concat(triple);
+const charTriples = single.concat(double).concat(triple);
 
 scrapeSuggestedWords(charTriples);
+
