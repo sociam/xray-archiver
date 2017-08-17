@@ -22,6 +22,7 @@ function readCSV(path) {
     return json;
 }
 
+// https://stackoverflow.com/questions/12303989/cartesian-product-of-multiple-arrays-in-javascript
 function cartesianProductAltArray() {
     return _.reduce(arguments, function(a, b) {
         return _.flatten(_.map(a, function(x) {
@@ -95,11 +96,11 @@ function main() {
 
     logger.debug('Apps Parsed. Line Count:' + apps.length);
     logger.debug('App-Alt Pairs Parsed: ' + alts.length);
-    _.forEach(apps, (app) => {
+    apps.forEach((app) => {
         scrapeAppID(app.replace('\r', ''));
     });
 
-    _.forEach(alts, (app) => {
+    alts.forEach((app) => {
         db.insertManualSuggestion(app)
             .then((res) => logger.debug(res))
             .catch((err) => logger.err(err));

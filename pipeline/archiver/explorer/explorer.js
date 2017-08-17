@@ -55,7 +55,7 @@ function importFileTerms(file_location) {
 
 /**
  * Creates a cartesion product of arrays of strings.
- *
+ * https://stackoverflow.com/questions/12303989/cartesian-product-of-multiple-arrays-in-javascript
  * Eg, ['a', 'b', 'c'] x2 => ['aa' ''ab' 'ac' 'ba' 'bb'] ...
  */
 function cartesianProductChars() {
@@ -80,7 +80,7 @@ function cartesianProductChars() {
 function scrapeSuggestedWords(startingWords) {
     //TODO: return array of suggested search terms
     Promise.each(startingWords, (letter) => {
-        return gplay.suggest({ term: letter, throttle: 10, region: 'uk'})
+        return gplay.suggest({ term: letter, throttle: 10, region: 'uk' })
             .then((suggestion) => {
                 Promise.each(suggestion, async(word) => {
                     logger.debug('Inserting to DB: ' + word);
