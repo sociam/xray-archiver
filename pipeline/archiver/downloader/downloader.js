@@ -63,7 +63,7 @@ function downloadApp(appData, appSavePath) {
 async function main() {
     for (;;) {
         try {
-            var apps = await db.queryAppsToDownload(10);
+            var apps = await db.queryAppsToDownload(7);
         } catch (err) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             continue;
