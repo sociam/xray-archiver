@@ -340,6 +340,28 @@ func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func getHostLoci(w http.ResponseWriter, r *http.Request) {
+	mime := r.Header.Get("Accept")
+
+	if r.Method == "POST" || r.Method == "GET" {
+		mime = mimeCheck(mime)
+		if mime == "" {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+			return
+		}
+
+		err := r.ParseForm()
+		if err != nil {
+			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
+			return
+		}
+
+		//util.GetHostGeoIP()
+		//for name, val := range r.Form {
+
+	}
+}
+
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
 var port = flag.Uint("port", 8118, "Port to serve on.")
 
@@ -355,5 +377,6 @@ func main() {
 	http.HandleFunc("/api/apps", appsEndpoint)
 	http.HandleFunc("/api/alt/", altAppsEndpoint)
 	http.HandleFunc("/api/fetch", fetchIDEndpoint)
+	http.HandleFunc("/api/hosts", getHostLoci)
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
