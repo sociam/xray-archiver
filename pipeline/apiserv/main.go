@@ -341,8 +341,8 @@ func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 func getHostLoci(w http.ResponseWriter, r *http.Request) {
+	util.Log.Debug("Host lookup requested")
 	mime := r.Header.Get("Accept")
-
 	if r.Method == "POST" || r.Method == "GET" {
 		mime = mimeCheck(mime)
 		if mime == "" {
@@ -350,15 +350,15 @@ func getHostLoci(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err := r.ParseForm()
-		if err != nil {
-			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
+		split := strings.Split(r.URL.Path, "/")
+
+		if len(split) < 3 {
+			writeErr(w, mime, http.StatusBadRequest, "bad_hosts", "Bad app slashes specified")
 			return
 		}
 
-		//util.GetHostGeoIP()
-		//for name, val := range r.Form {
-		var hostname = r.Form["host"][0]
+		hostname := split[3]
+		util.Log.Debug("Attempting to lookup hosts: ", hostname)
 		geoip, err := util.GetHostGeoIP(hostname)
 
 		if err != nil {
@@ -385,6 +385,6 @@ func main() {
 	http.HandleFunc("/api/apps", appsEndpoint)
 	http.HandleFunc("/api/alt/", altAppsEndpoint)
 	http.HandleFunc("/api/fetch", fetchIDEndpoint)
-	http.HandleFunc("/api/hosts", getHostLoci)
+	http.HandleFunc("/api/hosts/", getHostLoci)
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
