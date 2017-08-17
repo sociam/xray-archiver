@@ -358,7 +358,15 @@ func getHostLoci(w http.ResponseWriter, r *http.Request) {
 
 		//util.GetHostGeoIP()
 		//for name, val := range r.Form {
+		var hostname = r.Form["host"][0]
+		geoip, err := util.GetHostGeoIP(hostname)
 
+		if err != nil {
+			writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
+			return
+		}
+
+		writeData(w, mime, http.StatusOK, geoip)
 	}
 }
 
