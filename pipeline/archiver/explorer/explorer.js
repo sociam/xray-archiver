@@ -61,7 +61,7 @@ function flatten(arr) {
 
 /**
  * Creates a cartesion product of arrays of strings.
- *
+ * https://stackoverflow.com/questions/12303989/cartesian-product-of-multiple-arrays-in-javascript
  * Eg, ['a', 'b', 'c'] x2 => ['aa' ''ab' 'ac' 'ba' 'bb'] ...
  */
 function cartesianProductChars(...args) {
@@ -97,4 +97,3 @@ const triple = cartesianProductChars(single, single, single);
 const charTriples = single.concat(double).concat(triple);
 
 scrapeSuggestedWords(charTriples);
-

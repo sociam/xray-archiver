@@ -70,7 +70,7 @@ function main() {
     const alts = parseAltCSVToJSON('alt_apps.csv');
     const apps = parseAltCSVtoArray('alt_apps.csv');
 
-    logger.debug(`Apps Parsed. Line Count:${apps.length}`);
+    logger.debug(`Apps Parsed. Line Count: ${apps.length}`);
     logger.debug(`App-Alt Pairs Parsed: ${alts.length}`);
     apps.forEach((app) => {
         scrapeAppID(app.replace('\r', ''));
