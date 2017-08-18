@@ -272,10 +272,10 @@ func GetHostGeoIP(host string) ([]GeoIPInfo, error) {
 	for _, host := range hosts {
 		var inf GeoIPInfo
 		//TODO: fix?
-		err = GetJSON("https://localhost/geoip/"+url.PathEscape(host), &inf)
+		err = GetJSON("http://localhost/geoip/"+url.PathEscape(host), &inf)
 		if err != nil {
 			//TODO: better handling?
-			fmt.Printf("Couldn't lookup geoip info for %s\n", host)
+			fmt.Printf("Couldn't lookup geoip info for %s: %s \n", host, err.Error())
 		}
 		ret = append(ret, inf)
 	}
