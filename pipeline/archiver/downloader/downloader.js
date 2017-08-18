@@ -2,7 +2,7 @@
 Download process spawner
 */
 
-const Promise = require('Buebird');
+const Promise = require('bluebird');
 
 const config = require('/etc/xray/config.json');
 const fs = require('fs-extra');
