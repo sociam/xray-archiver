@@ -2,12 +2,12 @@
 Download process spawner
 */
 
-import * as Promise from 'bluebird';
+const Promise = require('Buebird');
 
-import * as config from '/etc/xray/config.json';
-import * as fs from 'fs-extra';
-import * as logger from '../../util.logger';
-import * as path from 'path';
+const config = require('/etc/xray/config.json');
+const fs = require('fs-extra');
+const path = require('path');
+const logger = require('../../util/logger');
 
 const db = new (require('../../db/db'))('downloader');
 
