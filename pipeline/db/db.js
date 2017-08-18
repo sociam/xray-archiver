@@ -54,7 +54,7 @@ class DB {
 
             // maybe dev id needs to be URL encoded?
             const storeSite = `https://play.google.com/store/apps/developer?id=${dev.id}`;
-            res = await this.query('INSERT INTO developers(email,name,storeSite,site) VALUES ($1, $2, $3, $4) RETURNING id', [
+            res = await this.query('INSERT INTO developers(email,name,store_site,site) VALUES ($1, $2, $3, $4) RETURNING id', [
                 [dev.email], dev.name, storeSite, dev.site,
             ]);
             return res.rows[0].id;
