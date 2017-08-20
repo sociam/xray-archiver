@@ -389,8 +389,11 @@ func fetchHosts(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		hosts := r.Form["hosts"]
-		util.Log.Debug("Checking over hosts: ", hosts)
+		hostsParams := r.Form["hosts"][0]
+		util.Log.Debug("Raw host params: %s\n", hostsParams)
+
+		hosts := strings.Split(hostsParams, ",")
+		util.Log.Debug("Checking over hosts: %s\n", hosts)
 
 		hostToGeoip := map[string][]util.GeoIPInfo{}
 
