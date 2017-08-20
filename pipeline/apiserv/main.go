@@ -394,19 +394,19 @@ func fetchHosts(w http.ResponseWriter, r *http.Request) {
 
 		hostToGeoip := map[string][]util.GeoIPInfo{}
 
-		for _, host := range hosts {
-			util.Log.Debug("Getting host geo ip: ", host)
+		for i := range hosts {
+			util.Log.Debug("Getting host geo ip: %s\n", hosts[i] )
 			var geoip []util.GeoIPInfo
 
-			geoip, err = util.GetHostGeoIP(host)
+			geoip, err = util.GetHostGeoIP(hosts[i])
 
 			if err != nil {
 				//TODO: immedoiately fail?
 				//writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
-				util.Log.Warning("host could not be found ", host, err)
+				util.Log.Warning("host could not be found", hosts[i], err)
 
 			}
-			hostToGeoip[host] = geoip
+			hostToGeoip[hosts[i]] = geoip
 		}
 
 		writeData(w, mime, http.StatusOK, hostToGeoip)
@@ -415,7 +415,7 @@ func fetchHosts(w http.ResponseWriter, r *http.Request) {
 }
 
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
-var port = flag.Uint("port", 8118, "Port to serve on.")
+var port = flag.Uint("port", 6666, "Port to serve on.")
 
 func init() {
 	util.LoadCfg(*cfgFile, util.APIServ)
