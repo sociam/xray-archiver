@@ -402,10 +402,10 @@ func fetchHosts(w http.ResponseWriter, r *http.Request) {
 
 			if err != nil {
 				//TODO: immedoiately fail?
-				writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
-				return
-			}
+				//writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
+				util.Log.Warning("host could not be found ", host, err)
 
+			}
 			hostToGeoip[host] = geoip
 		}
 
