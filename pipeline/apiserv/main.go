@@ -370,6 +370,38 @@ func getHostLoci(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func fetchHosts(w http.ResponseWriter, r *http.Request) {
+	mime := r.Header.Get("Accept")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	if r.Method == "POST" || r.Method == "GET" {
+		mime = mimeCheck(mime)
+		if mime == "" {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+			return
+		}
+
+		//need to take a hosts list of []string
+		err := r.ParseForm()
+		if err != nil {
+			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
+			return
+		}
+
+		util.Log.Debug("Parsing Form Params.")
+
+		hosts := r.Form["hosts"]
+
+		//hostsGeoip := []util.GeoIPInfo{}
+
+		util.Log.Debug("Checking over hosts: ", hosts)
+		for i := range hosts {
+			util.GetHostGeoIP(hosts[i])
+		}
+	}
+
+}
+
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
 var port = flag.Uint("port", 8118, "Port to serve on.")
 
@@ -385,6 +417,9 @@ func main() {
 	http.HandleFunc("/api/apps", appsEndpoint)
 	http.HandleFunc("/api/alt/", altAppsEndpoint)
 	http.HandleFunc("/api/fetch", fetchIDEndpoint)
+
 	http.HandleFunc("/api/hosts/", getHostLoci)
+	http.HandleFunc("/api/hosts", fetchHosts)
+
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
