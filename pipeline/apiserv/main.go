@@ -407,9 +407,11 @@ func fetchHosts(w http.ResponseWriter, r *http.Request) {
 				//TODO: immedoiately fail?
 				//writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
 				util.Log.Warning("host could not be found", hosts[i], err)
+				hostToGeoip[hosts[i]] = []util.GeoIPInfo{}
 
+			} else {
+				hostToGeoip[hosts[i]] = geoip
 			}
-			hostToGeoip[hosts[i]] = geoip
 		}
 
 		writeData(w, mime, http.StatusOK, hostToGeoip)
