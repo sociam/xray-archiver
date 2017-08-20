@@ -381,6 +381,7 @@ func fetchHosts(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		util.Log.Debug("Parsing Form Params.")
 		//need to take a hosts list of []string
 		err := r.ParseForm()
 		if err != nil {
@@ -388,13 +389,11 @@ func fetchHosts(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		util.Log.Debug("Parsing Form Params.")
-
 		hosts := r.Form["hosts"]
+		util.Log.Debug("Checking over hosts: ", hosts)
 
 		hostToGeoip := map[string][]util.GeoIPInfo{}
 
-		util.Log.Debug("Checking over hosts: ", hosts)
 		for _, host := range hosts {
 			util.Log.Debug("Getting host geo ip: ", host)
 			var geoip []util.GeoIPInfo
@@ -431,7 +430,6 @@ func main() {
 	http.HandleFunc("/api/alt/", altAppsEndpoint)
 	http.HandleFunc("/api/fetch", fetchIDEndpoint)
 
-	http.HandleFunc("/api/hosts/", getHostLoci)
 	http.HandleFunc("/api/hosts", fetchHosts)
 
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
