@@ -392,12 +392,25 @@ func fetchHosts(w http.ResponseWriter, r *http.Request) {
 
 		hosts := r.Form["hosts"]
 
-		//hostsGeoip := []util.GeoIPInfo{}
+		hostToGeoip := map[string][]util.GeoIPInfo{}
 
 		util.Log.Debug("Checking over hosts: ", hosts)
-		for i := range hosts {
-			util.GetHostGeoIP(hosts[i])
+		for _, host := range hosts {
+			util.Log.Debug("Getting host geo ip: ", host)
+			var geoip []util.GeoIPInfo
+
+			geoip, err = util.GetHostGeoIP(host)
+
+			if err != nil {
+				//TODO: immedoiately fail?
+				writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
+				return
+			}
+
+			hostToGeoip[host] = geoip
 		}
+
+		writeData(w, mime, http.StatusOK, hostToGeoip)
 	}
 
 }
