@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/sociam/xray-archiver/pipeline/db"
 	"github.com/sociam/xray-archiver/pipeline/util"
@@ -74,13 +75,13 @@ func writeMultiSuccessData(w http.ResponseWriter, mime string,data map[string][]
 		fallthrough
 	case "application/json":
 		//if array empty failed the lookup... can not have a domain without a host
-		for _, i := range data {
-			if len(i) > 1
-				response := fmt.print(data, http.StatusOK)
-				err1 = util.WriteJSON(w, response) //Need to append into data key... still want key on outside 
-			else 
-				err1 = util.WriteJSON(w,data)
-		}
+		// for _, i := range data {
+		// 	if len(i) > 1
+		// 		response := fmt.print(data, http.StatusOK)
+		// 		err1 = util.WriteJSON(w, response) //Need to append into data key... still want key on outside 
+		// 	else 
+		// 		err1 = util.WriteJSON(w,data)
+		// }
 	}
 	if err1 != nil {
 		util.Log.Err("error writing data", err1)
@@ -425,22 +426,29 @@ func fetchHosts(w http.ResponseWriter, r *http.Request) {
  
 		hostToGeoip := map[string][]util.GeoIPInfo{}
 
-		for i := range hosts {
-			util.Log.Debug("Getting host geo ip: %s\n", hosts[i])
-			var geoip []util.GeoIPInfo
+		wg := sync.WaitGroup{}
+			for i := range hosts {
+				util.Log.Debug("Getting host geo ip: %s\n", hosts[i])
+				wg.Add(1)
+				go func() {
+					var geoip []util.GeoIPInfo
 
-			geoip, err = util.GetHostGeoIP(hosts[i])
+					geoip, err = util.GetHostGeoIP(hosts[i])
 
-			if err != nil {
-				//TODO: immedoiately fail? change status to accepted 202 and 200 and BADREQUEST  when all is well with all hosts
-				//writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
-				util.Log.Warning("host could not be found", hosts[i], err)
-				hostToGeoip[hosts[i]] = []util.GeoIPInfo{}
+					if err != nil {
+						//TODO: immedoiately fail? change status to accepted 202 and 200 and BADREQUEST  when all is well with all hosts
+						//writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
+						util.Log.Warning("host could not be found", hosts[i], err)
+						hostToGeoip[hosts[i]] = []util.GeoIPInfo{}
 
-			} else {
-				hostToGeoip[hosts[i]] = geoip
+					} else {
+						hostToGeoip[hosts[i]] = geoip
+					}
+					wg.Done()
+				}()
 			}
-		}
+
+		wg.Wait()
 
 		writeData(w, mime, http.StatusOK, hostToGeoip)
 	}
