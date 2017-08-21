@@ -59,6 +59,34 @@ func writeData(w http.ResponseWriter, mime string, status int, data interface{})
 	}
 }
 
+//yeah, a map of string to some data is fine but the array setup? check for empty? or null?
+func writeMultiSuccessData(w http.ResponseWriter, mime string,data map[string][]interface{}) {
+	w.WriteHeader(http.StatusMultiStatus)
+	var err1 error
+	w.Header().Set("Content-Type", mime)
+	switch mime {
+	case "application/nahmate":
+		err1 = util.WriteDEAN(w, data)
+	case "text/plain":
+		_, err1 = w.Write(toBytes(data))
+	default:
+		w.Header().Set("Content-Type", "application/json")
+		fallthrough
+	case "application/json":
+		//if array empty failed the lookup... can not have a domain without a host
+		for _, i := range data {
+			if len(i) > 1
+				response := fmt.print(data, http.StatusOK)
+				err1 = util.WriteJSON(w, response) //Need to append into data key... still want key on outside 
+			else 
+				err1 = util.WriteJSON(w,data)
+		}
+	}
+	if err1 != nil {
+		util.Log.Err("error writing data", err1)
+	}
+
+}
 func mimeCheck(mime string) string {
 	mimes := strings.Split(mime, ",")
 	for _, mime := range mimes {
@@ -394,7 +422,7 @@ func fetchHosts(w http.ResponseWriter, r *http.Request) {
 
 		hosts := strings.Split(hostsParams, ",")
 		util.Log.Debug("Checking over hosts: %s\n", hosts)
-
+ 
 		hostToGeoip := map[string][]util.GeoIPInfo{}
 
 		for i := range hosts {
@@ -404,7 +432,7 @@ func fetchHosts(w http.ResponseWriter, r *http.Request) {
 			geoip, err = util.GetHostGeoIP(hosts[i])
 
 			if err != nil {
-				//TODO: immedoiately fail?
+				//TODO: immedoiately fail? change status to accepted 202 and 200 and BADREQUEST  when all is well with all hosts
 				//writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
 				util.Log.Warning("host could not be found", hosts[i], err)
 				hostToGeoip[hosts[i]] = []util.GeoIPInfo{}
@@ -434,7 +462,6 @@ func main() {
 	http.HandleFunc("/api/apps", appsEndpoint)
 	http.HandleFunc("/api/alt/", altAppsEndpoint)
 	http.HandleFunc("/api/fetch", fetchIDEndpoint)
-
 	http.HandleFunc("/api/hosts", fetchHosts)
 
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
