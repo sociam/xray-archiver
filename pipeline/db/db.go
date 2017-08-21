@@ -551,7 +551,7 @@ var appStoreTable = map[string]string{
 }
 
 func appendSetQuery(querystr *string, colName string, numParam *int, arr *[]string)  {
-	newQuery := colName + " ILIKE ANY($"+ strconv.Itoa(*numParam) +")"
+	newQuery := colName + " ILIKE ANY($"+ strconv.Itoa(*numParam) +") "
 	*querystr += newQuery
 	percentifyArray(arr)
 	*numParam++;
@@ -573,7 +573,7 @@ func QuickQuery(
 
 	var querystr string
 	querystr = "SELECT " +
-		"a.id, a.title, a.summary, a.description, a.store_url, a.price, a.sfree, a.rating, " +
+		"a.id, a.title, a.summary, a.description, a.store_url, a.price, a.free, a.rating, " +
 		"a.num_reviews, a.genre, a.family_genre, a.min_installs, a.max_installs, a.updated, " +
 		"a.android_ver, a.content_rating, a.recent_changes, v.app, v.store, v.region, " +
 		"v.version, v.icon, v.analyzed, d.email, d.name, d.store_site, d.site, h.hosts, p.permissions, " +
@@ -591,16 +591,15 @@ func QuickQuery(
 	
 	var numParam = 1
 	const maxParams = 5;
-	//if &titles != ""
-	querystr += "a.title ILIKE ANY($"+ strconv.Itoa(numParam) +")"
-	percentifyArray(&titles)
-	args  =	append(args, pq.Array(&titles))
-	numParam++;
 	
+	appendSetQuery(&querystr, "a.title", &numParam, &titles)
+	querystr += "AND "
+	args =	append(args, pq.Array(&developers))
+
 	if len(developers) > 0 {		
 		appendSetQuery(&querystr, "d.name",  &numParam, &developers)
 		if numParam < maxParams {
-			querystr += " AND "
+			querystr += "AND "
 		}
 		args =	append(args, pq.Array(&developers))
 	}
@@ -608,7 +607,7 @@ func QuickQuery(
 	if len(genres) > 0 {
 		appendSetQuery(&querystr, "d.genre", &numParam, &genres)
 		if numParam < maxParams {
-			querystr += " AND "
+			querystr += "AND "
 		}
 		args =	append(args, pq.Array(&developers))
 	}
@@ -616,7 +615,7 @@ func QuickQuery(
 	if len(appIDs) > 0 {
 		appendSetQuery(&querystr, "v.app", &numParam, &appIDs)
 		if numParam < maxParams {
-			querystr += " AND "
+			querystr += "AND "
 		}
 		args =	append(args, pq.Array(&developers))
 	}
@@ -626,9 +625,12 @@ func QuickQuery(
 		args =	append(args, pq.Array(&developers))				
 	} 
 
-	args = append(args, []interface{}{limit,offset})
+	args = append(args, limit, offset)
 	
-	querystr += shouldAnalyze + " ORDER BY a.max_installs using> LIMIT $6 OFFSET $7"
+	querystr += shouldAnalyze + " ORDER BY a.max_installs " 
+	querystr += "using> LIMIT $" + strconv.Itoa(numParam) + " "
+	numParam++
+	querystr += "OFFSET $" + strconv.Itoa(numParam)
 
 	fmt.Printf("%s %v\n", querystr, args)
 
