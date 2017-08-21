@@ -584,26 +584,7 @@ func QuickQuery(
 		"FULL OUTER JOIN app_hosts h ON (a.id = h.id) " +
 		"FULL OUTER JOIN app_perms p ON (a.id = p.id) " +
 		"FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) " +
-		//Table Join Appends
-		//+ "NATURAL JOIN app_perms " + "NATURAL JOIN app_packages"
 		"WHERE " 
-		//+ "a.title ILIKE ANY($1) "
-		//"AND d.name ILIKE ANY($2)" +
-		//"AND a.genre ILIKE ANY($3) " +
-		//" AND LOWER(app_perms.permissions) like any " + percentifyArray(permissions) + //TODO: s a array so need to check the arrays...
-	//"AND v.app ILIKE ANY($4)" +
-		//"AND a.title ILIKE ANY($5) " 
-		
-	
-	// percentifyArray(&titles)
-
-	// percentifyArray(&developers)
-	
-	// percentifyArray(&genres)r
-	
-	// percentifyArray(&appIDs)
-	
-	// percentifyStartifyArrayify(&startsWith)
 
 
 	var args []interface{}
@@ -644,20 +625,10 @@ func QuickQuery(
 		appendSetQuery(&querystr, "a.title", &numParam, &startsWith)
 		args =	append(args, pq.Array(&developers))				
 	} 
-	
-	// args := []interface{}{
-		// pq.Array(&titles),
-		// pq.Array(&developers),
-		// pq.Array(&genres),
-		// pq.Array(&appIDs),
-		// pq.Array(&startsWith),
-		// limit,
-		// offset,
-	// }
 
 	args = append(args, []interface{}{limit,offset})
 	
-	querystr += shouldAnalyze + "ORDER BY a.max_installs using> LIMIT $6 OFFSET $7"
+	querystr += shouldAnalyze + " ORDER BY a.max_installs using> LIMIT $6 OFFSET $7"
 
 	fmt.Printf("%s %v\n", querystr, args)
 
