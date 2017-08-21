@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
-
+	"strconv"
 	"github.com/lib/pq"
 	"github.com/sociam/xray-archiver/pipeline/util"
 )
@@ -550,6 +550,13 @@ var appStoreTable = map[string]string{
 	"play": "playstore_apps",
 }
 
+func appendSetQuery(querystr *string, colName string, numParam *int, arr *[]string)  {
+	newQuery := colName + " ILIKE ANY($"+ strconv.Itoa(*numParam) +")"
+	*querystr += newQuery
+	percentifyArray(arr)
+	*numParam++;
+}
+
 // QuickQuery depricates all of dean's queries.
 func QuickQuery(
 	onlyAnalyzed bool, appStore string, limit string, offset string, developers []string,
@@ -564,8 +571,9 @@ func QuickQuery(
 		shouldAnalyze = ""
 	}
 
-	querystr := "SELECT " +
-		"a.id, a.title, a.summary, a.description, a.store_url, a.price, a.free, a.rating, " +
+	var querystr string
+	querystr = "SELECT " +
+		"a.id, a.title, a.summary, a.description, a.store_url, a.price, a.sfree, a.rating, " +
 		"a.num_reviews, a.genre, a.family_genre, a.min_installs, a.max_installs, a.updated, " +
 		"a.android_ver, a.content_rating, a.recent_changes, v.app, v.store, v.region, " +
 		"v.version, v.icon, v.analyzed, d.email, d.name, d.store_site, d.site, h.hosts, p.permissions, " +
@@ -578,25 +586,79 @@ func QuickQuery(
 		"FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) " +
 		//Table Join Appends
 		//+ "NATURAL JOIN app_perms " + "NATURAL JOIN app_packages"
-		"WHERE a.title ILIKE ANY($1) AND d.name ILIKE ANY($2) AND a.genre ILIKE ANY($3) " +
+		"WHERE " 
+		//+ "a.title ILIKE ANY($1) "
+		//"AND d.name ILIKE ANY($2)" +
+		//"AND a.genre ILIKE ANY($3) " +
 		//" AND LOWER(app_perms.permissions) like any " + percentifyArray(permissions) + //TODO: s a array so need to check the arrays...
-		"AND v.app ILIKE ANY($4) AND a.title ILIKE ANY($5) " + shouldAnalyze + "ORDER BY a.max_installs using> LIMIT $6 OFFSET $7"
+	//"AND v.app ILIKE ANY($4)" +
+		//"AND a.title ILIKE ANY($5) " 
+		
+	
+	// percentifyArray(&titles)
 
+	// percentifyArray(&developers)
+	
+	// percentifyArray(&genres)r
+	
+	// percentifyArray(&appIDs)
+	
+	// percentifyStartifyArrayify(&startsWith)
+
+
+	var args []interface{}
+	
+	var numParam = 1
+	const maxParams = 5;
+	//if &titles != ""
+	querystr += "a.title ILIKE ANY($"+ strconv.Itoa(numParam) +")"
 	percentifyArray(&titles)
-	percentifyArray(&developers)
-	percentifyArray(&genres)
-	percentifyArray(&appIDs)
-	percentifyStartifyArrayify(&startsWith)
-
-	args := []interface{}{
-		pq.Array(&titles),
-		pq.Array(&developers),
-		pq.Array(&genres),
-		pq.Array(&appIDs),
-		pq.Array(&startsWith),
-		limit,
-		offset,
+	args  =	append(args, pq.Array(&titles))
+	numParam++;
+	
+	if len(developers) > 0 {		
+		appendSetQuery(&querystr, "d.name",  &numParam, &developers)
+		if numParam < maxParams {
+			querystr += " AND "
+		}
+		args =	append(args, pq.Array(&developers))
 	}
+	
+	if len(genres) > 0 {
+		appendSetQuery(&querystr, "d.genre", &numParam, &genres)
+		if numParam < maxParams {
+			querystr += " AND "
+		}
+		args =	append(args, pq.Array(&developers))
+	}
+
+	if len(appIDs) > 0 {
+		appendSetQuery(&querystr, "v.app", &numParam, &appIDs)
+		if numParam < maxParams {
+			querystr += " AND "
+		}
+		args =	append(args, pq.Array(&developers))
+	}
+		
+	if len(startsWith) > 0 {
+		appendSetQuery(&querystr, "a.title", &numParam, &startsWith)
+		args =	append(args, pq.Array(&developers))				
+	} 
+	
+	// args := []interface{}{
+		// pq.Array(&titles),
+		// pq.Array(&developers),
+		// pq.Array(&genres),
+		// pq.Array(&appIDs),
+		// pq.Array(&startsWith),
+		// limit,
+		// offset,
+	// }
+
+	args = append(args, []interface{}{limit,offset})
+	
+	querystr += shouldAnalyze + "ORDER BY a.max_installs using> LIMIT $6 OFFSET $7"
+
 	fmt.Printf("%s %v\n", querystr, args)
 
 	rows, err := db.Query(querystr, args...)
