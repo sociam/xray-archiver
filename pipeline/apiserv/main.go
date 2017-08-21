@@ -60,34 +60,35 @@ func writeData(w http.ResponseWriter, mime string, status int, data interface{})
 	}
 }
 
-//yeah, a map of string to some data is fine but the array setup? check for empty? or null?
-func writeMultiSuccessData(w http.ResponseWriter, mime string,data map[string][]interface{}) {
-	w.WriteHeader(http.StatusMultiStatus)
-	var err1 error
-	w.Header().Set("Content-Type", mime)
-	switch mime {
-	case "application/nahmate":
-		err1 = util.WriteDEAN(w, data)
-	case "text/plain":
-		_, err1 = w.Write(toBytes(data))
-	default:
-		w.Header().Set("Content-Type", "application/json")
-		fallthrough
-	case "application/json":
-		//if array empty failed the lookup... can not have a domain without a host
-		// for _, i := range data {
-		// 	if len(i) > 1
-		// 		response := fmt.print(data, http.StatusOK)
-		// 		err1 = util.WriteJSON(w, response) //Need to append into data key... still want key on outside 
-		// 	else 
-		// 		err1 = util.WriteJSON(w,data)
-		// }
-	}
-	if err1 != nil {
-		util.Log.Err("error writing data", err1)
-	}
+// //yeah, a map of string to some data is fine but the array setup? check for empty? or null?
+// func writeMultiSuccessData(w http.ResponseWriter, mime string, data map[string][]interface{}) {
+// 	w.WriteHeader(http.StatusMultiStatus)
+// 	var err1 error
+// 	w.Header().Set("Content-Type", mime)
+// 	switch mime {
+// 	case "application/nahmate":
+// 		err1 = util.WriteDEAN(w, data)
+// 	case "text/plain":
+// 		_, err1 = w.Write(toBytes(data))
+// 	default:
+// 		w.Header().Set("Content-Type", "application/json")
+// 		fallthrough
+// 	case "application/json":
+// 		//if array empty failed the lookup... can not have a domain without a host
+// 		// for _, i := range data {
+// 		// 	if len(i) > 1
+// 		// 		response := fmt.print(data, http.StatusOK)
+// 		// 		err1 = util.WriteJSON(w, response) //Need to append into data key... still want key on outside
+// 		// 	else
+// 		// 		err1 = util.WriteJSON(w,data)
+// 		// }
+// 	}
+// 	if err1 != nil {
+// 		util.Log.Err("error writing data", err1)
+// 	}
 
-}
+// }
+
 func mimeCheck(mime string) string {
 	mimes := strings.Split(mime, ",")
 	for _, mime := range mimes {
@@ -369,35 +370,35 @@ func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getHostLoci(w http.ResponseWriter, r *http.Request) {
-	util.Log.Debug("Host lookup requested")
-	mime := r.Header.Get("Accept")
-	if r.Method == "POST" || r.Method == "GET" {
-		mime = mimeCheck(mime)
-		if mime == "" {
-			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
-			return
-		}
+// func getHostLoci(w http.ResponseWriter, r *http.Request) {
+// 	util.Log.Debug("Host lookup requested")
+// 	mime := r.Header.Get("Accept")
+// 	if r.Method == "POST" || r.Method == "GET" {
+// 		mime = mimeCheck(mime)
+// 		if mime == "" {
+// 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+// 			return
+// 		}
 
-		split := strings.Split(r.URL.Path, "/")
+// 		split := strings.Split(r.URL.Path, "/")
 
-		if len(split) < 3 {
-			writeErr(w, mime, http.StatusBadRequest, "bad_hosts", "Bad app slashes specified")
-			return
-		}
+// 		if len(split) < 3 {
+// 			writeErr(w, mime, http.StatusBadRequest, "bad_hosts", "Bad app slashes specified")
+// 			return
+// 		}
 
-		hostname := split[3]
-		util.Log.Debug("Attempting to lookup hosts: ", hostname)
-		geoip, err := util.GetHostGeoIP(hostname)
+// 		hostname := split[3]
+// 		util.Log.Debug("Attempting to lookup hosts: ", hostname)
+// 		geoip, err := util.GetHostGeoIP(hostname)
 
-		if err != nil {
-			writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
-			return
-		}
+// 		if err != nil {
+// 			writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
+// 			return
+// 		}
 
-		writeData(w, mime, http.StatusOK, geoip)
-	}
-}
+// 		writeData(w, mime, http.StatusOK, geoip)
+// 	}
+// }
 
 func fetchHosts(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
@@ -423,30 +424,29 @@ func fetchHosts(w http.ResponseWriter, r *http.Request) {
 
 		hosts := strings.Split(hostsParams, ",")
 		util.Log.Debug("Checking over hosts: %s\n", hosts)
- 
+
 		hostToGeoip := map[string][]util.GeoIPInfo{}
 
 		wg := sync.WaitGroup{}
-			for i := range hosts {
-				util.Log.Debug("Getting host geo ip: %s\n", hosts[i])
-				wg.Add(1)
-				go func() {
-					var geoip []util.GeoIPInfo
+		for i := range hosts {
+			util.Log.Debug("Getting host geo ip: %s\n", hosts[i])
+			wg.Add(1)
+			go func() {
+				var geoip []util.GeoIPInfo
 
-					geoip, err = util.GetHostGeoIP(hosts[i])
+				geoip, err = util.GetHostGeoIP(hosts[i])
 
-					if err != nil {
-						//TODO: immedoiately fail? change status to accepted 202 and 200 and BADREQUEST  when all is well with all hosts
-						//writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
-						util.Log.Warning("host could not be found", hosts[i], err)
-						hostToGeoip[hosts[i]] = []util.GeoIPInfo{}
-
-					} else {
-						hostToGeoip[hosts[i]] = geoip
-					}
-					wg.Done()
-				}()
-			}
+				if err != nil {
+					//TODO: immedoiately fail? change status to accepted 202 and 200 and BADREQUEST  when all is well with all hosts
+					//writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
+					util.Log.Notice("host could not be found", hosts[i], err)
+					hostToGeoip[hosts[i]] = nil
+				} else {
+					hostToGeoip[hosts[i]] = geoip
+				}
+				wg.Done()
+			}()
+		}
 
 		wg.Wait()
 
