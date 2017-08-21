@@ -206,12 +206,12 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 		onlyAnalyzed := false //Default is true as most desire is for analyzed apps
 		store := "play"
 
-		titles := []string{""}
-		developers := []string{""}
-		genres := []string{""}
-		permissions := []string{""}
-		appIDs := []string{""}
-		startsWith := []string{""}
+		titles := []string{}
+		developers := []string{}
+		genres := []string{}
+		permissions := []string{}
+		appIDs := []string{}
+		startsWith := []string{}
 
 		util.Log.Info("Parsing app form parameters, params size %s", fmt.Sprint(len(r.Form)))
 
