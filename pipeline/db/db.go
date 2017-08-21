@@ -3,8 +3,9 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"time"
 	"strconv"
+	"time"
+
 	"github.com/lib/pq"
 	"github.com/sociam/xray-archiver/pipeline/util"
 )
@@ -550,11 +551,21 @@ var appStoreTable = map[string]string{
 	"play": "playstore_apps",
 }
 
-func appendSetQuery(querystr *string, colName string, numParam *int, arr *[]string)  {
-	newQuery := colName + " ILIKE ANY($"+ strconv.Itoa(*numParam) +") "
+func extendWhereQuery(querystr *string, colName string, numParam *int, arr *[]string, hasPrev *bool) {
+	util.Log.Debug("Attempting to query params %s \n", *arr)
+
+	if *hasPrev {
+		*querystr += "AND "
+	} else {
+		*hasPrev = true
+	}
+
+	newQuery := colName + "ILIKE ANY($" + strconv.Itoa(*numParam) + ") "
 	*querystr += newQuery
+
 	percentifyArray(arr)
-	*numParam++;
+
+	*numParam++
 }
 
 // QuickQuery depricates all of dean's queries.
@@ -562,14 +573,6 @@ func QuickQuery(
 	onlyAnalyzed bool, appStore string, limit string, offset string, developers []string,
 	genres []string, permissions []string, appIDs []string, titles []string, startsWith []string,
 ) ([]AppVersion, error) {
-
-	var shouldAnalyze string
-
-	if onlyAnalyzed {
-		shouldAnalyze = "AND v.analyzed = true "
-	} else {
-		shouldAnalyze = ""
-	}
 
 	var querystr string
 	querystr = "SELECT " +
@@ -584,50 +587,49 @@ func QuickQuery(
 		"FULL OUTER JOIN app_hosts h ON (a.id = h.id) " +
 		"FULL OUTER JOIN app_perms p ON (a.id = p.id) " +
 		"FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) " +
-		"WHERE " 
-
+		"WHERE "
 
 	var args []interface{}
-	
-	var numParam = 1
-	const maxParams = 5;
-	
-	appendSetQuery(&querystr, "a.title", &numParam, &titles)
-	querystr += "AND "
-	args =	append(args, pq.Array(&developers))
 
-	if len(developers) > 0 {		
-		appendSetQuery(&querystr, "d.name",  &numParam, &developers)
-		if numParam < maxParams {
-			querystr += "AND "
-		}
-		args =	append(args, pq.Array(&developers))
+	numParam := 1
+	hasPrev := false //TODO: future me will fix this doggyness later... however considering the horrible *quick*query a better refactor is needed...
+
+	if len(titles) > 0 {
+		extendWhereQuery(&querystr, "a.title ", &numParam, &titles, &hasPrev)
+		args = append(args, pq.Array(&titles))
 	}
-	
+
+	if len(developers) > 0 {
+		extendWhereQuery(&querystr, "d.name ", &numParam, &developers, &hasPrev)
+		args = append(args, pq.Array(&developers))
+	}
+
 	if len(genres) > 0 {
-		appendSetQuery(&querystr, "d.genre", &numParam, &genres)
-		if numParam < maxParams {
-			querystr += "AND "
-		}
-		args =	append(args, pq.Array(&developers))
+		extendWhereQuery(&querystr, "d.genre ", &numParam, &genres, &hasPrev)
+		args = append(args, pq.Array(&genres))
 	}
 
 	if len(appIDs) > 0 {
-		appendSetQuery(&querystr, "v.app", &numParam, &appIDs)
-		if numParam < maxParams {
-			querystr += "AND "
-		}
-		args =	append(args, pq.Array(&developers))
+		extendWhereQuery(&querystr, "v.app ", &numParam, &appIDs, &hasPrev)
+		args = append(args, pq.Array(&appIDs))
 	}
-		
+
 	if len(startsWith) > 0 {
-		appendSetQuery(&querystr, "a.title", &numParam, &startsWith)
-		args =	append(args, pq.Array(&developers))				
-	} 
+		extendWhereQuery(&querystr, "a.title ", &numParam, &startsWith, &hasPrev)
+		args = append(args, pq.Array(&startsWith))
+	}
 
 	args = append(args, limit, offset)
-	
-	querystr += shouldAnalyze + " ORDER BY a.max_installs " 
+
+	var shouldAnalyze string
+
+	if onlyAnalyzed {
+		shouldAnalyze = "AND v.analyzed = true "
+	} else {
+		shouldAnalyze = ""
+	}
+
+	querystr += shouldAnalyze + " ORDER BY a.max_installs "
 	querystr += "using> LIMIT $" + strconv.Itoa(numParam) + " "
 	numParam++
 	querystr += "OFFSET $" + strconv.Itoa(numParam)
