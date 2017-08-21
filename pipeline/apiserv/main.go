@@ -341,7 +341,7 @@ func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
-var port = flag.Uint("port", 6666, "Port to serve on.")
+var port = flag.Uint("port", 8118, "Port to serve on.")
 
 func init() {
 	util.LoadCfg(*cfgFile, util.APIServ)
