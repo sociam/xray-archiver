@@ -115,7 +115,7 @@ jobs:
           name: Test golang util
           command: |
             cd pipeline/util
-            [[ -z $(gofmt -d *.go) ]]
+            gofmt -d *.go && [[ -z $(gofmt -d *.go) ]]
             go get -v -t -d ./...
             golint -set_exit_status
             go vet
@@ -126,7 +126,7 @@ jobs:
           name: Test golang db
           command: |
             cd pipeline/db
-            [[ -z $(gofmt -d *.go) ]]
+            gofmt -d *.go && [[ -z $(gofmt -d *.go) ]]
             go get -v -t -d ./...
             golint -set_exit_status
             go vet
@@ -137,7 +137,7 @@ jobs:
           name: Test apiserv
           command: |
             cd pipeline/apiserv
-            [[ -z $(gofmt -d *.go) ]]
+            gofmt -d *.go && [[ -z $(gofmt -d *.go) ]]
             go get -v -t -d ./...
             golint -set_exit_status
             go vet
@@ -148,7 +148,7 @@ jobs:
           name: Test analyzer
           command: |
             cd pipeline/analyzer
-            [[ -z $(gofmt -d *.go) ]]
+            gofmt -d *.go && [[ -z $(gofmt -d *.go) ]]
             go get -v -t -d ./...
             golint -set_exit_status
             go vet

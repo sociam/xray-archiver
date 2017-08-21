@@ -15,7 +15,6 @@
     "csv-parse": "^1.2.0",
     "db": "^1.0.6",
     "fs-extra": "^4.0.0",
-    "fs-readdir-promise": "^1.0.1",
     "google-play-scraper": "^3.3.1",
     "pg": "^6.4.0"
   },
