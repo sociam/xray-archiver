@@ -40,6 +40,10 @@ jobs:
           name: Install node dependencies
           command: cd pipeline && npm install
       - run:
+          name: Install eslint
+          command: sudo npm install -g eslint
+
+      - run:
           name: Initialize DB
           command: sudo psql -U postgres -h localhost -c 'CREATE DATABASE xraydb;' && sudo psql xraydb -U postgres -h localhost -f pipeline/db/init_db.sql
       - run:
@@ -108,7 +112,7 @@ jobs:
 
       - run:
           name: Lint node files
-          command: cd pipeline && nodejs node_modules/eslint/bin/eslint.js **/*.js --ignore-pattern dbexampleCSV.js
+          command: cd pipeline && eslint .
       #- run: cd pipeline && npm test
 
       - run:
