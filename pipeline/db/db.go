@@ -629,7 +629,7 @@ func QuickQuery(
 		shouldAnalyze = ""
 	}
 
-	querystr += shouldAnalyze + " " //+ " ORDER BY a.max_installs using> "
+	querystr += shouldAnalyze + " ORDER BY a.max_installs using> "
 	querystr += "LIMIT $" + strconv.Itoa(numParam) + " "
 	numParam++
 	querystr += "OFFSET $" + strconv.Itoa(numParam)
