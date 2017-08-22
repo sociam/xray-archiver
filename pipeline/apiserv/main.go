@@ -435,7 +435,7 @@ func fetchHosts(w http.ResponseWriter, r *http.Request) {
 			go func() {
 				var geoip []util.GeoIPInfo
 
-				geoip, err = util.GetHostGeoIP(hosts[j])
+				geoip, err = util.GetHostGeoIP(util.Cfg.GeoIPEndpoint, hosts[j])
 
 				if err != nil {
 					// TODO: immedoiately fail? change status to accepted 202 and 200 and
@@ -445,7 +445,7 @@ func fetchHosts(w http.ResponseWriter, r *http.Request) {
 					// hard) and I don't think we should use http statuses in a non-standard way -sauyon
 
 					// writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
-					util.Log.Notice("host %s could not be found: %s", hosts[j], err.Error())
+					util.Log.Notice("Host %s could not be found: %s", hosts[j], err.Error())
 					hostToGeoip[hosts[j]] = nil
 				} else {
 					hostToGeoip[hosts[j]] = geoip

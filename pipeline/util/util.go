@@ -241,6 +241,9 @@ func GetJSON(url string, target interface{}) error {
 	if err != nil {
 		return err
 	}
+	if r.StatusCode != http.StatusOK {
+		return fmt.Errorf("Got status %d while attempting to get GeoIP data", r.StatusCode)
+	}
 	defer r.Body.Close()
 
 	return json.NewDecoder(r.Body).Decode(target)
@@ -262,7 +265,7 @@ type GeoIPInfo struct {
 }
 
 // GetHostGeoIP grabs geo location information from hostname
-func GetHostGeoIP(host string) ([]GeoIPInfo, error) {
+func GetHostGeoIP(geoipHost, host string) ([]GeoIPInfo, error) {
 	hosts, err := net.LookupHost(host)
 	if err != nil {
 		return nil, err
@@ -272,12 +275,13 @@ func GetHostGeoIP(host string) ([]GeoIPInfo, error) {
 	for _, host := range hosts {
 		var inf GeoIPInfo
 		//TODO: fix?
-		err = GetJSON("http://localhost/geoip/"+url.PathEscape(host), &inf)
+		err = GetJSON(geoipHost+"/"+url.PathEscape(host), &inf)
 		if err != nil {
 			//TODO: better handling?
 			fmt.Printf("Couldn't lookup geoip info for %s: %s \n", host, err.Error())
+		} else {
+			ret = append(ret, inf)
 		}
-		ret = append(ret, inf)
 	}
 
 	return ret, nil
