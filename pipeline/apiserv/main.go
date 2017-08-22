@@ -429,20 +429,26 @@ func fetchHosts(w http.ResponseWriter, r *http.Request) {
 
 		wg := sync.WaitGroup{}
 		for i := range hosts {
+			j := i
 			util.Log.Debug("Getting host geo ip: %s\n", hosts[i])
 			wg.Add(1)
 			go func() {
 				var geoip []util.GeoIPInfo
 
-				geoip, err = util.GetHostGeoIP(hosts[i])
+				geoip, err = util.GetHostGeoIP(hosts[j])
 
 				if err != nil {
-					//TODO: immedoiately fail? change status to accepted 202 and 200 and BADREQUEST  when all is well with all hosts
-					//writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
-					util.Log.Notice("host could not be found", hosts[i], err)
-					hostToGeoip[hosts[i]] = nil
+					// TODO: immedoiately fail? change status to accepted 202 and 200 and
+					// BADREQUEST when all is well with all hosts.
+
+					// immediately failing is impossible with parallelization (or very
+					// hard) and I don't think we should use http statuses in a non-standard way -sauyon
+
+					// writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
+					util.Log.Notice("host could not be found", hosts[j], err)
+					hostToGeoip[hosts[j]] = nil
 				} else {
-					hostToGeoip[hosts[i]] = geoip
+					hostToGeoip[hosts[j]] = geoip
 				}
 				wg.Done()
 			}()
