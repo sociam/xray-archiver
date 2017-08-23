@@ -610,7 +610,22 @@ func QuickQuery(
 	}
 
 	if len(appIDs) > 0 {
-		extendWhereQuery(&querystr, "v.app ", &numParam, &appIDs, &hasPrev)
+		//extendWhereQuery(&querystr, "v.app ", &numParam, &appIDs, &hasPrev)
+		util.Log.Debug("Attempting to query params %s \n", *arr)
+
+		if *hasPrev {
+			*querystr += "AND "
+		} else {
+			*hasPrev = true
+		}
+
+		newQuery := colName + "v.app = " + strconv.Itoa(*numParam) + ") "
+		*querystr += newQuery
+
+		percentifyArray(arr)
+
+		*numParam++
+
 		args = append(args, pq.Array(&appIDs))
 	}
 
