@@ -344,12 +344,17 @@ var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location"
 var port = flag.Uint("port", 8118, "Port to serve on.")
 
 func init() {
-	util.LoadCfg(*cfgFile, util.APIServ)
-	db.Open(util.Cfg, true)
+	if err := util.LoadCfg(*cfgFile, util.APIServ); err != nil {
+		fmt.Printf("Failed to open config file: %v\n", err)
+		panic()
+	}
+	if err := db.Open(util.Cfg, true); err != nil {
+		fmt.Printf("Failed to connect to the db: %v\n", err)
+		panic()
+	}
 }
 
 func main() {
-
 	http.Handle("/", http.FileServer(http.Dir(util.Cfg.AppDir)))
 
 	http.HandleFunc("/api/apps", appsEndpoint)
