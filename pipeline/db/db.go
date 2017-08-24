@@ -643,17 +643,20 @@ func QueryAll(
 			hasPrev = true
 		}
 
-		newQuery := "v.app IN($" + strconv.Itoa(numParam) + ") "
-		querystr += newQuery
+		newQuery := "v.app IN( "
 
-		numParam++
-
-		var genreTuples string
-		for i := range genres {
-			genreTuples += genres[i] + ", "
+		for i := numParam; i < numParam+len(genres)-1; numParam++ {
+			newQuery += "$" + strconv.Itoa(i) + ", "
+			util.Log.Debug("Adding arg ", genres[i])
+			args = append(args, genres[i])
 		}
 
-		args = append(args, genreTuples)
+		newQuery += "$" + strconv.Itoa(numParam) + ") "
+		numParam++
+		util.Log.Debug("Adding arg ", genres[len(genres)-1])
+		args = append(args, genres[len(genres)-1])
+
+		querystr += newQuery
 	}
 
 	if len(appIDs) > 0 {
@@ -672,21 +675,14 @@ func QueryAll(
 			util.Log.Debug("Adding arg ", appIDs[i])
 			args = append(args, appIDs[i])
 		}
+
 		newQuery += "$" + strconv.Itoa(numParam) + ") "
+		numParam++
 		util.Log.Debug("Adding arg ", appIDs[len(appIDs)-1])
 		args = append(args, appIDs[len(appIDs)-1])
 
 		querystr += newQuery
 
-		numParam++
-
-		// var idTuples string
-
-		// for i := range appIDs {
-		// 	idTuples += appIDs[i] + ", "
-		// }
-
-		// args = append(args, idTuples)
 	}
 
 	if len(startsWith) > 0 {
