@@ -22,15 +22,6 @@ let
         sha1 = "4730a11ef610fad450b8f223c79d31d7bdad8074";
       };
     };
-    "require-2.4.20" = {
-      name = "require";
-      packageName = "require";
-      version = "2.4.20";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/require/-/require-2.4.20.tgz";
-        sha1 = "66cb6baaabb65de8a71d793f5c65fd184f3798b6";
-      };
-    };
     "request-2.81.0" = {
       name = "request";
       packageName = "request";
@@ -56,15 +47,6 @@ let
       src = fetchurl {
         url = "https://registry.npmjs.org/fs-extra/-/fs-extra-4.0.1.tgz";
         sha1 = "7fc0c6c8957f983f57f306a24e5b9ddd8d0dd880";
-      };
-    };
-    "fs-readdir-promise-1.0.1" = {
-      name = "fs-readdir-promise";
-      packageName = "fs-readdir-promise";
-      version = "1.0.1";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/fs-readdir-promise/-/fs-readdir-promise-1.0.1.tgz";
-        sha1 = "bd7fe90fe376fad33065c2950c144fd77a340e39";
       };
     };
     "google-play-scraper-3.3.1" = {
@@ -155,69 +137,6 @@ let
       src = fetchurl {
         url = "https://registry.npmjs.org/isexe/-/isexe-2.0.0.tgz";
         sha1 = "e8fbf374dc556ff8947a10dcb0572d633f2cfa10";
-      };
-    };
-    "uglify-js-2.3.0" = {
-      name = "uglify-js";
-      packageName = "uglify-js";
-      version = "2.3.0";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/uglify-js/-/uglify-js-2.3.0.tgz";
-        sha1 = "2cdec16d378a8a2b6ecfb6989784cf8b7ae5491f";
-      };
-    };
-    "std-0.1.40" = {
-      name = "std";
-      packageName = "std";
-      version = "0.1.40";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/std/-/std-0.1.40.tgz";
-        sha1 = "3678a5f65094d9e1b6b5e26edbfc0212b8342b71";
-      };
-    };
-    "async-0.2.10" = {
-      name = "async";
-      packageName = "async";
-      version = "0.2.10";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/async/-/async-0.2.10.tgz";
-        sha1 = "b6bbe0b0674b9d719708ca38de8c237cb526c3d1";
-      };
-    };
-    "source-map-0.1.43" = {
-      name = "source-map";
-      packageName = "source-map";
-      version = "0.1.43";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/source-map/-/source-map-0.1.43.tgz";
-        sha1 = "c24bc146ca517c1471f5dacbe2571b2b7f9e3346";
-      };
-    };
-    "optimist-0.3.7" = {
-      name = "optimist";
-      packageName = "optimist";
-      version = "0.3.7";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/optimist/-/optimist-0.3.7.tgz";
-        sha1 = "c90941ad59e4273328923074d2cf2e7cbc6ec0d9";
-      };
-    };
-    "amdefine-1.0.1" = {
-      name = "amdefine";
-      packageName = "amdefine";
-      version = "1.0.1";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/amdefine/-/amdefine-1.0.1.tgz";
-        sha1 = "4a5282ac164729e93619bcfd3ad151f817ce91f5";
-      };
-    };
-    "wordwrap-0.0.3" = {
-      name = "wordwrap";
-      packageName = "wordwrap";
-      version = "0.0.3";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/wordwrap/-/wordwrap-0.0.3.tgz";
-        sha1 = "a3d5da6cd5c0bc0008d37234bbaf1bed63059107";
       };
     };
     "aws-sign2-0.6.0" = {
@@ -886,42 +805,6 @@ let
         sha1 = "fa71badd4437af4c148841e3b3b165f9e9e590b7";
       };
     };
-    "graceful-fs-3.0.11" = {
-      name = "graceful-fs";
-      packageName = "graceful-fs";
-      version = "3.0.11";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/graceful-fs/-/graceful-fs-3.0.11.tgz";
-        sha1 = "7613c778a1afea62f25c630a086d7f3acbbdd818";
-      };
-    };
-    "wrap-promise-1.0.1" = {
-      name = "wrap-promise";
-      packageName = "wrap-promise";
-      version = "1.0.1";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/wrap-promise/-/wrap-promise-1.0.1.tgz";
-        sha1 = "b019f4236ccbf1fb560921b4b4870b7bda2f5255";
-      };
-    };
-    "natives-1.1.0" = {
-      name = "natives";
-      packageName = "natives";
-      version = "1.1.0";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/natives/-/natives-1.1.0.tgz";
-        sha1 = "e9ff841418a6b2ec7a495e939984f78f163e6e31";
-      };
-    };
-    "es6-promise-2.3.0" = {
-      name = "es6-promise";
-      packageName = "es6-promise";
-      version = "2.3.0";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/es6-promise/-/es6-promise-2.3.0.tgz";
-        sha1 = "96edb9f2fdb01995822b263dd8aadab6748181bc";
-      };
-    };
     "cheerio-0.20.0" = {
       name = "cheerio";
       packageName = "cheerio";
@@ -1246,6 +1129,15 @@ let
         sha1 = "3d8a5c66883a16a30ca8643e851f19baa7797917";
       };
     };
+    "amdefine-1.0.1" = {
+      name = "amdefine";
+      packageName = "amdefine";
+      version = "1.0.1";
+      src = fetchurl {
+        url = "https://registry.npmjs.org/amdefine/-/amdefine-1.0.1.tgz";
+        sha1 = "4a5282ac164729e93619bcfd3ad151f817ce91f5";
+      };
+    };
     "tr46-0.0.3" = {
       name = "tr46";
       packageName = "tr46";
@@ -1426,13 +1318,13 @@ let
         sha1 = "f7ec73824c37a03f076f51bfdf70e340147c4f37";
       };
     };
-    "pg-types-1.12.0" = {
+    "pg-types-1.12.1" = {
       name = "pg-types";
       packageName = "pg-types";
-      version = "1.12.0";
+      version = "1.12.1";
       src = fetchurl {
-        url = "https://registry.npmjs.org/pg-types/-/pg-types-1.12.0.tgz";
-        sha1 = "8ad3b7b897e3fd463e62de241ad5fc640b4a66f0";
+        url = "https://registry.npmjs.org/pg-types/-/pg-types-1.12.1.tgz";
+        sha1 = "d64087e3903b58ffaad279e7595c52208a14c3d2";
       };
     };
     "pgpass-1.0.2" = {
@@ -1469,15 +1361,6 @@ let
       src = fetchurl {
         url = "https://registry.npmjs.org/object-assign/-/object-assign-4.1.0.tgz";
         sha1 = "7a3b3d0e98063d43f4c03f2e8ae6cd51a86883a0";
-      };
-    };
-    "ap-0.2.0" = {
-      name = "ap";
-      packageName = "ap";
-      version = "0.2.0";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/ap/-/ap-0.2.0.tgz";
-        sha1 = "ae0942600b29912f0d2b14ec60c45e8f330b6110";
       };
     };
     "postgres-array-1.0.2" = {
@@ -1570,26 +1453,6 @@ let
           })
           sources."node-version-1.1.0"
           sources."promise-polyfill-6.0.2"
-        ];
-      })
-      (sources."require-2.4.20" // {
-        dependencies = [
-          (sources."uglify-js-2.3.0" // {
-            dependencies = [
-              sources."async-0.2.10"
-              (sources."source-map-0.1.43" // {
-                dependencies = [
-                  sources."amdefine-1.0.1"
-                ];
-              })
-              (sources."optimist-0.3.7" // {
-                dependencies = [
-                  sources."wordwrap-0.0.3"
-                ];
-              })
-            ];
-          })
-          sources."std-0.1.40"
         ];
       })
       (sources."request-2.81.0" // {
@@ -1734,20 +1597,6 @@ let
           sources."graceful-fs-4.1.11"
           sources."jsonfile-3.0.1"
           sources."universalify-0.1.1"
-        ];
-      })
-      (sources."fs-readdir-promise-1.0.1" // {
-        dependencies = [
-          (sources."graceful-fs-3.0.11" // {
-            dependencies = [
-              sources."natives-1.1.0"
-            ];
-          })
-          (sources."wrap-promise-1.0.1" // {
-            dependencies = [
-              sources."es6-promise-2.3.0"
-            ];
-          })
         ];
       })
       (sources."google-play-scraper-3.3.1" // {
@@ -1896,9 +1745,8 @@ let
               sources."object-assign-4.1.0"
             ];
           })
-          (sources."pg-types-1.12.0" // {
+          (sources."pg-types-1.12.1" // {
             dependencies = [
-              sources."ap-0.2.0"
               sources."postgres-array-1.0.2"
               sources."postgres-bytea-1.0.0"
               sources."postgres-date-1.0.3"
