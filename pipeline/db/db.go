@@ -621,7 +621,8 @@ func QueryAll(
 	var args []interface{}
 
 	numParam := 1
-	hasPrev := false //TODO: future me will fix this doggyness later... however considering the horrible *quick*query a better refactor is needed...
+	hasPrev := false
+	//TODO: future me will fix this doggyness later... however considering the horrible *quick*query a better refactor is needed...
 
 	if len(titles) > 0 {
 		extendWhereQuery(&querystr, "a.title ", &numParam, &titles, &hasPrev)
@@ -664,18 +665,28 @@ func QueryAll(
 			hasPrev = true
 		}
 
-		newQuery := "v.app IN($" + strconv.Itoa(numParam) + ") "
+		newQuery := "v.app IN( "
+
+		for i := numParam; i < numParam+len(appIDs)-1; numParam++ {
+			newQuery += "$" + strconv.Itoa(i) + ", "
+			util.Log.Debug("Adding arg ", appIDs[i])
+			args = append(args, appIDs[i])
+		}
+		newQuery += "$" + strconv.Itoa(numParam) + ") "
+		util.Log.Debug("Adding arg ", appIDs[len(appIDs)-1])
+		args = append(args, appIDs[len(appIDs)-1])
+
 		querystr += newQuery
 
 		numParam++
 
-		var idTuples string
+		// var idTuples string
 
-		for i := range appIDs {
-			idTuples += appIDs[i] + ", "
-		}
+		// for i := range appIDs {
+		// 	idTuples += appIDs[i] + ", "
+		// }
 
-		args = append(args, idTuples)
+		// args = append(args, idTuples)
 	}
 
 	if len(startsWith) > 0 {
@@ -719,13 +730,16 @@ func QueryAll(
 	if rows != nil {
 		defer rows.Close()
 	}
-
 	if err != nil {
+		util.Log.Debug("Failed to grab app query", err)
 		return []AppVersion{}, err
 	}
 
+	util.Log.Debug("Examining rows")
+
 	result := []AppVersion{}
 	for i := 0; rows.Next(); i++ {
+		util.Log.Debug("Casting Row: ", i)
 
 		var appData AppVersion
 		var playInf PlayStoreInfo
@@ -771,9 +785,7 @@ func QueryAll(
 		if err != nil {
 			util.Log.Err("Database Query", err)
 		} else {
-
-			//info.FamilyGenre = famGenre.Valid ? famGenre.String : ""
-			//TODO: ight be able to get away with nul being "" after the scan stage
+			util.Log.Debug("Casting data into correct structures")
 			playInf.Summary = summ.String
 			playInf.Description = desc.String
 			playInf.Genre = genre.String
@@ -807,7 +819,6 @@ func QueryAll(
 	}
 
 	return result, nil
-
 }
 
 // GetAppsToAnalyze returns a list of up to 10 apps that have analyzed=False and
