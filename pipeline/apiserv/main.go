@@ -281,7 +281,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		util.Log.Debug("Gathering full details")
 
-		results, err := db.QuickQuery(onlyAnalyzed, store, limit, offset, developers, genres, permissions, appIDs, titles, startsWith)
+		results, err := db.QueryAll(onlyAnalyzed, store, limit, offset, developers, genres, permissions, appIDs, titles, startsWith)
 
 		if err != nil {
 			util.Log.Err("Error querying database: ", err.Error())

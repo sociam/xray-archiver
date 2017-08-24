@@ -533,15 +533,13 @@ func GetAltApps(appID string) ([]AltApp, error) {
 	return result, nil
 }
 
-// precentifyArray produces a Postgres compatable 'like any' string intended
-// to be used as part of a larger query.
-func percentifyArray(arr *[]string) {
+func anyPatternFormat(arr *[]string) {
 	for i, v := range *arr {
 		(*arr)[i] = "%" + v + "%"
 	}
 }
 
-func percentifyStartifyArrayify(arr *[]string) {
+func startsWithPatternFormat(arr *[]string) {
 	for i, v := range *arr {
 		(*arr)[i] = v + "%"
 	}
@@ -563,13 +561,44 @@ func extendWhereQuery(querystr *string, colName string, numParam *int, arr *[]st
 	newQuery := colName + "ILIKE ANY($" + strconv.Itoa(*numParam) + ") "
 	*querystr += newQuery
 
-	percentifyArray(arr)
+	anyPatternFormat(arr)
 
 	*numParam++
 }
 
-// QuickQuery depricates all of dean's queries.
-func QuickQuery(
+//Prepare playfround
+// func prepareAppsGet(
+// 	onlyAnalyzed bool, appStore string, limit string, offset string, developers []string,
+// 	genres []string, permissions []string, appIDs []string, titles []string, startsWith []string) ([]AppVersion, error) {
+
+// 	// //Sanitising input
+
+// 	// stmt, err = db.Prepare("SELECT " +
+// 	// 	"a.id, a.title, a.summary, a.description, a.store_url, a.price, a.free, a.rating, " +
+// 	// 	"a.num_reviews, a.genre, a.family_genre, a.min_installs, a.max_installs, a.updated, " +
+// 	// 	"a.android_ver, a.content_rating, a.recent_changes, v.app, v.store, v.region, " +
+// 	// 	"v.version, v.icon, v.analyzed, d.email, d.name, d.store_site, d.site, h.hosts, p.permissions, " +
+// 	// 	"pkg.packages " +
+// 	// 	"FROM $1" + " a " +
+// 	// 	"FULL OUTER JOIN app_versions v ON (a.id = v.id) " +
+// 	// 	"FULL OUTER JOIN developers d ON (a.developer = d.id) " +
+// 	// 	"FULL OUTER JOIN app_hosts h ON (a.id = h.id) " +
+// 	// 	"FULL OUTER JOIN app_perms p ON (a.id = p.id) " +
+// 	// 	"FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) " +
+// 	// 	"WHERE ")
+
+// 	// appStoreTable[appStore]
+
+// 	// if err != nil {
+// 	// 	util.log.Fatal(err)
+// 	// }
+
+// 	//result.StoreInfo.(db.PlayStoreInfo).Title
+// 	//result.App
+// }
+
+// QueryAll depricates all of dean's queries.
+func QueryAll(
 	onlyAnalyzed bool, appStore string, limit string, offset string, developers []string,
 	genres []string, permissions []string, appIDs []string, titles []string, startsWith []string,
 ) ([]AppVersion, error) {
@@ -605,8 +634,25 @@ func QuickQuery(
 	}
 
 	if len(genres) > 0 {
-		extendWhereQuery(&querystr, "d.genre ", &numParam, &genres, &hasPrev)
-		args = append(args, pq.Array(&genres))
+		util.Log.Debug("Attempting to query params %s \n", genres)
+
+		if hasPrev {
+			querystr += "AND "
+		} else {
+			hasPrev = true
+		}
+
+		newQuery := "v.app IN($" + strconv.Itoa(numParam) + ") "
+		querystr += newQuery
+
+		numParam++
+
+		var genreTuples string
+		for i := range genres {
+			genreTuples += genres[i] + ", "
+		}
+
+		args = append(args, genreTuples)
 	}
 
 	if len(appIDs) > 0 {
@@ -623,11 +669,31 @@ func QuickQuery(
 
 		numParam++
 
-		args = append(args, pq.Array(&appIDs))
+		var idTuples string
+
+		for i := range appIDs {
+			idTuples += appIDs[i] + ", "
+		}
+
+		args = append(args, idTuples)
 	}
 
 	if len(startsWith) > 0 {
-		extendWhereQuery(&querystr, "a.title ", &numParam, &startsWith, &hasPrev)
+		util.Log.Debug("Attempting to query params %s \n", startsWith)
+
+		if hasPrev {
+			querystr += "AND "
+		} else {
+			hasPrev = true
+		}
+
+		newQuery := "a.title ILIKE ANY($" + strconv.Itoa(numParam) + ") "
+		querystr += newQuery
+
+		startsWithPatternFormat(&startsWith)
+
+		numParam++
+
 		args = append(args, pq.Array(&startsWith))
 	}
 
