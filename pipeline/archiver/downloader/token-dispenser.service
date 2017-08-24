@@ -1,0 +1,12 @@
+[Unit]
+Description=Token dispenser for the xray project.
+
+[Service]
+WorkingDirectory=<<<PREFIX>>>/lib/xray/archiver/downloader
+ExecStart=/usr/bin/java -jar <<<PREFIX>>>/lib/xray/token-dispenser.jar
+#ExecStop=?
+Type=simple
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
