@@ -139,7 +139,7 @@ grant select on playstore_apps to downloader;
 
 grant select, insert, update on apps to analyzer;
 grant select, insert, update on app_versions to analyzer;
-grant usage on app_versions_id_seq to retriever;
+grant usage on app_versions_id_seq to analyzer;
 grant select  on playstore_apps to analyzer;
 grant select, insert, update on app_perms to analyzer;
 
