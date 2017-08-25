@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"net/http"
 	"reflect"
 	"testing"
@@ -62,9 +63,13 @@ var ExampleAppVer = db.AppVersion{ID: 1,
 	Packages:    []string{},
 	IsAnalyzed:  true}
 
+var cfgFileTest = flag.String("cfg", "/etc/xray/config.json", "config file location")
+
+var portTest = flag.Uint("port", 8118, "Port to serve on.")
+
 func TestInit(t *testing.T) {
 	var err error
-	err = util.LoadCfg(*cfgFile, util.APIServ)
+	err = util.LoadCfg(*cfgFileTest, util.APIServ) //TODO:might break all setup
 	if err != nil {
 		t.Errorf("Could not load and setup database config", err)
 	}
@@ -103,27 +108,28 @@ func TestInit(t *testing.T) {
 		t.Errorf("Could not add appversions example data", err)
 	}
 
-	rows, err := xrayDb.Query("INSERT INTO playstore_apps VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, current_date)",
-		ExampleApp.Vers[0],
+	rows, err := xrayDb.Query("INSERT INTO playstore_apps VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)",
+		ExamplePlaystore.AndroidVer,
 		ExamplePlaystore.Title,
 		ExamplePlaystore.Summary,
 		ExamplePlaystore.Description,
-		ExamplePlaystore.Url,
+		ExamplePlaystore.StoreURL,
 		ExamplePlaystore.Price,
 		ExamplePlaystore.Free,
-		ExamplePlaystore.Score,
-		ExamplePlaystore.Reviews,
-		ExamplePlaystore.GenreId,
-		ExamplePlaystore.FamilyGenreId,
-		ExamplePlaystore.minInstalls,
-		ExamplePlaystore.maxInstalls,
-		ExampleDev.ID,
+		ExamplePlaystore.Rating,
+		ExamplePlaystore.NumReviews,
+		ExamplePlaystore.Genre,
+		ExamplePlaystore.FamilyGenre,
+		ExamplePlaystore.Installs.Min,
+		ExamplePlaystore.Installs.Max,
+		ExamplePlaystore.Developer,
 		ExamplePlaystore.Updated,
-		ExamplePlaystore.AndroidVersion,
+		ExamplePlaystore.AndroidVer,
 		ExamplePlaystore.ContentRating,
 		ExamplePlaystore.Screenshots,
 		ExamplePlaystore.Video,
-		ExamplePlaystore.RecentChanges)
+		ExamplePlaystore.RecentChanges,
+		ExamplePlaystore.Updated)
 
 	if rows != nil {
 		rows.Close()
@@ -150,7 +156,19 @@ func TestInit(t *testing.T) {
 
 /*API ENDPOINT TEST*/
 func Test_IsFulParam(t *testing.T) {
+	t.Fail()
+}
 
+func Test_Title(t *testing.T) {
+	t.Fail()
+}
+
+func Test_Developer(t *testing.T) {
+	t.Fail()
+}
+
+func Test_Genre(t *testing.T) {
+	t.Fail()
 }
 
 /* BELOW ARE AUTO GENERATED TEST STRUCTURES */
