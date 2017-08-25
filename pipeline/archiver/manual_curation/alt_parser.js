@@ -8,11 +8,15 @@ const childProcess = require('child_process');
 
 function readCSV(path) {
     const lines = fs.readFileSync(path).toString().split('\n');
-    return lines.reduce((json, line) => {
+    const pairs = lines.reduce((json, line) => {
         const split = line.replace('\r', '').split(',');
-        json.concat({ source: split[1], alt: split[0] });
-        return json.concat({ source: split[0], alt: split[1] });
+        return json.concat([
+            { source: split[0], alt: split[1] },
+            { source: split[1], alt: split[0] },
+        ]);
     }, []);
+    logger.debug(pairs);
+    return pairs;
 }
 
 function flatten(arr) {
