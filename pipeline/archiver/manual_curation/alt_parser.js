@@ -20,7 +20,9 @@ function flatten(arr) {
 
 function cartesianProductAltArray(...args) {
     return args.reduce((prods, arr) =>
-        flatten(prods.map((prod) => arr.map((v) => prod.concat(v)))), [[]]);
+        flatten(prods.map((prod) => arr.map((v) => prod.concat(v)))), [
+            []
+        ]);
 }
 
 function nwayAlts(alts) {
@@ -43,9 +45,10 @@ function nwayAlts(alts) {
 
 function parseAltCSVToJSON(path) {
     const array = readCSV(path);
-    return array.concat(nwayAlts(array).map((alt) =>
-        alt[9] != alt[1] ? { source: alt[0], alt: alt[1] } : false
-    ).filter((x) => Boolean(x)));
+    return array.concat(nwayAlts(array).map((alt) => {
+        logger.debug(alt);
+        return alt[9] != alt[1] ? { source: alt[0], alt: alt[1] } : false;
+    }).filter((x) => Boolean(x)));
 }
 
 function parseAltCSVtoArray(path) {
