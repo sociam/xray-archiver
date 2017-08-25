@@ -1,140 +1,142 @@
 package main
 
 import (
+	"database/sql"
 	"net/http"
 	"reflect"
 	"testing"
-	"github.com/sociam/xray-archiver/pipeline/util"
+	"time"
+
 	"github.com/sociam/xray-archiver/pipeline/db"
+	"github.com/sociam/xray-archiver/pipeline/util"
 )
 
-
-
-
-
-/* Db config */
 type xrayDb struct {
 	*sql.DB
 }
+
 var useDB bool
-var db xrayDb
+var database xrayDb
 
-var EXAMPLE_APP = App{ID: "example", Ver: {1.0}}	
+var ExampleApp = db.App{ID: "example", Vers: []int64{1.0}}
 
-var EXAMPLE_STOREINFO = PlayStoreInfo{
-									Title: "EXAMPLE TITLE",
-									Summary: "I AM A EXAMPLE",
-									Description: "I WISH TO EXAMPLE",
-									StoreURL: "/path/to/store_url",
-									Price: "Free",
-									Free: true,
-									Rating: "3.7",
-									NumReviews: 1,
-									Genre: "GAME_CASUAL",
-									FamilyGenre: "",
-									Installs: 20,
-									Developer: 1,
-									Updated: "2017-02-21",
-									AndroidVer: 4.1,
-									Screenshots: {},
-									Video: "",
-									RecentChanges: {},
-									CrawlDate: "2017-08-16",
-									Permissions: ""
-									} //where are the permission
+var ExamplePlaystore = db.PlayStoreInfo{
+	Title:         "EXAMPLE TITLE",
+	Summary:       "I AM A EXAMPLE",
+	Description:   "I WISH TO EXAMPLE",
+	StoreURL:      "/path/to/store_url",
+	Price:         "Free",
+	Free:          true,
+	Rating:        "3.7",
+	NumReviews:    1,
+	Genre:         "GAME_CASUAL",
+	FamilyGenre:   "",
+	Installs:      db.Range{Min: int64(1), Max: int64(10)},
+	Developer:     1,
+	Updated:       time.Date(1996, 1, 1, 1, 1, 1, 1, time.Local),
+	AndroidVer:    "4.1",
+	Screenshots:   []string{},
+	Video:         "",
+	RecentChanges: []string{},
+	CrawlDate:     time.Date(1996, 1, 1, 1, 1, 1, 2, time.Local),
+	Permissions:   []string{},
+}
 
-var EXAMPLE_DEV = Developer{Emails: {"example@email.com"},
-							Name: "example_name",
-							StoreSite: "/path/to/store_site",
-							Site: "path/to/site"}
+var ExampleDev = db.Developer{
+	Emails:    []string{"example@email.com"},
+	Name:      "example_name",
+	StoreSite: "/path/to/store_site",
+	Site:      "path/to/site"}
 
-var EXAMPLE_APP_VER = AppVersion{ID: 1, 
-							App:EXAMPLE_APP.ID, 
-							Store: "play", 
-							Region: "uk", 
-							Ver:EXAMPLE_APP.Vers[0],
-							ScreenFlags: 0,
-							StoreInfo: EXAMPLE_STOREINFO ,
-							Icon: "",
-							Dev: 1,	
-							Hosts: {"example.com"},	
-							Perms:       {},	
-							Packages:    {},	
-							IsAnalyzed: true}
+var ExampleAppVer = db.AppVersion{ID: 1,
+	App:         ExampleApp.ID,
+	Store:       "play",
+	Region:      "uk",
+	Ver:         ExamplePlaystore.AndroidVer, //Urgh maybe not android ver might of just screwed up versions
+	ScreenFlags: 0,
+	StoreInfo:   ExamplePlaystore,
+	Icon:        "",
+	Dev:         ExampleDev,
+	Hosts:       []string{"example.com"},
+	Perms:       []string{},
+	Packages:    []string{},
+	IsAnalyzed:  true}
 
 func TestInit(t *testing.T) {
-	err := util.LoadCfg(*cfgFile, util.APIServ)
+	var err error
+	err = util.LoadCfg(*cfgFile, util.APIServ)
 	if err != nil {
 		t.Errorf("Could not load and setup database config", err)
 	}
-	
-	err := db.Open(util.Cfg, true)
+
+	err = db.Open(util.Cfg, true)
 	if err != nil {
 		t.Errorf("Could not connect to database", err)
 	}
-	
 
 	//ID should be 1..
-	rows, err := db.Query("INSERT INTO apps VALUES ($1, $2)",
-			EXAMPLE_APP.ID, EXAMPLE_APP.Ver)
-	
+	rows, err := database.Query("INSERT INTO apps VALUES ($1, $2)",
+		ExampleApp.ID, ExampleApp.Vers[0])
+
 	if rows != nil {
 		rows.Close()
-	} 
+	}
 
 	if err != nil {
 		t.Errorf("Could not add exampel host", err)
 	}
 
+	xrayDb.Query("INSERT INTO app_versions(app, store, region, version, downloaded, last_dl_attempt, analyzed) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+		ExampleApp.ID,
+		ExampleAppVer.Store,
+		ExampleAppVer.Region,
+		ExampleAppVer.Ver,
+		0,
+		"epoch",
+		0)
 
-	rows, err := db.Query("INSERT INTO app_versions(app, store, region, version, downloaded, last_dl_attempt, analyzed )" +
-					"VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id", app.appId, 
-					EXAMPLE_APP_VER.Store, EXAMPLE_APP_VER.Region, 
-					EXAMPLE_APP_VER.Ver, 0, "epoch", 0)
-					
 	if rows != nil {
 		rows.Close()
-	} 
+	}
 
 	if err != nil {
 		t.Errorf("Could not add appversions example data", err)
 	}
 
-	rows, err := db.Query("INSERT INTO playstore_apps VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, current_date)", 
-                    EXAMPLE_APP.Vers[0],
-                    EXAMPLE_STOREINFO.title,
-                    EXAMPLE_STOREINFO.summary,
-                    EXAMPLE_STOREINFO.description,
-                    EXAMPLE_STOREINFO.url,
-                    EXAMPLE_STOREINFO.price,
-                    EXAMPLE_STOREINFO.free,
-                    EXAMPLE_STOREINFO.score,
-                    EXAMPLE_STOREINFO.reviews,
-                    EXAMPLE_STOREINFO.genreId,
-                    EXAMPLE_STOREINFO.familyGenreId,
-                    EXAMPLE_STOREINFO.minInstalls,
-                    EXAMPLE_STOREINFO.maxInstalls,
-                    EXAMPLE_DEV.ID,
-                    EXAMPLE_STOREINFO.updated,
-                    EXAMPLE_STOREINFO.androidVersion,
-                    EXAMPLE_STOREINFO.contentRating,
-                    EXAMPLE_STOREINFO.screenshots,
-                    EXAMPLE_STOREINFO.video,
-                    EXAMPLE_STOREINFO.recentChanges)
-	
+	rows, err := xrayDb.Query("INSERT INTO playstore_apps VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, current_date)",
+		ExampleApp.Vers[0],
+		ExamplePlaystore.Title,
+		ExamplePlaystore.Summary,
+		ExamplePlaystore.Description,
+		ExamplePlaystore.Url,
+		ExamplePlaystore.Price,
+		ExamplePlaystore.Free,
+		ExamplePlaystore.Score,
+		ExamplePlaystore.Reviews,
+		ExamplePlaystore.GenreId,
+		ExamplePlaystore.FamilyGenreId,
+		ExamplePlaystore.minInstalls,
+		ExamplePlaystore.maxInstalls,
+		ExampleDev.ID,
+		ExamplePlaystore.Updated,
+		ExamplePlaystore.AndroidVersion,
+		ExamplePlaystore.ContentRating,
+		ExamplePlaystore.Screenshots,
+		ExamplePlaystore.Video,
+		ExamplePlaystore.RecentChanges)
+
 	if rows != nil {
 		rows.Close()
-	} 
+	}
 
 	if err != nil {
 		t.Errorf("Could not add playstore_app  example data", err)
 	}
 
-	
-	rows, err := db.Query("SELECT * FROM apps WHERE id = $1", EXAMPLE_APP.ID)
+	rows, err := xrayDb.Query("SELECT * FROM apps WHERE id = $1", ExampleApp.ID)
 	if rows != nil {
 		rows.Close()
-	} 
+	}
 
 	if err != nil {
 		t.Errorf("Could not select  example data", err)
@@ -146,8 +148,7 @@ func TestInit(t *testing.T) {
 
 }
 
-
-
+/*API ENDPOINT TEST*/
 func Test_IsFulParam(t *testing.T) {
 
 }
