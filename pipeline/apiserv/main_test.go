@@ -155,19 +155,91 @@ func TestInit(t *testing.T) {
 }
 
 /*API ENDPOINT TEST*/
+//Test the app endppoint or the query? the problem is main barely have shiz...
+//just querying the real running endpoint?
+
+func Test_DefaultLimit() {
+	appsEndpoint()
+}
+
 func Test_IsFulParam(t *testing.T) {
+	appsEndpoint("/api/apps?isFull=True")
 	t.Fail()
 }
 
 func Test_Title(t *testing.T) {
+	appsEndpoint("/api/apps?title=DinnerAtNoon")
+	t.Fail()
+}
+
+func Test_MultiTitle(t *testing.T) {
+	appsEndpoint("/api/apps?title=DinnerAtNoon,cats")
+	appsEndpoint("/api/apps?title=dinner&title=at&title=noon")
 	t.Fail()
 }
 
 func Test_Developer(t *testing.T) {
+	appsEndpoint("/api/apps?developer=zynga")
+	t.Fail()
+}
+
+func Test_MultiDevelopers(t *testing.T) {
+	appsEndpoint("/api/apps?developer=zynga,cat")
+	appsEndpoint("/api/apps?developer=zynga&developer=cat")
 	t.Fail()
 }
 
 func Test_Genre(t *testing.T) {
+	appsEndpoint("/api/apps?genre=entertainment")
+	t.Fail()
+}
+
+func Test_MultiGenre(t *testing.T) {
+	appsEndpoint("/api/apps?genre=lifestyle,food_and_drink")
+	appsEndpoint("/api/apps?genre=lifestyle&genre=food_and_drink")
+	t.Fail()
+}
+
+func Test_GameGenre(t *testing.T) {
+	appsEndpoint("/api/apps?genre=GAMES")
+	t.Fail()
+}
+
+func Test_AppId(t *testing.T) {
+	appsEndpoint("/api/apps?appId")
+	t.Fail()
+}
+
+func Test_MultiAppId(t *testing.T) {
+	appsEndpoint("/api/apps?appId=example1&appId=example2")
+	appsEndpoint("/api/apps?appId=example1,example2")
+	t.Fail()
+}
+
+func Test_invalidAppid(t *testing.T) {
+	appsEndpoint("/api/apps?appId=INVALID")
+	t.Fail()
+}
+
+func Test_startsWith(t *testing.T) {
+	appsEndpoint("/api/apps?startsWith=i")
+	t.Fail()
+}
+
+func Test_onlyAnalyzed(t *testing.T) {
+	appsEndpoint("/api/apps?onlyAnalyzed")
+	t.Fail()
+}
+
+func Test_limit(t *testing.T) {
+	appsEndpoint("/api/apps?limit=10")
+
+	t.Fail()
+}
+
+func Test_offset(t *testing.T) {
+	appsEndpoint("/api/apps?offset=10")
+
 	t.Fail()
 }
 
