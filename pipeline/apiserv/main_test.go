@@ -20,7 +20,9 @@ var useDB bool
 var db xrayDb
 
 var EXAMPLE_APP = App{ID: "example", Ver: {1.0}}	
-var EXAMPLE_STOREINFO = PlayStoreInfo{Title: "EXAMPLE TITLE",
+
+var EXAMPLE_STOREINFO = PlayStoreInfo{
+									Title: "EXAMPLE TITLE",
 									Summary: "I AM A EXAMPLE",
 									Description: "I WISH TO EXAMPLE",
 									StoreURL: "/path/to/store_url",
@@ -38,8 +40,8 @@ var EXAMPLE_STOREINFO = PlayStoreInfo{Title: "EXAMPLE TITLE",
 									Video: "",
 									RecentChanges: {},
 									CrawlDate: "2017-08-16",
-									Permissions: "" //where are the permission
-									}
+									Permissions: ""
+									} //where are the permission
 
 var EXAMPLE_DEV = Developer{Emails: {"example@email.com"},
 							Name: "example_name",
@@ -50,9 +52,9 @@ var EXAMPLE_APP_VER = AppVersion{ID: 1,
 							App:EXAMPLE_APP.ID, 
 							Store: "play", 
 							Region: "uk", 
-							Ver:EXAMPLE_APP.Vers[0]
+							Ver:EXAMPLE_APP.Vers[0],
 							ScreenFlags: 0,
-							StoreInfo: EXAMPLE_STOREINFO 
+							StoreInfo: EXAMPLE_STOREINFO ,
 							Icon: "",
 							Dev: 1,	
 							Hosts: {"example.com"},	
@@ -86,9 +88,9 @@ func TestInit(t *testing.T) {
 
 
 	rows, err := db.Query("INSERT INTO app_versions(app, store, region, version, downloaded, last_dl_attempt, analyzed )" +
-					"VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id", [app.appId, 
+					"VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id", app.appId, 
 					EXAMPLE_APP_VER.Store, EXAMPLE_APP_VER.Region, 
-					EXAMPLE_APP_VER.Ver, 0, "epoch", 0])
+					EXAMPLE_APP_VER.Ver, 0, "epoch", 0)
 					
 	if rows != nil {
 		rows.Close()
@@ -98,8 +100,8 @@ func TestInit(t *testing.T) {
 		t.Errorf("Could not add appversions example data", err)
 	}
 
-	rows, err := db.Query("INSERT INTO playstore_apps VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, current_date)", [
-                    verId,
+	rows, err := db.Query("INSERT INTO playstore_apps VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, current_date)", 
+                    EXAMPLE_APP.Vers[0],
                     EXAMPLE_STOREINFO.title,
                     EXAMPLE_STOREINFO.summary,
                     EXAMPLE_STOREINFO.description,
@@ -118,9 +120,7 @@ func TestInit(t *testing.T) {
                     EXAMPLE_STOREINFO.contentRating,
                     EXAMPLE_STOREINFO.screenshots,
                     EXAMPLE_STOREINFO.video,
-                    EXAMPLE_STOREINFO.recentChanges
-                ]);
-    )
+                    EXAMPLE_STOREINFO.recentChanges)
 	
 	if rows != nil {
 		rows.Close()
@@ -131,44 +131,22 @@ func TestInit(t *testing.T) {
 	}
 
 	
+	rows, err := db.Query("SELECT * FROM apps WHERE id = $1", EXAMPLE_APP.ID)
+	if rows != nil {
+		rows.Close()
+	} 
 
+	if err != nil {
+		t.Errorf("Could not select  example data", err)
+	}
 
-
-}
-
-
-func insertTestData() {
-	
-	'INSERT INTO app_versions(app, store, region, version, downloaded, last_dl_attempt, analyzed )' +
-                    'VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id', [app.appId, 'play', region, app.version, 0, 'epoch', 0]
-
-	               'INSERT INTO playstore_apps VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, current_date)', [
-                    verId,
-                    app.title,
-                    app.summary,
-                    app.description,
-                    app.url,
-                    app.price,
-                    app.free,
-                    app.score,
-                    app.reviews,
-                    app.genreId,
-                    app.familyGenreId,
-                    app.minInstalls,
-                    app.maxInstalls,
-                    devId,
-                    app.updated,
-                    app.androidVersion,
-                    app.contentRating,
-                    app.screenshots,
-                    app.video,
-                    app.recentChanges
-                ]);
-            await client.lquery('COMMIT');
-
-	'SELECT * FROM apps WHERE id = $1', [app.appId]
+	if rows != 1 {
+		t.Errorf("Correct number of example row data was not added", rows)
+	}
 
 }
+
+
 
 func Test_IsFulParam(t *testing.T) {
 
