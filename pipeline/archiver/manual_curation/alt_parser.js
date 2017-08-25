@@ -10,6 +10,7 @@ function readCSV(path) {
     const lines = fs.readFileSync(path).toString().split('\n');
     return lines.reduce((json, line) => {
         const split = line.replace('\r', '').split(',');
+        json.concat({ source: split[1], alt: split[0] });
         return json.concat({ source: split[0], alt: split[1] });
     }, []);
 }
@@ -47,7 +48,7 @@ function parseAltCSVToJSON(path) {
     const array = readCSV(path);
     return array.concat(nwayAlts(array).map((alt) => {
         return { source: alt[0], alt: alt[1] };
-    }).filter((x) => Boolean(x)));
+    }));
 }
 
 function parseAltCSVtoArray(path) {
