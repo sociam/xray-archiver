@@ -26,8 +26,8 @@ function flatten(arr) {
 function cartesianProductAltArray(...args) {
     return args.reduce((prods, arr) =>
         flatten(prods.map((prod) => arr.map((v) => prod.concat(v)))), [
-            []
-        ]);
+        [],
+    ]);
 }
 
 function nwayAlts(alts) {
