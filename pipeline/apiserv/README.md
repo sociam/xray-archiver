@@ -24,7 +24,7 @@ The ``` isFull ``` parameter is used to toggle between retrieving all appdata th
 
 **Example**
 ```
-/api/apps/?isFull=True
+/api/apps?isFull=True
 ```
 
 ### Title
@@ -34,14 +34,14 @@ When searching for applications based on title, some apps may share some of the 
 
 **Example**
 ```
-/api/apps/?title=DinnerAtNoon
+/api/apps?title=DinnerAtNoon
 ```
 
 You can also chain title multiple times to search for apps that match either string
 
 **Example**
 ```
-/api/apps/?title=dinner&title=at&title=noon
+/api/apps?title=dinner&title=at&title=noon
 ```
 
 The above example would return any apps that contain either ``` dinner ```, ``` at ``` or ``` noon ```.
@@ -55,14 +55,14 @@ As with the title field, developers may the term that you pass to the API. Becau
 
 **Example**
 ```
-/api/apps/?developer=zynga
+/api/apps?developer=zynga
 ```
 
 You can also chain developers together to bring back app data that contain either of the strings that are provided
 
 **Example**
 ```
-/api/apps/?developer=zynga&developer=google
+/api/apps?developer=zynga&developer=google
 ```
 
 This would return back app data relating to apps that have a developer name that contains either: ```zynga``` or ```google```.
@@ -76,21 +76,21 @@ The Genre parameter will allw you to retieve metadata for applications that are 
 
 **Example**
 ```
-/api/apps/?genre=entertainment
+/api/apps?genre=entertainment
 ```
 
 You can also chain the parameter with more genres. This would allow you to compare app data found in different genres easily.
 
 **Example**
 ```
-/api/apps/?genre=lifestyle&genre=food_and_drink
+/api/apps?genre=lifestyle&genre=food_and_drink
 ```
 
 As some genres actually share words, putting part of a genre will return meta data for apps, whos genre's contain that string.
 
 **Example**
 ```
-/api/apps/?genre=game
+/api/apps?genre=game
 ```
 
 Requesting meta data where the genre contains the string ```game``` will actually bring back apps that belong to one of the game genres.
@@ -121,7 +121,7 @@ Chaining together 15 ```genre=``` is also possible, however this would be much e
 
 **Example URL**
 ```
-/api/apps/?isFull=false&developer=Zynga&title=frozen
+/api/apps?isFull=false&developer=Zynga&title=frozen
 ```
 
 The above when used with Curl might return JSON similar to:
