@@ -8,7 +8,6 @@ const childProcess = require('child_process');
 
 function readCSV(path) {
     const lines = fs.readFileSync(path).toString().split('\n');
-    logger.debug(lines.length);
     return lines.reduce((json, line) => {
         const split = line.replace('\r', '').split(',');
         return json.concat({ source: split[0], alt: split[1] });
@@ -47,8 +46,7 @@ function nwayAlts(alts) {
 function parseAltCSVToJSON(path) {
     const array = readCSV(path);
     return array.concat(nwayAlts(array).map((alt) => {
-        logger.debug(alt);
-        return alt[9] != alt[1] ? { source: alt[0], alt: alt[1] } : false;
+        return { source: alt[0], alt: alt[1] };
     }).filter((x) => Boolean(x)));
 }
 
