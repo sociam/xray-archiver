@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
-	"strconv"
 	"testing"
 	"time"
 
@@ -165,16 +164,6 @@ var apiUrl = "http://localhost:8118"
 
 var myClient = &http.Client{Timeout: 10 * time.Second}
 
-func getJson(url string, target interface{}) error {
-	r, err := myClient.Get(url)
-	if err != nil {
-		return err
-	}
-	defer r.Body.Close()
-
-	return json.NewDecoder(r.Body).Decode(target)
-}
-
 func getJSON(response []byte) (data []map[string]interface{}, err error) {
 
 	err = json.Unmarshal(response, &data)
@@ -196,11 +185,17 @@ func Test_AccessEndpoint(t *testing.T) {
 	//body, err := ioutil.ReadAll(resp.Body)
 }
 
-func Test_DefaultLimit(t *testing.T) {
-	resource := "/api/apps"
+func constructAPIURL(resource string, formData url.Values) string {
 	u, _ := url.ParseRequestURI(apiUrl)
 	u.Path = resource
-	urlStr := u.String()
+	if formData != nil {
+		u.RawQuery = formData.Encode()
+	}
+	return fmt.Sprintf("%v", u)
+}
+
+func Test_DefaultLimit(t *testing.T) {
+	urlStr := constructAPIURL("/api/apps", nil)
 
 	hc := http.Client{}
 
@@ -208,7 +203,8 @@ func Test_DefaultLimit(t *testing.T) {
 	if err != nil {
 		t.Errorf("Bad post", err)
 	}
-	req.Header.Add("Accept", "application/json")
+
+	req.Header.Add("Accept", "application/json") //TODO: generate func to pass to req
 
 	resp, err := hc.Do(req)
 
@@ -248,17 +244,8 @@ func Test_IsFulParam(t *testing.T) {
 	// ("/api/apps?isFull=True")
 	form := url.Values{}
 	form.Add("isFull", "true")
-	//form.Set("limit", "2")
 
-	resource := "/api/apps"
-	u, _ := url.ParseRequestURI(apiUrl)
-	u.Path = resource
-
-	u.RawQuery = form.Encode()
-
-	urlStr := fmt.Sprintf("%v", u)
-
-	fmt.Println(urlStr)
+	urlStr := constructAPIURL("/api/apps", form)
 
 	hc := http.Client{}
 
@@ -266,9 +253,7 @@ func Test_IsFulParam(t *testing.T) {
 	if err != nil {
 		t.Errorf("Bad post", err)
 	}
-
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Content-Length", strconv.Itoa(len(form.Encode())))
 
 	resp, err := hc.Do(req)
 
@@ -276,17 +261,16 @@ func Test_IsFulParam(t *testing.T) {
 		t.Errorf("Could not access endpoint", err)
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
 	respData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		t.Errorf("Umable to read response", err)
 	}
 
-	s := string(respData)
-	fmt.Println("String version:", s)
-
 	var data []db.AppVersion
-
-	//var data []map[string]interface{}
 
 	err = json.Unmarshal(respData, &data)
 
@@ -294,86 +278,1018 @@ func Test_IsFulParam(t *testing.T) {
 		t.Errorf("Unable to retrieve response data", err)
 	}
 
-	fmt.Println("Data is full", data)
-
 	if data == nil {
 		t.Errorf("Empty data returned")
 	}
 
+	//TODO: validate data
 }
 
 func Test_Title(t *testing.T) {
 	//("/api/apps?title=DinnerAtNoon")
-	t.Fail()
+	form := url.Values{}
+	form.Add("title", "EXAMPLE TITLE")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) != 1 {
+		t.Errorf("Shoul be only one match", data)
+	}
+
+	if _, ok := data[0]["title"]; !ok {
+		t.Errorf("No title present")
+	}
+
+	if _, ok := data[0]["app"]; !ok {
+		t.Error("No app present")
+	}
+}
+
+func Test_NonTitle(t *testing.T) {
+	//("/api/apps?title=DinnerAtNoon")
+	form := url.Values{}
+	form.Add("title", "EXAMPLE NOT A TITLE PLEASE")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) < 1 {
+		t.Errorf("Should be no matchs", data)
+	}
+
 }
 
 func Test_MultiTitle(t *testing.T) {
 	//("/api/apps?title=DinnerAtNoon,cats")
 	//("/api/apps?title=dinner&title=at&title=noon")
-	t.Fail()
+	form := url.Values{}
+	form.Add("title", "EXAMPLE TITLE")
+	form.Add("title", "EXAMPLE TITLE TWO")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) != 2 {
+		t.Errorf("Should be only one match", data)
+	}
+
+	if _, ok := data[0]["title"]; !ok {
+		t.Errorf("No title present")
+	}
+
+	if _, ok := data[0]["app"]; !ok {
+		t.Error("No app present")
+	}
+
 }
 
 func Test_Developer(t *testing.T) {
 	//("/api/apps?developer=zynga")
-	t.Fail()
+	form := url.Values{}
+	form.Add("developer", "EXAMPLE")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) != 1 {
+		t.Errorf("Should be only one match", data)
+	}
+
+	if _, ok := data[0]["title"]; !ok {
+		t.Errorf("No title present")
+	}
+
+	if _, ok := data[0]["app"]; !ok {
+		t.Error("No app present")
+	}
 }
 
+func Test_NonDeveloper(t *testing.T) {
+	//("/api/apps?title=DinnerAtNoon")
+	form := url.Values{}
+	form.Add("title", "EXAMPLE NOT A DEVELOPER PLEASE")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) < 1 {
+		t.Errorf("Should be no matchs", data)
+	}
+
+}
 func Test_MultiDevelopers(t *testing.T) {
-	//("/api/apps?developer=zynga,cat")
+	//TODO:("/api/apps?developer=zynga,cat")
 	//("/api/apps?developer=zynga&developer=cat")
-	t.Fail()
+	form := url.Values{}
+	form.Add("title", "EXAMPLE DEVELOPER")
+	form.Add("title", "EXAMPLE DEVELOPER TWO")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) != 2 {
+		t.Errorf("Should be only one match", data)
+	}
+
+	if _, ok := data[0]["title"]; !ok {
+		t.Errorf("No title present")
+	}
+
+	if _, ok := data[0]["app"]; !ok {
+		t.Error("No app present")
+	}
 }
 
 func Test_Genre(t *testing.T) {
 	//("/api/apps?genre=entertainment")
-	t.Fail()
+	//TODO: test every genre
+	form := url.Values{}
+	form.Add("genre", "EXAMPLE")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) > 10 {
+		t.Errorf("Should be only one match", data)
+	}
+
+	if _, ok := data[0]["title"]; !ok {
+		t.Errorf("No title present")
+	}
+
+	if _, ok := data[0]["app"]; !ok {
+		t.Error("No app present")
+	}
+
 }
 
 func Test_MultiGenre(t *testing.T) {
 	//("/api/apps?genre=lifestyle,food_and_drink")
 	//("/api/apps?genre=lifestyle&genre=food_and_drink")
-	t.Fail()
+	form := url.Values{}
+	form.Add("genre", "EXAMPLE GENRE")
+	form.Add("genre", "EXAMPLE GENRE TWO")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) != 2 {
+		t.Errorf("Should be only one match", data)
+	}
+
+	if _, ok := data[0]["title"]; !ok {
+		t.Errorf("No title present")
+	}
+
+	if _, ok := data[0]["app"]; !ok {
+		t.Error("No app present")
+	}
 }
 
 func Test_GameGenre(t *testing.T) {
 	//("/api/apps?genre=GAMES")
-	t.Fail()
+	form := url.Values{}
+	form.Add("genre", "GAMES")
+	form.Add("isFull", "true") //Need fulll data
+	form.Add("limit", "100")   //Need high limit inorder to hope two different game genres
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	var data []db.AppVersion
+
+	err = json.Unmarshal(respData, &data)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if data == nil {
+		t.Errorf("Empty data returned")
+	}
+
+	//Test to see if a unqiue genre exists
+
+	multiGenresFound := false
+	cmpGenre := data[0].StoreInfo.(db.PlayStoreInfo).Genre
+	for _, app := range data {
+		appGenre := app.StoreInfo.(db.PlayStoreInfo).Genre
+		if cmpGenre != appGenre {
+			multiGenresFound = true
+		}
+	}
+
+	if !multiGenresFound {
+		t.Errorf("Games did not get mutlple unique genres, maybe increase limit size. Data:\n", data)
+	}
 }
 
 func Test_AppId(t *testing.T) {
 	//("/api/apps?appId")
-	t.Fail()
+	form := url.Values{}
+	form.Add("appid", "EXAMPLE APP")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) != 1 {
+		t.Errorf("Should be only one match", data)
+	}
+
+	if _, ok := data[0]["title"]; !ok {
+		t.Errorf("No title present")
+	}
+
+	if _, ok := data[0]["app"]; !ok {
+		t.Error("No app present")
+	}
+
+	if data[0]["app"] != "EXAMPLE APP" {
+		t.Error("Incorrect appid found: ", data[0]["app"])
+	}
+
 }
 
 func Test_MultiAppId(t *testing.T) {
 	//("/api/apps?appId=example1&appId=example2")
 	//("/api/apps?appId=example1,example2")
-	t.Fail()
+	form := url.Values{}
+	form.Add("title", "EXAMPLE APP")
+	form.Add("title", "EXAMPLE APP TWO")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) != 2 {
+		t.Errorf("Should be only one match", data)
+	}
+
+	if _, ok := data[0]["title"]; !ok {
+		t.Errorf("No title present")
+	}
+
+	if _, ok := data[0]["app"]; !ok {
+		t.Error("No app present")
+	}
 }
 
 func Test_invalidAppid(t *testing.T) {
 	//("/api/apps?appId=INVALID")
-	t.Fail()
+	form := url.Values{}
+	form.Add("appid", "EXAMPLE NOT A APP ID PLEASE")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) < 1 {
+		t.Errorf("Should be no matchs", data)
+	}
+
 }
 
-func Test_startsWith(t *testing.T) {
+func Test_startsWithSingleLetter(t *testing.T) {
 	//("/api/apps?startsWith=i")
-	t.Fail()
+	form := url.Values{}
+	form.Add("startsWith", "a")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) > 10 {
+		t.Errorf("Should be more thabn 10 matchs", data)
+	}
+
+	if _, ok := data[0]["title"]; !ok {
+		t.Errorf("No title present")
+	}
+
+	if _, ok := data[0]["app"]; !ok {
+		t.Error("No app present")
+	}
+}
+
+func Test_startsWithDoubleLetter(t *testing.T) {
+	//("/api/apps?startsWith=i")
+	form := url.Values{}
+	form.Add("startsWith", "aa")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) > 10 {
+		t.Errorf("Should be more than 10 matchs", data)
+	}
+
+	if _, ok := data[0]["title"]; !ok {
+		t.Errorf("No title present")
+	}
+
+	if _, ok := data[0]["app"]; !ok {
+		t.Error("No app present")
+	}
+}
+
+func Test_startsWithTripleLetter(t *testing.T) {
+	//("/api/apps?startsWith=i")
+	form := url.Values{}
+	form.Add("startsWith", "cat")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) > 10 {
+		t.Errorf("Should be more than 10 matchs", data)
+	}
+
+	if _, ok := data[0]["title"]; !ok {
+		t.Errorf("No title present")
+	}
+
+	if _, ok := data[0]["app"]; !ok {
+		t.Error("No app present")
+	}
 }
 
 func Test_onlyAnalyzed(t *testing.T) {
 	//("/api/apps?onlyAnalyzed")
-	t.Fail()
+
 }
 
-func Test_limit(t *testing.T) {
+func Test_limitOne(t *testing.T) {
 	//("/api/apps?limit=10")
-	t.Fail()
+	form := url.Values{}
+	form.Add("limit", "1")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) != 1 {
+		t.Errorf("Should be more than 10 matchs", data)
+	}
+
+	if _, ok := data[0]["title"]; !ok {
+		t.Errorf("No title present")
+	}
+
+	if _, ok := data[0]["app"]; !ok {
+		t.Error("No app present")
+	}
 }
 
+func Test_limitHundo(t *testing.T) {
+	//("/api/apps?limit=10")
+	form := url.Values{}
+	form.Add("limit", "100")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) != 100 {
+		t.Errorf("Should be more than 100 matchs", data)
+	}
+
+	if _, ok := data[0]["title"]; !ok {
+		t.Errorf("No title present")
+	}
+
+	if _, ok := data[0]["app"]; !ok {
+		t.Error("No app present")
+	}
+}
+
+func Test_limitThoudo(t *testing.T) {
+	//("/api/apps?limit=10")
+	form := url.Values{}
+	form.Add("limit", "1000")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) != 1000 {
+		t.Errorf("Should be more than 1000 matchs", data)
+	}
+
+	if _, ok := data[0]["title"]; !ok {
+		t.Errorf("No title present")
+	}
+
+	if _, ok := data[0]["app"]; !ok {
+		t.Error("No app present")
+	}
+}
+
+func Test_limitHundoThoudo(t *testing.T) {
+	//("/api/apps?limit=10")
+	form := url.Values{}
+	form.Add("limit", "100000")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) != 100000 {
+		t.Errorf("Should be more than  100000 matchs", data)
+	}
+
+	if _, ok := data[0]["title"]; !ok {
+		t.Errorf("No title present")
+	}
+
+	if _, ok := data[0]["app"]; !ok {
+		t.Error("No app present")
+	}
+}
+func Test_limitExcess(t *testing.T) {
+	//("/api/apps?limit=10")
+	form := url.Values{}
+	form.Add("limit", "10000000")
+
+	urlStr := constructAPIURL("/api/apps", form)
+
+	hc := http.Client{}
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		t.Errorf("Bad post", err)
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := hc.Do(req)
+
+	if err != nil {
+		t.Errorf("Could not access endpoint", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Bad request", resp.Status)
+	}
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Umable to read response", err)
+	}
+
+	data, err := getJSON(respData)
+
+	if err != nil {
+		t.Errorf("Unable to retrieve response data", err)
+	}
+
+	if len(data) != 10000000 {
+		t.Errorf("Should be more than 10 matchs", data)
+	}
+
+	if _, ok := data[0]["title"]; !ok {
+		t.Errorf("No title present")
+	}
+
+	if _, ok := data[0]["app"]; !ok {
+		t.Error("No app present")
+	}
+}
 func Test_offset(t *testing.T) {
 	//("/api/apps?offset=10")
-	t.Fail()
+
+}
+
+func Test_geoIp(t *testing.T) {
+	//("/api/")
+
+}
+
+func Test_iconGet(t *testing.T) {
+	//("/api/")
+
+}
+
+func Test_host(t *testing.T) {
+	//("/api/hosts")
+
 }
 
 /* BELOW ARE AUTO GENERATED TEST STRUCTURES */
