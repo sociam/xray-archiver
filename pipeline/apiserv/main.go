@@ -268,6 +268,8 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 			case "appId":
 				appIDs = val
+			case "nocache":
+				util.Log.Debug("No Cache flag. Good Stuff.");
 
 			default:
 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "passed form values did not match params", name)
