@@ -268,7 +268,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 			case "appId":
 				appIDs = val
-				
+
 			case "nocache":
 				util.Log.Debug("No Cache flag. Good Stuff.")
 
