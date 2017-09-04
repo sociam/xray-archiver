@@ -108,7 +108,10 @@ func analyze(app *util.App) error {
 		fmt.Printf("Error setting analyzed for app %d! This will result in looping!\n", app.DBID)
 	}
 
-	app.Cleanup()
+	err = app.Cleanup()
+	if err != nil {
+		fmt.Printf("Error removing temp dir: %s", err.Error())
+	}
 
 	return nil
 }
