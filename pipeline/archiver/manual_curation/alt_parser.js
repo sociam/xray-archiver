@@ -8,10 +8,15 @@ const childProcess = require('child_process');
 
 function readCSV(path) {
     const lines = fs.readFileSync(path).toString().split('\n');
-    return lines.reduce((line, json) => {
+    const pairs = lines.reduce((json, line) => {
         const split = line.replace('\r', '').split(',');
-        return json.concat({ source: split[0], alt: split[1] });
+        return json.concat([
+            { source: split[0], alt: split[1] },
+            { source: split[1], alt: split[0] },
+        ]);
     }, []);
+    logger.debug(pairs);
+    return pairs;
 }
 
 function flatten(arr) {
@@ -20,7 +25,9 @@ function flatten(arr) {
 
 function cartesianProductAltArray(...args) {
     return args.reduce((prods, arr) =>
-        flatten(prods.map((prod) => arr.map((v) => prod.concat(v)))), [[]]);
+        flatten(prods.map((prod) => arr.map((v) => prod.concat(v)))), [
+        [],
+    ]);
 }
 
 function nwayAlts(alts) {
@@ -43,9 +50,9 @@ function nwayAlts(alts) {
 
 function parseAltCSVToJSON(path) {
     const array = readCSV(path);
-    return array.concat(nwayAlts(array).map((alt) =>
-        alt[9] != alt[1] ? { source: alt[0], alt: alt[1] } : false
-    ).filter((x) => Boolean(x)));
+    return array.concat(nwayAlts(array).map((alt) => {
+        return { source: alt[0], alt: alt[1] };
+    }));
 }
 
 function parseAltCSVtoArray(path) {
