@@ -117,6 +117,12 @@ create table hosts(
   company  text references companies(id)
 );
 
+create table company_domains (
+  company text not null,
+  domain text not null,
+  primary key(company, domain)
+);
+
 create user explorer;
 create user retriever;
 create user downloader;
@@ -157,10 +163,24 @@ grant select on companies to apiserv;
 grant select on hosts to apiserv;
 grant select on alt_apps to apiserv;
 grant select on manual_alts to apiserv;
+grant select on company_domains to apiserv;
 
 grant select, update, insert on alt_apps to suggester;
 grant select, update, insert on manual_alts to suggester;
+grant select, update, insert on company_domains to suggester;
 grant select, update on app_versions to suggester;
 grant select on playstore_apps to suggester;
 
+-- SUMMARY STATISTICS VIEWS
+create view all_hosts as
+  select unnest(ah.hosts) as hosts from app_hosts ah; 
+  
+create view host_freq as
+  select un.hosts as host_name, bigcnt.big_n, count(un.hosts) as little_n, count(un.hosts)/bigcnt.big_n::float as n_pct from 
+    (select count(hosts) as big_n from all_hosts) as bigcnt,
+    all_hosts as un
+      group by hosts, big_n
+      order by little_n using >;
+
 commit;
+
