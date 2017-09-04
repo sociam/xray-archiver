@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os/exec"
 	"regexp"
@@ -468,8 +469,15 @@ var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location"
 var port = flag.Uint("port", 8118, "Port to serve on.")
 
 func init() {
-	util.LoadCfg(*cfgFile, util.APIServ)
-	db.Open(util.Cfg, true)
+	var err error
+	err = util.LoadCfg(*cfgFile, util.Analyzer)
+	if err != nil {
+		log.Fatalf("Failed to read config: %s", err.Error())
+	}
+	err = db.Open(util.Cfg, true)
+	if err != nil {
+		log.Fatalf("Failed to open a connection to the database: %s", err.Error())
+	}
 }
 
 func main() {
