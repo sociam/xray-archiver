@@ -160,7 +160,7 @@ var ExampleAppVer = db.AppVersion{ID: 1,
 //Test the app endppoint or the query? the problem is main barely have shiz...
 //just querying the real running endpoint?
 
-var apiUrl = "http://localhost:8118"
+var apiURL = "http://localhost:8118"
 
 var myClient = &http.Client{Timeout: 10 * time.Second}
 
@@ -172,21 +172,17 @@ func getJSON(response []byte) (data []map[string]interface{}, err error) {
 }
 
 func Test_AccessEndpoint(t *testing.T) {
-	// client := &http.Client{
-	// 	CheckRedirect: redirectPolicyFunc,
-	// }
-	resp, err := http.Get(apiUrl)
+	resp, err := http.Get(apiURL)
 
 	if err != nil {
 		t.Errorf("Could not access endpoint", err)
 	}
 
 	defer resp.Body.Close()
-	//body, err := ioutil.ReadAll(resp.Body)
 }
 
 func constructAPIURL(resource string, formData url.Values) string {
-	u, _ := url.ParseRequestURI(apiUrl)
+	u, _ := url.ParseRequestURI(apiURL)
 	u.Path = resource
 	if formData != nil {
 		u.RawQuery = formData.Encode()
