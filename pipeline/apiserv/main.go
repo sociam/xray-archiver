@@ -345,6 +345,7 @@ var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location"
 var port = flag.Uint("port", 8118, "Port to serve on.")
 
 func init() {
+	var err error
 	err = util.LoadCfg(*cfgFile, util.Analyzer)
 	if err != nil {
 		log.Fatalf("Failed to read config: %s", err.Error())
