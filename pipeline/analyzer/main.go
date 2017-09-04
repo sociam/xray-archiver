@@ -149,10 +149,13 @@ var useDb = flag.Bool("db", false, "add app information to the db specified in t
 func init() {
 	var err error
 	flag.Parse()
-	util.LoadCfg(*cfgFile, util.Analyzer)
+	err = util.LoadCfg(*cfgFile, util.Analyzer)
+	if err != nil {
+		log.Fatalf("Failed to read config: %s", err.Error())
+	}
 	err = db.Open(util.Cfg, *useDb)
 	if err != nil {
-		log.Fatalf("Failed to open a connection to the database %s", err.Error())
+		log.Fatalf("Failed to open a connection to the database: %s", err.Error())
 	}
 }
 
