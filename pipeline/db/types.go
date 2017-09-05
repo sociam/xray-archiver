@@ -36,7 +36,7 @@ type AppVersion struct {
 	IsAnalyzed  bool      `json:"isAnalyzed"`
 }
 
-// GenreAvg represents a row from the Genre average statistics table
+// GenreStats represents a row from the Genre average statistics table
 type GenreStats struct {
 	Category  string  `json:"category"`
 	HostCount int64   `json:"hostCount"`
