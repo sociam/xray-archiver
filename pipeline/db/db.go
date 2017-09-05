@@ -333,6 +333,7 @@ func GetCompany(id string) (Company, error) {
 	return comp, nil
 }
 
+// GetGenreHostAverages Queries DB for Genre averages stats view.
 func GetGenreHostAverages() ([]GenreStats, error) {
 	rows, err := db.Query("SELECT * FROM genre_host_averages")
 	results := []GenreStats{}
