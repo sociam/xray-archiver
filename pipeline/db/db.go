@@ -340,7 +340,7 @@ func GetGenreHostAverages() ([]GenreStats, error) {
 		defer rows.Close()
 	}
 	if err != nil {
-		util.Log.Err("Error in stats table query",err)
+		util.Log.Err("Error in stats table query", err)
 		return results, err
 	}
 	util.Log.Debug("Scanning Rows.")
