@@ -40,13 +40,13 @@ type APIServCfg struct {
 // locations. As well as holding DB, Analyser and APIServ Config
 // information.
 type Config struct {
-	EDIHostname string      `json:"edihost"`
-	DataDir     string      `json:"datadir"`
-	AppDir      string      `json:"-"`
-	UnpackDir   string      `json:"unpackdir"`
-	Analyzer    AnalyzerCfg `json:"analyzer"`
-	APIServ     APIServCfg  `json:"apiserv"`
-	DB          DBCfg       `json:"db"`
+	GeoIPEndpoint string      `json:"geoipurl"`
+	DataDir       string      `json:"datadir"`
+	AppDir        string      `json:"-"`
+	UnpackDir     string      `json:"unpackdir"`
+	Analyzer      AnalyzerCfg `json:"analyzer"`
+	APIServ       APIServCfg  `json:"apiserv"`
+	DB            DBCfg       `json:"db"`
 }
 
 // Cfg is an instance of Config that will contain DB settings
@@ -74,8 +74,8 @@ func LoadCfg(cfgFile string, requester int) error {
 		return errors.New("Error reading JSON: " + err.Error())
 	}
 
-	if Cfg.EDIHostname == "" {
-		Cfg.EDIHostname = "edi.sociam.org"
+	if Cfg.GeoIPEndpoint == "" {
+		Cfg.GeoIPEndpoint = "http://localhost/geoip"
 	}
 	if Cfg.DataDir == "" {
 		Cfg.DataDir = "/var/xray"

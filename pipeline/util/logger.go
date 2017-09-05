@@ -30,7 +30,7 @@ type logger struct{}
 var Log = logger{}
 
 func (l logger) Log(level int, str string, args ...interface{}) {
-	fmt.Print(prefixes[level] +
+	fmt.Println(prefixes[level] +
 		strings.Replace(fmt.Sprintf(str, args...),
 			"\n", "\n"+prefixes[level], -1))
 }
