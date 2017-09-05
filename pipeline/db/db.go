@@ -333,6 +333,37 @@ func GetCompany(id string) (Company, error) {
 	return comp, nil
 }
 
+func GetGenreHostAverages() ([]GenreStats, error){
+	rows, err := db.Query("SELECT * FROM genre_host_averages")
+	results := []GenreStats{}
+	if rows != nil {
+		defer rows.Close()
+	}
+	if err != nil {
+		util.Log.Err("Error in stats table query",err)
+		return results, err
+	}
+	util.Log.Debug("Scanning Rows.")
+
+	for i := 0; rows.Next(); i++ {
+		row := GenreStats{}
+		rows.Scan(
+			&row.Category,
+			&row.HostCount,
+			&row.AppCount,
+			&row.GenreAvg)
+		results = append(results,row)
+		//util.Log.Debug("Row Scanned: " + fmt.Sprint(i))
+	}
+	util.Log.Debug("Rows Scanned")
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+		util.Log.Err("Error Scanning Rows ", rows.Err())
+		return []GenreStats{}, err
+	}
+	util.Log.Debug("Returning Rows")
+	return results, nil
+}
+
 // GetCompanies returns a list of companies.
 func GetCompanies(num, start int) ([]Company, error) {
 	rows, err := db.Query("SELECT * FROM companies LIMIT $1 OFFSET $2", num, start)

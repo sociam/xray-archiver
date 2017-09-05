@@ -36,6 +36,14 @@ type AppVersion struct {
 	IsAnalyzed  bool      `json:"isAnalyzed"`
 }
 
+// GenreAvg represents a row from the Genre average statistics table
+type GenreStats struct {
+	Category 	string 	`json:"category"`
+	HostCount 	int64	`json:"hostCount"`
+	AppCount	int64	`json:"appCount"`
+	GenreAvg	float64	`json:"genreAvg"`
+}
+
 // AltApp represents Alternative App title and playstore url. Used in API
 type AltApp struct {
 	AltAppTitle     string `json:"altAppTitle"`
