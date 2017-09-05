@@ -333,7 +333,7 @@ func GetCompany(id string) (Company, error) {
 	return comp, nil
 }
 
-func GetGenreHostAverages() ([]GenreStats, error){
+func GetGenreHostAverages() ([]GenreStats, error) {
 	rows, err := db.Query("SELECT * FROM genre_host_averages")
 	results := []GenreStats{}
 	if rows != nil {
@@ -352,7 +352,7 @@ func GetGenreHostAverages() ([]GenreStats, error){
 			&row.HostCount,
 			&row.AppCount,
 			&row.GenreAvg)
-		results = append(results,row)
+		results = append(results, row)
 		//util.Log.Debug("Row Scanned: " + fmt.Sprint(i))
 	}
 	util.Log.Debug("Rows Scanned")
