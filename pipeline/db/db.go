@@ -333,6 +333,42 @@ func GetCompany(id string) (Company, error) {
 	return comp, nil
 }
 
+// GetAppCompanyFreq Queries the DB for global company stats.
+// a generalised get Stat Freq table method should be created where
+// the name of a freq table is specified. the tables would take a 
+// standardised format.
+func GetAppCompanyFreq() ([]CompanyCoverage, error) {
+	func GetGenreHostAverages() ([]GenreStats, error) {
+	rows, err := db.Query("SELECT * FROM company_app_coverage")
+	results := []CompanyCoverage{}
+	if rows != nil {
+		defer rows.Close()
+	}
+	if err != nil {
+		util.Log.Err("Error in stats table query", err)
+		return results, err
+	}
+	util.Log.Debug("Scanning Rows.")
+
+	for i := 0; rows.Next(); i++ {
+		row := CompanyCoverage{}
+		rows.Scan(
+			&row.Company,
+			&row.AppCount,
+			&row.TotalApps,
+			&row.CompanyFreq)
+		results = append(results, row)
+		//util.Log.Debug("Row Scanned: " + fmt.Sprint(i))
+	}
+	util.Log.Debug("Rows Scanned")
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+		util.Log.Err("Error Scanning Rows ", rows.Err())
+		return []CompanyCoverage{}, err
+	}
+	util.Log.Debug("Returning Rows")
+	return results, nil
+}
+
 // GetGenreHostAverages Queries DB for Genre averages stats view.
 func GetGenreHostAverages() ([]GenreStats, error) {
 	rows, err := db.Query("SELECT * FROM genre_host_averages")

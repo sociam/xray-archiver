@@ -44,6 +44,16 @@ type GenreStats struct {
 	GenreAvg  float64 `json:"genreAvg"`
 }
 
+// CompanyCoverage represents a row from the company_app_coverage statistics
+// table found in the XRay DB. it will be expanded later to have some genre
+// stats in there.
+type CompanyCoverage struct {
+	Company      string  `json:"company"`
+	AppCount     int64   `json:"appCount"`
+	TotalApps    int64   `json:"totalApps"`
+	CompanyFreq  float64 `json:"companyFreq"`
+}
+
 // AltApp represents Alternative App title and playstore url. Used in API
 type AltApp struct {
 	AltAppTitle     string `json:"altAppTitle"`
