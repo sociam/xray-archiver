@@ -39,13 +39,13 @@ create table distinct_app_hosts as
 ---------------------------------------------------------------------------------------------------
 -- table counting the number of apps that feature specific hosts.
 ---------------------------------------------------------------------------------------------------
-
 drop table if exists host_app_coverage;
 create table host_app_coverage as
   select hosts, count(*) from distinct_app_hosts
     group by hosts;
 
-grant select on host domains to apiserv
+grant select on host domains to apiserv;
+
 ---------------------------------------------------------------------------------------------------
 -- Table of all possible Host names and a heuristic regex for the domain of the host.
 ---------------------------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ create table host_domains as
     substring(hosts from '(([^\.]*)\.([^\.]*)$)') as domain,
     substring(hosts from '(([^\.]*)\.([^\.]*)\.([^\.]*)$)') as domain_plus from distinct_hosts;
 
-grant select on host_domains to apiserv
+grant select on host_domains to apiserv;
 
 ---------------------------------------------------------------------------------------------------
 -- Table of Host, heuristic based domain and company for that domain.
@@ -68,7 +68,7 @@ create table host_domain_companies as
          or d.domain_plus = c.domain
          or lower(d.hosts) ilike '%' || lower(c.domain) || '%');
 
-grant select on host_domain_companies to apiserv
+grant select on host_domain_companies to apiserv;
 
 ---------------------------------------------------------------------------------------------------
 -- a mapping of hosts-app pairs to host-company pairs. if an app sends to a company, only
@@ -82,8 +82,11 @@ drop table if exists distinct_app_companies;
 create table distinct_app_companies as
   select distinct hdc.company, dah.id from host_domain_companies hdc, distinct_app_hosts dah
   where hdc.hosts = dah.hosts;
+
 ---------------------------------------------------------------------------------------------------
 -- Counts of the amount of apps that feature a host name tied to a company.
+--
+-- This table features in the 'app_company_freq' API endpoint.
 ---------------------------------------------------------------------------------------------------
 drop table if exists company_app_coverage;
 create table company_app_coverage as
@@ -96,9 +99,7 @@ create table company_app_coverage as
           group by company, total_apps
           order by app_count using >
   ) as company_app_counts;
- 
-
-drop table if exists company_app_freq;
+ grant select on company_app_coverage to apiserv;
 
 ---------------------------------------------------------------------------------------------------
 -- Other Views. might be useful at somepoint. but they turned out to be too slow.
