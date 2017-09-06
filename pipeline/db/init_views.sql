@@ -12,16 +12,39 @@ create view genre_host_averages as
 
 grant select on genre_host_averages to apiserv;
 
-create view host_domains as
-  select hosts, substring(hosts from '(?:https?:\/\/)?(?:[^@\n]+@)?(?:mobile\.)?(?:www\.)?(?:app\.)?(?:appco\.)?(?:stream\.)?(?:test\.)?(?:ipua\.)?(?:retail\.)?(?:i\.)?(?:idx\.)?(?:snappy\.)?(?:snappy.\.)?(?:ofbiz\.)?(?:post\.)?(?:e\.)?(?:api.map\.)?(?:oauth\.)?(?:map\.)?(?:api.maps\.)?(?:m\.)?(?:\.)?(?:badad\.)?(?:bugs\.)?(?:info\.)?(?:info.static\.)?(?:androidads21\.)?(?:maps\.)?(?:serve\.)?(?:sonuj\.)?(?:sonuj,dev\.)?(?:dev\.)?(?:graph.%s\.)?(?:ws\.)?(?:accounts\.)?(?:account\.)?(?:imp\.)?(?:lh6\.)?(?:%s\.)?(?:hemmabast\.)?(?:cdn.unityads\.)?(?:vid\.)?(?:login\.)?(?:sdk\.)?(?:ssdk\.)?(?:graph\.)?(?:ach\.)?(?:unconf.mobad\.)?(?:live\.)?(?:r\.)?(?:tech\.)?(?:rri\.)?(?:ms\.)?(?:unconf\.)?(?:unrcv\.)?(?:cdn\.)?(?:img\.)?(?:ud\.)?(?:ufs\.)?(?:xml\.)?(?:rt\.)?(?:mads\.)?(?:pdn\.)?(?:settings\.)?(?:cdnjs\.)?(?:assets\.)?(?:market\.)?(?:adwatch\.)?(?:code\.)?(?:a\.)?(?:d\.)?(?:ad\.)?(?:www\.)?(?:googleads\.)?(?:googleads.g\.)?(?:schemas\.)?(?:ads\.)?(?:csi\.)?(?:developer\.)?(?:pro\.)?(?:s3\.)?(?:api\.)?(?:docs\.)?(?:ssl\.)?(?:media\.)?(?:play\.)?(?:plus\.)?(?:pagead2\.)?([^:\/\n]+)') as domain from ( 
-    select distinct hosts from ( 
-      select unnest(hosts) as hosts from app_hosts
-    ) as unpack_hosts
-  ) as distinct_hosts limit 10;
 
-create view host_domain_companies as 
-  select hosts, domain
+create table distinct_hosts as
+  select distinct hosts from ( 
+    select unnest(hosts) as hosts from app_hosts
+  ) as unpack_hosts;
 
+create view distinct_app_hosts as
+  select distinct id, hosts from ( 
+    select id, unnest(hosts) as hosts from app_hosts
+  ) as unpack_hosts;
+
+
+create view host_app_coverage as
+
+
+-- Table of all possible Host names and a heuristic regex for the domain of the host.
+-- create view host_domains as
+--   select hosts,
+--          substring(hosts from '(([^\.]*)\.([^\.]*)$)') as domain,
+--          substring(hosts from '(([^\.]*)\.([^\.]*)\.([^\.]*)$)') as domain_plus from ( 
+--     select distinct hosts from ( 
+--       select unnest(hosts) as hosts from app_hosts
+--     ) as unpack_hosts
+--   ) as distinct_hosts;
+
+grant select on host_domains to apiserv
+
+-- Table of Host, heuristic based domain and company for that domain.
+-- create view host_domain_companies as 
+--   select distinct d.hosts, d.domain, d.domain_plus, coalesce(c.company, 'unknown') as company
+--     from host_domains d, company_domains c
+--       where d.domain = c.domain 
+--          or d.domain_plus = c.domain;
 
 -- All Hosts
 -- create view all_hosts as
