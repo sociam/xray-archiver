@@ -5,6 +5,8 @@ begin;
 
 ---------------------------------------------------------------------------------------------------
 -- Average number of hosts for each genre
+--
+-- Features in the "genre_host_averages" API Endpoint.
 ---------------------------------------------------------------------------------------------------
 drop table if exists genre_host_averages
 create table genre_host_averages as
@@ -15,6 +17,7 @@ create table genre_host_averages as
     group by genre) as genre_freq;
 
 grant select on genre_host_averages to apiserv;
+
 ---------------------------------------------------------------------------------------------------
 -- table of distinct hosts 
 ---------------------------------------------------------------------------------------------------
@@ -23,6 +26,7 @@ create table distinct_hosts as
   select distinct hosts from ( 
     select unnest(hosts) as hosts from app_hosts
   ) as unpack_hosts;
+
 ---------------------------------------------------------------------------------------------------
 -- table of app-host pairs
 ---------------------------------------------------------------------------------------------------
@@ -31,7 +35,6 @@ create table distinct_app_hosts as
   select distinct id, hosts from ( 
     select id, unnest(hosts) as hosts from app_hosts
   ) as unpack_hosts;
-
 
 ---------------------------------------------------------------------------------------------------
 -- table counting the number of apps that feature specific hosts.
@@ -53,6 +56,7 @@ create table host_domains as
     substring(hosts from '(([^\.]*)\.([^\.]*)\.([^\.]*)$)') as domain_plus from distinct_hosts;
 
 grant select on host_domains to apiserv
+
 ---------------------------------------------------------------------------------------------------
 -- Table of Host, heuristic based domain and company for that domain.
 ---------------------------------------------------------------------------------------------------
@@ -66,6 +70,39 @@ create table host_domain_companies as
 
 grant select on host_domain_companies to apiserv
 
+---------------------------------------------------------------------------------------------------
+-- a mapping of hosts-app pairs to host-company pairs. if an app sends to a company, only
+-- marked once.
+--
+-- NOTE - expand to include genres. would be interesting to see if some types of apps send
+-- to different types of companies
+-- NOTE - Expand to include information on the 
+---------------------------------------------------------------------------------------------------
+drop table if exists distinct_app_companies;
+create table distinct_app_companies as
+  select distinct hdc.company, dah.id from host_domain_companies hdc, distinct_app_hosts dah
+  where hdc.hosts = dah.hosts;
+---------------------------------------------------------------------------------------------------
+-- Counts of the amount of apps that feature a host name tied to a company.
+---------------------------------------------------------------------------------------------------
+drop table if exists company_app_coverage;
+create table company_app_coverage as
+  select company, app_count, total_apps, app_count/total_apps::float as company_freq from (
+    select company, count(*) as app_count, total_apps
+        from distinct_app_companies,( 
+          select count(*) as total_apps
+            from app_versions where analyzed = true
+            ) as total_app_count 
+          group by company, total_apps
+          order by app_count using >
+  ) as company_app_counts;
+ 
+
+drop table if exists company_app_freq;
+
+---------------------------------------------------------------------------------------------------
+-- Other Views. might be useful at somepoint. but they turned out to be too slow.
+---------------------------------------------------------------------------------------------------
 -- All Hosts
 -- create view all_hosts as
 --   select unnest(ah.hosts) as hosts, company from app_hosts ah full outer join company_domains on (hosts = domain ); 
