@@ -88,6 +88,11 @@ create table app_hosts(
   pis    int[]
 );
 
+create table app_companies(
+  id         int references app_versions(id) primary key not null,
+  companies  text[]
+);
+
 create table manual_alts(
   source_id  text not null,
   alt_id     text not null,

@@ -4,12 +4,24 @@ begin;
 
 -- Average number of hosts for each genre
 create view genre_host_averages as
-  select category, host_count, app_count, host_count/app_count::float as host_avg
-  from (select p.genre as category, sum(array_length(v.hosts,1)) as host_count, count(p.genre) as app_count
-          from playstore_apps p inner join app_hosts v on (p.id = v.id)
-            group by genre) as genre_freq;
+  select category, host_count, app_count, host_count/app_count::float as host_avg from (
+    select p.genre as category, sum(array_length(v.hosts,1)
+  ) as host_count, count(p.genre) as app_count
+  from playstore_apps p inner join app_hosts v on (p.id = v.id)
+    group by genre) as genre_freq;
 
 grant select on genre_host_averages to apiserv;
+
+create view host_domains as
+  select hosts, substring(hosts from '(?:https?:\/\/)?(?:[^@\n]+@)?(?:mobile\.)?(?:www\.)?(?:app\.)?(?:appco\.)?(?:stream\.)?(?:test\.)?(?:ipua\.)?(?:retail\.)?(?:i\.)?(?:idx\.)?(?:snappy\.)?(?:snappy.\.)?(?:ofbiz\.)?(?:post\.)?(?:e\.)?(?:api.map\.)?(?:oauth\.)?(?:map\.)?(?:api.maps\.)?(?:m\.)?(?:\.)?(?:badad\.)?(?:bugs\.)?(?:info\.)?(?:info.static\.)?(?:androidads21\.)?(?:maps\.)?(?:serve\.)?(?:sonuj\.)?(?:sonuj,dev\.)?(?:dev\.)?(?:graph.%s\.)?(?:ws\.)?(?:accounts\.)?(?:account\.)?(?:imp\.)?(?:lh6\.)?(?:%s\.)?(?:hemmabast\.)?(?:cdn.unityads\.)?(?:vid\.)?(?:login\.)?(?:sdk\.)?(?:ssdk\.)?(?:graph\.)?(?:ach\.)?(?:unconf.mobad\.)?(?:live\.)?(?:r\.)?(?:tech\.)?(?:rri\.)?(?:ms\.)?(?:unconf\.)?(?:unrcv\.)?(?:cdn\.)?(?:img\.)?(?:ud\.)?(?:ufs\.)?(?:xml\.)?(?:rt\.)?(?:mads\.)?(?:pdn\.)?(?:settings\.)?(?:cdnjs\.)?(?:assets\.)?(?:market\.)?(?:adwatch\.)?(?:code\.)?(?:a\.)?(?:d\.)?(?:ad\.)?(?:www\.)?(?:googleads\.)?(?:googleads.g\.)?(?:schemas\.)?(?:ads\.)?(?:csi\.)?(?:developer\.)?(?:pro\.)?(?:s3\.)?(?:api\.)?(?:docs\.)?(?:ssl\.)?(?:media\.)?(?:play\.)?(?:plus\.)?(?:pagead2\.)?([^:\/\n]+)') as domain from ( 
+    select distinct hosts from ( 
+      select unnest(hosts) as hosts from app_hosts
+    ) as unpack_hosts
+  ) as distinct_hosts limit 10;
+
+create view host_domain_companies as 
+  select hosts, domain
+
 
 -- All Hosts
 -- create view all_hosts as
@@ -26,7 +38,7 @@ grant select on genre_host_averages to apiserv;
 -- All Host Freq Counts
 -- create view host_freq as
 --   select un.hosts as host_name, bigcnt.big_n, count(un.hosts) as little_n, count(un.hosts)/bigcnt.big_n::float as n_pct from 
---     (select count(hosts) as big_n from all_hosts) as bigcnt,
+--     (select count(hosts) as big_n from all_hosts)1 as bigcnt,
 --     all_hosts as un
 --       group by hosts, big_n
 --       order by little_n using >;
