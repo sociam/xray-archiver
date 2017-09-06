@@ -104,6 +104,18 @@ create table company_app_coverage as
 ---------------------------------------------------------------------------------------------------
 -- Other Views. might be useful at somepoint. but they turned out to be too slow.
 ---------------------------------------------------------------------------------------------------
+
+-- SUMMARY STATISTICS VIEWS
+
+-- Average number of hosts for each genre
+create view genre_host_averages as
+  select category, host_count, app_count, host_count/app_count::float as host_avg
+  from (select p.genre as category, sum(array_length(v.hosts,1)) as host_count, count(p.genre) as app_count
+          from playstore_apps p inner join app_hosts v on (p.id = v.id)
+            group by genre) as genre_freq;
+
+grant select on genre_host_averages to apiserv;
+
 -- All Hosts
 -- create view all_hosts as
 --   select unnest(ah.hosts) as hosts, company from app_hosts ah full outer join company_domains on (hosts = domain ); 
@@ -119,7 +131,8 @@ create table company_app_coverage as
 -- All Host Freq Counts
 -- create view host_freq as
 --   select un.hosts as host_name, bigcnt.big_n, count(un.hosts) as little_n, count(un.hosts)/bigcnt.big_n::float as n_pct from 
---     (select count(hosts) as big_n from all_hosts)1 as bigcnt,
+
+--     (select count(hosts) as big_n from all_hosts) as bigcnt,
 --     all_hosts as un
 --       group by hosts, big_n
 --       order by little_n using >;

@@ -512,7 +512,7 @@ var port = flag.Uint("port", 8118, "Port to serve on.")
 
 func init() {
 	var err error
-	err = util.LoadCfg(*cfgFile, util.Analyzer)
+	err = util.LoadCfg(*cfgFile, util.APIServ)
 	if err != nil {
 		log.Fatalf("Failed to read config: %s", err.Error())
 	}
