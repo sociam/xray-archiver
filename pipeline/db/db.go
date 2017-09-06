@@ -338,7 +338,6 @@ func GetCompany(id string) (Company, error) {
 // the name of a freq table is specified. the tables would take a 
 // standardised format.
 func GetAppCompanyFreq() ([]CompanyCoverage, error) {
-	func GetGenreHostAverages() ([]GenreStats, error) {
 	rows, err := db.Query("SELECT * FROM company_app_coverage")
 	results := []CompanyCoverage{}
 	if rows != nil {
