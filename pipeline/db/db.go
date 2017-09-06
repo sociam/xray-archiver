@@ -335,7 +335,7 @@ func GetCompany(id string) (Company, error) {
 
 // GetAppCompanyFreq Queries the DB for global company stats.
 // a generalised get Stat Freq table method should be created where
-// the name of a freq table is specified. the tables would take a 
+// the name of a freq table is specified. the tables would take a
 // standardised format.
 func GetAppCompanyFreq() ([]CompanyCoverage, error) {
 	rows, err := db.Query("SELECT * FROM company_app_coverage")
