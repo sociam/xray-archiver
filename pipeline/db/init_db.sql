@@ -88,6 +88,11 @@ create table app_hosts(
   pis    int[]
 );
 
+create table app_companies(
+  id         int references app_versions(id) primary key not null,
+  companies  text[]
+);
+
 create table manual_alts(
   source_id  text not null,
   alt_id     text not null,
@@ -115,6 +120,12 @@ create table companies(
 create table hosts(
   hostname text     primary key not null,
   company  text references companies(id)
+);
+
+create table company_domains (
+  company text not null,
+  domain text not null,
+  primary key(company, domain)
 );
 
 create user explorer;
@@ -157,9 +168,11 @@ grant select on companies to apiserv;
 grant select on hosts to apiserv;
 grant select on alt_apps to apiserv;
 grant select on manual_alts to apiserv;
+grant select on company_domains to apiserv;
 
 grant select, update, insert on alt_apps to suggester;
 grant select, update, insert on manual_alts to suggester;
+grant select, update, insert on company_domains to suggester;
 grant select, update on app_versions to suggester;
 grant select on playstore_apps to suggester;
 

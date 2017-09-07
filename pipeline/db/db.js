@@ -178,6 +178,27 @@ class DB {
     }
 
     /**
+     * 
+     */
+    async insertCompanyDomain(company, domain) {
+        logger.debug(`Inserting - Company: ${company}  Domain: ${domain}`);
+        try {
+            logger.debug(`Checking if Company: ${company} & Domain: ${domain} already exist.`);
+            const checkRes = await this.query('SELECT * FROM company_domains WHERE company = $1 and domain = $2', [company, domain]);
+            if (checkRes.rowCount != 0) {
+                logger.debug('Company and Domain Already Exist.');
+                return;
+            }
+            logger.debug('Company and Domain don\'t exist. Inserting now.');
+            await this.query('INSERT INTO company_domains VALUES($1, $2)', [company, domain]);
+        } catch (err) {
+            logger.err(`Error Occured: ${err}`);
+        } finally {
+            logger.debug('Finally Reached on Company-domain insert.');
+        }
+    }
+
+    /**
      *  Insert A Manually Curated App and ID into the Database
      */
     async insertManualSuggestion(altPair) {
