@@ -8,7 +8,7 @@ begin;
 --
 -- Features in the "genre_host_averages" API Endpoint.
 ---------------------------------------------------------------------------------------------------
-drop table if exists genre_host_averages
+drop table if exists genre_host_averages;
 create table genre_host_averages as
   select category, host_count, app_count, host_count/app_count::float as host_avg from (
     select p.genre as category, sum(array_length(v.hosts,1)
@@ -41,7 +41,7 @@ create table distinct_app_hosts as
 ---------------------------------------------------------------------------------------------------
 drop table if exists host_app_coverage;
 create table host_app_coverage as
-  select hosts, count(*) from distinct_app_hosts
+  select hosts, count(*) from distinct_app_hosts1
     group by hosts;
 
 grant select on host domains to apiserv;
@@ -62,7 +62,7 @@ grant select on host_domains to apiserv;
 ---------------------------------------------------------------------------------------------------
 drop table if exists host_domain_companies;
 create table host_domain_companies as 
-  select distinct d.hosts, d.domain, d.domain_plus, coalesce(c.company, 'unknown') as company, c.type
+  select distinct d.hosts, d.domain, d.domain_plus, coalesce(c.company, 'unknown') as company, coalesce(c.type, 'unknown') as type
     from host_domains d left outer join company_domains c
       on( d.domain = c.domain 
          or d.domain_plus = c.domain
@@ -83,6 +83,7 @@ create table distinct_app_companies as
   select distinct hdc.company, hdc.type, dah.id from host_domain_companies hdc, distinct_app_hosts dah
   where hdc.hosts = dah.hosts;
 
+
 ---------------------------------------------------------------------------------------------------
 -- Counts of the amount of apps that feature a host name tied to a company.
 --
@@ -90,16 +91,31 @@ create table distinct_app_companies as
 ---------------------------------------------------------------------------------------------------
 drop table if exists company_app_coverage;
 create table company_app_coverage as
-  select company, app_count, total_apps, app_count/total_apps::float as company_freq from (
+  select distinct t2.company, t2.type, app_count, total_apps, app_count/total_apps::float as company_freq from (
     select company, count(*) as app_count, total_apps
-        from distinct_app_companies,( 
-          select count(*) as total_apps
-            from app_versions where analyzed = true
-            ) as total_app_count 
+        from distinct_app_companies,( select count(*) as total_apps from app_versions where analyzed = true ) as total_app_count 
           group by company, total_apps
-          order by app_count using >
-  ) as company_app_counts;
+  ) as company_app_counts,
+  distinct_app_companies t2
+  where company_app_counts.company = t2.company
+  order by app_count using >;
  grant select on company_app_coverage to apiserv;
+
+---------------------------------------------------------------------------------------------------
+-- Counts of the amount of apps that feature a host name tied to a specific purpose
+--
+-- This table features in the 'app_type_freq' API endpoint.
+---------------------------------------------------------------------------------------------------
+ drop table if exists app_type_coverage;
+ create table app_type_coverage as 
+  select type, app_count, total_apps, app_count/total_apps::float as type_freq from (
+    select type, count(*) as app_count, total_apps
+        from (select distinct type, id from distinct_app_companies) as distinct_app_types,
+             (select count(*) as total_apps from app_versions where analyzed = true ) as total_app_count 
+          group by type, total_apps
+          order by app_count using >
+  ) as type_app_counts;
+ grant select on app_type_coverage to apiserv;
 
 ---------------------------------------------------------------------------------------------------
 -- Other Views. might be useful at somepoint. but they turned out to be too slow.
