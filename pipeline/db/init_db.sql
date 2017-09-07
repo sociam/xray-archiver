@@ -124,7 +124,8 @@ create table hosts(
 
 create table company_domains (
   company text not null,
-  domain text not null,
+  domain  text not null,
+  type    text         ,
   primary key(company, domain)
 );
 

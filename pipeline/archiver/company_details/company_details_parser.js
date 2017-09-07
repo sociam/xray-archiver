@@ -14,5 +14,5 @@ fs.readFile('./company_details.json', (err, data) => {
     logger.debug(`${Object.keys(companies).length} companies to log`);
     Object.keys(companies).map((key) =>
         companies[key].domains.map((domain) =>
-            db.insertCompanyDomain(key, domain)));
+            db.insertCompanyDomain(key, domain, companies[key].typetag)));
 });

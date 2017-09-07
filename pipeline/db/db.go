@@ -403,7 +403,7 @@ func GetGenreHostAverages() ([]GenreStats, error) {
 // GetCompanies returns a list of companies.
 func GetCompanies(num, start int) ([]Company, error) {
 	rows, err := db.Query("SELECT * FROM companies LIMIT $1 OFFSET $2", num, start)
-	if rows != nil {
+	if rows != nil {z
 		defer rows.Close()
 	}
 	if err != nil {

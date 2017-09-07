@@ -180,7 +180,7 @@ class DB {
     /**
      * 
      */
-    async insertCompanyDomain(company, domain) {
+    async insertCompanyDomain(company, domain, type) {
         logger.debug(`Inserting - Company: ${company}  Domain: ${domain}`);
         try {
             logger.debug(`Checking if Company: ${company} & Domain: ${domain} already exist.`);
@@ -190,7 +190,7 @@ class DB {
                 return;
             }
             logger.debug('Company and Domain don\'t exist. Inserting now.');
-            await this.query('INSERT INTO company_domains VALUES($1, $2)', [company, domain]);
+            await this.query('INSERT INTO company_domains VALUES($1, $2, $3)', [company, domain, type]);
         } catch (err) {
             logger.err(`Error Occured: ${err}`);
         } finally {
