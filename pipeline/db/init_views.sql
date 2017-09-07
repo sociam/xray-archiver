@@ -41,10 +41,10 @@ create table distinct_app_hosts as
 ---------------------------------------------------------------------------------------------------
 drop table if exists host_app_coverage;
 create table host_app_coverage as
-  select hosts, count(*) from distinct_app_hosts1
+  select hosts, count(*) from distinct_app_hosts
     group by hosts;
 
-grant select on host domains to apiserv;
+grant select on host_app_coverage to apiserv;
 
 ---------------------------------------------------------------------------------------------------
 -- Table of all possible Host names and a heuristic regex for the domain of the host.
@@ -117,6 +117,8 @@ create table company_app_coverage as
   ) as type_app_counts;
  grant select on app_type_coverage to apiserv;
 
+
+commit;
 ---------------------------------------------------------------------------------------------------
 -- Other Views. might be useful at somepoint. but they turned out to be too slow.
 ---------------------------------------------------------------------------------------------------
@@ -164,4 +166,3 @@ create table company_app_coverage as
 
 -- grant select on all_hosts, known_hosts, host_freq, known_host_freq to apiserv;
 
-commit;
