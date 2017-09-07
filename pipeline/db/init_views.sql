@@ -62,7 +62,7 @@ grant select on host_domains to apiserv;
 ---------------------------------------------------------------------------------------------------
 drop table if exists host_domain_companies;
 create table host_domain_companies as 
-  select distinct d.hosts, d.domain, d.domain_plus, coalesce(c.company, 'unknown') as company
+  select distinct d.hosts, d.domain, d.domain_plus, coalesce(c.company, 'unknown') as company, c.type
     from host_domains d left outer join company_domains c
       on( d.domain = c.domain 
          or d.domain_plus = c.domain
@@ -80,7 +80,7 @@ grant select on host_domain_companies to apiserv;
 ---------------------------------------------------------------------------------------------------
 drop table if exists distinct_app_companies;
 create table distinct_app_companies as
-  select distinct hdc.company, dah.id from host_domain_companies hdc, distinct_app_hosts dah
+  select distinct hdc.company, hdc.type, dah.id from host_domain_companies hdc, distinct_app_hosts dah
   where hdc.hosts = dah.hosts;
 
 ---------------------------------------------------------------------------------------------------
@@ -108,13 +108,13 @@ create table company_app_coverage as
 -- SUMMARY STATISTICS VIEWS
 
 -- Average number of hosts for each genre
-create view genre_host_averages as
-  select category, host_count, app_count, host_count/app_count::float as host_avg
-  from (select p.genre as category, sum(array_length(v.hosts,1)) as host_count, count(p.genre) as app_count
-          from playstore_apps p inner join app_hosts v on (p.id = v.id)
-            group by genre) as genre_freq;
+-- create view genre_host_averages as
+--   select category, host_count, app_count, host_count/app_count::float as host_avg
+--   from (select p.genre as category, sum(array_length(v.hosts,1)) as host_count, count(p.genre) as app_count
+--           from playstore_apps p inner join app_hosts v on (p.id = v.id)
+--             group by genre) as genre_freq;
 
-grant select on genre_host_averages to apiserv;
+-- grant select on genre_host_averages to apiserv;
 
 -- All Hosts
 -- create view all_hosts as
