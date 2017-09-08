@@ -19,6 +19,19 @@ create table genre_host_averages as
 grant select on genre_host_averages to apiserv;
 
 ---------------------------------------------------------------------------------------------------
+-- Standard Deviation of hosts found in each genre
+---------------------------------------------------------------------------------------------------
+create view genre_host_variance as
+  select squared_sum/n-1 
+  from (
+    select sum(diff_squared) as squared_sum
+  from (
+    select ((host_avg - 20.391152325979)*(host_avg-20.391152325979)) as diff_squared
+  from genre_host_averages) as sums) as sum ,(
+    select count(*) as n
+  from genre_host_averages) as count;
+
+---------------------------------------------------------------------------------------------------
 -- table of distinct hosts 
 ---------------------------------------------------------------------------------------------------
 drop table if exists distinct_hosts;
