@@ -127,6 +127,7 @@ select company, company_count, genre, genre_total, (company_count/genre_total::f
     group by p.genre, dac.company, genre_totals.genre_total
 ) as totals;
 
+grant select on company_genre_coverage to apiserv;
 ---------------------------------------------------------------------------------------------------
 -- Counts of the amount of apps that feature a host name tied to a company.
 --
