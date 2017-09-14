@@ -8,7 +8,7 @@ begin;
 --
 -- Features in the "genre_host_averages" API Endpoint.
 ---------------------------------------------------------------------------------------------------
-drop table if exists genre_host_averages;
+drop table if exists genre_host_averages cascade;
 create table genre_host_averages as
   select category, host_count, app_count, host_count/app_count::float as host_avg from (
     select p.genre as category, sum(array_length(v.hosts,1)
@@ -17,6 +17,19 @@ create table genre_host_averages as
     group by genre) as genre_freq;
 
 grant select on genre_host_averages to apiserv;
+
+---------------------------------------------------------------------------------------------------
+--  Counts by Genre
+--
+--  Todo -- API Endpoint.
+--
+---------------------------------------------------------------------------------------------------
+drop table if exists genre_counts;
+create table genre_counts as
+  select genre, count(*) from playstore_apps p inner join app_versions v on (p.id = v.id) 
+    where v.analyzed = true
+    group by genre;
+grant select on genre_counts to apiserv;
 
 ---------------------------------------------------------------------------------------------------
 -- Standard Deviation of hosts found in each genre
@@ -82,7 +95,6 @@ create table host_domain_companies as
          or lower(d.hosts) ilike '%' || lower(c.domain) || '%');
 
 grant select on host_domain_companies to apiserv;
-
 ---------------------------------------------------------------------------------------------------
 -- a mapping of hosts-app pairs to host-company pairs. if an app sends to a company, only
 -- marked once.
@@ -96,6 +108,24 @@ create table distinct_app_companies as
   select distinct hdc.company, hdc.type, dah.id from host_domain_companies hdc, distinct_app_hosts dah
   where hdc.hosts = dah.hosts;
 
+---------------------------------------------------------------------------------------------------
+--
+--  genre company coverage.
+--
+--
+---------------------------------------------------------------------------------------------------
+
+drop table if exists company_genre_coverage;
+create table company_genre_coverage as 
+select company, company_count, genre, genre_total, (company_count/genre_total::float)*100 as coverage_pct from (
+  select  count(dac.company) as company_count, dac.company, p.genre, genre_totals.genre_total from distinct_app_companies dac, playstore_apps p, app_versions v, (
+    select count(*) as genre_total, genre from  playstore_apps p, app_versions v
+      where v.id  = p.id and v.analyzed = true
+      group by genre
+  ) as genre_totals
+    where dac.id = v.id and dac.id = p.id and v.analyzed = true and genre_totals.genre = p.genre
+    group by p.genre, dac.company, genre_totals.genre_total
+) as totals;
 
 ---------------------------------------------------------------------------------------------------
 -- Counts of the amount of apps that feature a host name tied to a company.
@@ -129,6 +159,21 @@ create table company_app_coverage as
           order by app_count using >
   ) as type_app_counts;
  grant select on app_type_coverage to apiserv;
+
+
+
+-----
+-- company per app variance
+-----
+create table company_per_app_varianvce as
+select diffSum/count as variance, diffSum, count from (
+  select sum(diff) as diffSum 
+  from (
+       select ((count-6.98820683086)*(count-6.98820683086)) as diff from (
+          select count(*)
+          from distinct_app_companies group by id ) as counts ) as diffs) as diffsums,
+(select count (*) as count from (select distinct id from distinct_app_companies) as ids
+) as counts;
 
 
 commit;
