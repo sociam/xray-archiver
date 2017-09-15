@@ -664,6 +664,44 @@ func extendWhereQuery(querystr *string, colName string, numParam *int, arr *[]st
 // 	//result.App
 // }
 
+func GetTitleMatches(onlyAnalyzed bool, appStore string,
+	limit int, offset int, titles []string) ([]int64, error) {
+
+	anyPatternFormat(&titles)
+
+	//TOOD: db join for only only latest to get through
+	rows, err := db.Query("SELECT id FROM $1 WHERE title ILIKE ANY(array[$2'])LIMIT $3 OFFSET $4",
+		appStore,
+		pq.Array(&titles),
+		limit,
+		offset)
+
+	if rows != nil {
+		defer rows.Close()
+	}
+	if err != nil {
+		return []int64{}, err
+	}
+
+	ret := make([]int64, 0, limit)
+
+	for i := 0; rows.Next(); i++ {
+		rows.Scan(&ret[i])
+	}
+
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+		util.Log.Err("Databse err", rows.Err())
+		return []int64{}, rows.Err()
+	}
+
+	return ret, nil
+}
+
+func GetById(onlyAnalyzed bool, appStore string,
+	limit int, offset int, titles []int) {
+
+}
+
 // QueryAll depricates all of dean's queries.
 func QueryAll(
 	onlyAnalyzed bool, appStore string, limit string, offset string, developers []string,
