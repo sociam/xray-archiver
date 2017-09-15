@@ -392,8 +392,6 @@ func GetCompanyGenreCoverage() ([]CompanyGenreCoverage, error) {
 			&row.CoveragePct)
 		results = append(results, row)
 	}
-	util.Log.Debug("rows scanned")
-	
 	util.Log.Debug("Rows Scanned")
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
 		util.Log.Err("Error Scanning Rows ", rows.Err())

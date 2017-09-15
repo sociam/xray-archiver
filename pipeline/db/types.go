@@ -45,7 +45,7 @@ type GenreStats struct {
 }
 
 // CompanyCoverage represents a row from the company_app_coverage statistics
-// table found in the XRay DB. 
+// table found in the XRay DB.
 type CompanyCoverage struct {
 	Company     string  `json:"company"`
 	Type        string  `json:"type"`
