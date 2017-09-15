@@ -369,6 +369,40 @@ func GetAppCompanyFreq() ([]CompanyCoverage, error) {
 	return results, nil
 }
 
+// GetCompanyGenreCoverage queries DB for stats.
+func GetCompanyGenreCoverage() ([]CompanyGenreCoverage, error) {
+	rows, err := db.Query("SELECT * FROM company_genre_coverage")
+	results := []CompanyGenreCoverage{}
+	if rows != nil {
+		defer rows.Close()
+	}
+	if err != nil {
+		util.Log.Err("Error in selecting from company_genre_coverage")
+		return results, err
+	}
+	util.Log.Debug("Scanning Rows for company_genre_coverage")
+
+	for i := 0; rows.Next(); i++ {
+		row := CompanyGenreCoverage{}
+		rows.Scan(
+			&row.Company,
+			&row.CompanyCount,
+			&row.Genre,
+			&row.GenreTotal,
+			&row.CoveragePct)
+		results.append(results, row)
+	}
+	util.Log.Debug("rows scanned")
+	
+	util.Log.Debug("Rows Scanned")
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+		util.Log.Err("Error Scanning Rows ", rows.Err())
+		return []CompanyGenreCoverage{}, err
+	}
+	util.Log.Debug("Returning Rows")
+	return results, nil
+}
+
 // GetAppTypeFreq Querys the DB for rows in the app_types_coverage stats table
 func GetAppTypeFreq() ([]CompanyTypeCoverage, error) {
 	rows, err := db.Query("SELECT * FROM app_type_coverage")

@@ -125,6 +125,7 @@ select company, company_count, genre, genre_total, (company_count/genre_total::f
   ) as genre_totals
     where dac.id = v.id and dac.id = p.id and v.analyzed = true and genre_totals.genre = p.genre
     group by p.genre, dac.company, genre_totals.genre_total
+    order by p.genre, company_count
 ) as totals;
 
 grant select on company_genre_coverage to apiserv;

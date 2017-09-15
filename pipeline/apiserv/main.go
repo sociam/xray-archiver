@@ -183,6 +183,27 @@ func genreHostAvgEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func companyGenreCoverageEndpoint() {
+	mime := r.Header.Get("Accept")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	util.Log.Debug("Genre Host Requst...")
+	//Check input
+	if r.Method == "POST" || r.Method == "GET" {
+		mime = mimeCheck(mime)
+		if mime == "" {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+			return
+		}
+		//alts, err := db.GetAltApps(appID)
+		alts, err := db.GetCompanyGenreCoverage()
+		if err != nil {
+			writeErr(w, mime, http.StatusBadRequest, "Fail", "For some reason we couldn't fetch the stats table you requested.")
+			return
+		}
+		writeData(w, mime, http.StatusOK, alts)
+	}
+}
+
 func appCompanyFreqEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -553,6 +574,7 @@ func main() {
 	http.HandleFunc("/api/stats/genre_host_averages", genreHostAvgEndpoint)
 	http.HandleFunc("/api/stats/app_company_freq", appCompanyFreqEndpoint)
 	http.HandleFunc("/api/stats/app_type_freq", appTypeFreqEndpoint)
+	http.HandleFunc("/api/stats/company_genre_coverage", companyGenreCoverageEndpoint)
 	http.HandleFunc("/api/hosts", fetchHosts)
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
