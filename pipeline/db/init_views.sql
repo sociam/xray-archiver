@@ -72,6 +72,7 @@ create table host_app_coverage as
 
 grant select on host_app_coverage to apiserv;
 
+
 ---------------------------------------------------------------------------------------------------
 -- Table of all possible Host names and a heuristic regex for the domain of the host.
 ---------------------------------------------------------------------------------------------------
@@ -95,6 +96,7 @@ create table host_domain_companies as
          or lower(d.hosts) ilike '%' || lower(c.domain) || '%');
 
 grant select on host_domain_companies to apiserv;
+
 ---------------------------------------------------------------------------------------------------
 -- a mapping of hosts-app pairs to host-company pairs. if an app sends to a company, only
 -- marked once.
@@ -129,6 +131,7 @@ select company, company_count, genre, genre_total, (company_count/genre_total::f
 ) as totals;
 
 grant select on company_genre_coverage to apiserv;
+
 ---------------------------------------------------------------------------------------------------
 -- Counts of the amount of apps that feature a host name tied to a company.
 --
@@ -179,7 +182,7 @@ select diffSum/count as variance, diffSum, count from (
 
 
 commit;
----------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
 -- Other Views. might be useful at somepoint. but they turned out to be too slow.
 ---------------------------------------------------------------------------------------------------
 

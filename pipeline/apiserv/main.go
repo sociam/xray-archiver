@@ -242,6 +242,7 @@ func appTypeFreqEndpoint(w http.ResponseWriter, r *http.Request) {
 			writeErr(w, mime, http.StatusBadRequest, "Fail", "For some reason we couldn't fetch the stats table you requested.")
 			return
 		}
+
 		writeData(w, mime, http.StatusOK, alts)
 	}
 }
