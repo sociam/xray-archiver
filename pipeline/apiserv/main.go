@@ -183,7 +183,7 @@ func genreHostAvgEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func companyGenreCoverageEndpoint() {
+func companyGenreCoverageEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	util.Log.Debug("Genre Host Requst...")

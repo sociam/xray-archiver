@@ -54,13 +54,13 @@ type CompanyCoverage struct {
 	CompanyFreq float64 `json:"companyFreq"`
 }
 
-// Stats for company Genre Coverage...
-type CompanyGenreCoverage {
-	Company      string  `company`
-	CompanyCount int64   `companyCount`
-	Genre        string  `json:genre`
-	GenreTotal   int64   `json:genreTotal`
-	CoveragePct  float64 `json:companyPct`
+// CompanyGenreCoverage Stats for company Genre Coverage.
+type CompanyGenreCoverage struct {
+	Company      string  `json:"company"`
+	CompanyCount int64   `json:"companyCount"`
+	Genre        string  `json:"genre"`
+	GenreTotal   int64   `json:"genreTotal"`
+	CoveragePct  float64 `json:"companyPct"`
 }
 
 

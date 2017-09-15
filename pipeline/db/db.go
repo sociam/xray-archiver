@@ -390,7 +390,7 @@ func GetCompanyGenreCoverage() ([]CompanyGenreCoverage, error) {
 			&row.Genre,
 			&row.GenreTotal,
 			&row.CoveragePct)
-		results.append(results, row)
+		results = append(results, row)
 	}
 	util.Log.Debug("rows scanned")
 	
