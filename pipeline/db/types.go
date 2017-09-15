@@ -63,7 +63,6 @@ type CompanyGenreCoverage struct {
 	CoveragePct  float64 `json:"companyPct"`
 }
 
-
 // CompanyTypeCoverage represents a row from the app_type_coverage statistics
 // table found in the XRay DB
 type CompanyTypeCoverage struct {
