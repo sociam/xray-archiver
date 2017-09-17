@@ -722,7 +722,7 @@ func QueryAll(
 	// 	"FULL OUTER JOIN app_perms p ON (a.id = p.id) " +
 	// 	"FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) " +
 
-	querystr = "SELECT" +
+	querystr = "SELECT " +
 		"id, title, summary, description, store_url, price, free, rating, " +
 		"num_reviews, genre, family_genre, min_installs, max_installs, updated, " +
 		"android_ver, content_rating, recent_changes, app, store, region, " +
