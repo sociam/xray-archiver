@@ -738,12 +738,12 @@ func QueryAll(
 	//TODO: future me will fix this doggyness later... however considering the horrible *quick*query a better refactor is needed...
 
 	if len(titles) > 0 {
-		extendWhereQuery(&querystr, "a.title ", &numParam, &titles, &hasPrev)
+		extendWhereQuery(&querystr, "title ", &numParam, &titles, &hasPrev)
 		args = append(args, pq.Array(&titles))
 	}
 
 	if len(developers) > 0 {
-		extendWhereQuery(&querystr, "d.name ", &numParam, &developers, &hasPrev)
+		extendWhereQuery(&querystr, "name ", &numParam, &developers, &hasPrev)
 		args = append(args, pq.Array(&developers))
 	}
 
@@ -756,7 +756,7 @@ func QueryAll(
 			hasPrev = true
 		}
 
-		newQuery := "v.app IN( "
+		newQuery := "app IN( "
 
 		for i := numParam; i < numParam+len(genres)-1; numParam++ {
 			newQuery += "$" + strconv.Itoa(i) + ", "
@@ -781,7 +781,7 @@ func QueryAll(
 			hasPrev = true
 		}
 
-		newQuery := "v.app IN( "
+		newQuery := "app IN( "
 
 		for i := numParam; i < numParam+len(appIDs)-1; numParam++ {
 			newQuery += "$" + strconv.Itoa(i) + ", "
@@ -807,7 +807,7 @@ func QueryAll(
 			hasPrev = true
 		}
 
-		newQuery := "a.title ILIKE ANY($" + strconv.Itoa(numParam) + ") "
+		newQuery := "title ILIKE ANY($" + strconv.Itoa(numParam) + ") "
 		querystr += newQuery
 
 		startsWithPatternFormat(&startsWith)
@@ -822,12 +822,12 @@ func QueryAll(
 	var shouldAnalyze string
 
 	if onlyAnalyzed {
-		shouldAnalyze = "AND v.analyzed = true "
+		shouldAnalyze = "AND analyzed = true "
 	} else {
 		shouldAnalyze = ""
 	}
 
-	querystr += shouldAnalyze + " ORDER BY a.max_installs using> "
+	querystr += shouldAnalyze + " ORDER BY max_installs using> "
 	querystr += "LIMIT $" + strconv.Itoa(numParam) + " "
 	numParam++
 	querystr += "OFFSET $" + strconv.Itoa(numParam)
