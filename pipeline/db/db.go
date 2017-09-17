@@ -729,8 +729,8 @@ func QueryAll(
 		"android_ver, content_rating, recent_changes, app, store, region, " +
 		"version, icon, analyzed, email, name, store_site, site, hosts, permissions, " +
 		"packages " +
-		"FROM  all_apps_data" +
-		"WHERE"
+		"FROM  all_apps_data " +
+		"WHERE "
 
 	var args []interface{}
 
