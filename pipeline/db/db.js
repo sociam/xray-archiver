@@ -172,7 +172,7 @@ class DB {
      */
     async getStaleSearchTerms() {
         logger.debug('Fetching Search Terms');
-        const res = await this.query('SELECT search_term FROM search_terms WHERE age(last_searched) > interval \'1 month\'');
+        const res = await this.query('SELECT search_term FROM search_terms WHERE age(last_searched) > interval \'1 month\' limit 10');
         logger.debug(`${res.rows.length} terms fetched`);
         return res.rows;
     }
