@@ -170,9 +170,9 @@ class DB {
     /**
      *  Query the search_terms table to get a list of terms that are stale
      */
-    async getStaleSearchTerms() {
+    async getStaleSearchTerms(amount) {
         logger.debug('Fetching Search Terms');
-        const res = await this.query('SELECT search_term FROM search_terms WHERE age(last_searched) > interval \'1 month\' limit 10');
+        const res = await this.query('SELECT search_term FROM search_terms WHERE age(last_searched) > interval \'1 month\' limit $1', [amount]);
         logger.debug(`${res.rows.length} terms fetched`);
         return res.rows;
     }
