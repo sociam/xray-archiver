@@ -665,13 +665,13 @@ func GetAltApps(appID string) ([]AltApp, error) {
 	return result, nil
 }
 
-func anyPatternFormat(arr *[]string) {
+func arrRegexAnyFormat(arr *[]string) {
 	for i, v := range *arr {
 		(*arr)[i] = "%" + v + "%"
 	}
 }
 
-func startsWithPatternFormat(arr *[]string) {
+func startsWithRegexFormat(arr *[]string) {
 	for i, v := range *arr {
 		(*arr)[i] = v + "%"
 	}
@@ -693,7 +693,7 @@ func extendWhereQuery(querystr *string, colName string, numParam *int, arr *[]st
 	newQuery := colName + "ILIKE ANY($" + strconv.Itoa(*numParam) + ") "
 	*querystr += newQuery
 
-	anyPatternFormat(arr)
+	arrRegexAnyFormat(arr)
 
 	*numParam++
 }
@@ -704,7 +704,8 @@ func QueryAll(
 	genres []string, permissions []string, appIDs []string, titles []string, startsWith []string,
 ) ([]AppVersion, error) {
 
-	var querystr string
+	var queryStr string
+	//TODO: Left as join will be built later
 	// querystr = "SELECT " +
 	// 	"a.id, a.title, a.summary, a.description, a.store_url, a.price, a.free, a.rating, " +
 	// 	"a.num_reviews, a.genre, a.family_genre, a.min_installs, a.max_installs, a.updated, " +
@@ -718,7 +719,7 @@ func QueryAll(
 	// 	"FULL OUTER JOIN app_perms p ON (a.id = p.id) " +
 	// 	"FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) " +
 
-	querystr = "SELECT " +
+	queryStr = "SELECT " +
 		"id, title, summary, description, store_url, price, free, rating, " +
 		"num_reviews, genre, family_genre, min_installs, max_installs, updated, " +
 		"android_ver, content_rating, recent_changes, app, store, region, " +
@@ -731,15 +732,18 @@ func QueryAll(
 
 	numParam := 1
 	hasPrev := false
-	//TODO: future me will fix this doggyness later... however considering the horrible *quick*query a better refactor is needed...
+
+	//TODO: future me will fix this later... however considering the horrible *quick*query a better refactor is needed...
+	//This better refcator will sepeate each select as it's own component. Get ids then get where matching. Would require
+	//multiple joins but if the views are setup should not matter
 
 	if len(titles) > 0 {
-		extendWhereQuery(&querystr, "title ", &numParam, &titles, &hasPrev)
+		extendWhereQuery(&queryStr, "title ", &numParam, &titles, &hasPrev)
 		args = append(args, pq.Array(&titles))
 	}
 
 	if len(developers) > 0 {
-		extendWhereQuery(&querystr, "name ", &numParam, &developers, &hasPrev)
+		extendWhereQuery(&queryStr, "name ", &numParam, &developers, &hasPrev)
 		args = append(args, pq.Array(&developers))
 	}
 
@@ -747,7 +751,7 @@ func QueryAll(
 		util.Log.Debug("Attempting to query params %s \n", genres)
 
 		if hasPrev {
-			querystr += "AND "
+			queryStr += "AND "
 		} else {
 			hasPrev = true
 		}
@@ -765,14 +769,14 @@ func QueryAll(
 		util.Log.Debug("Adding arg ", genres[len(genres)-1])
 		args = append(args, genres[len(genres)-1])
 
-		querystr += newQuery
+		queryStr += newQuery
 	}
 
 	if len(appIDs) > 0 {
 		util.Log.Debug("Attempting to query params %s \n", appIDs)
 
 		if hasPrev {
-			querystr += "AND "
+			queryStr += "AND "
 		} else {
 			hasPrev = true
 		}
@@ -790,7 +794,7 @@ func QueryAll(
 		util.Log.Debug("Adding arg ", appIDs[len(appIDs)-1])
 		args = append(args, appIDs[len(appIDs)-1])
 
-		querystr += newQuery
+		queryStr += newQuery
 
 	}
 
@@ -798,15 +802,15 @@ func QueryAll(
 		util.Log.Debug("Attempting to query params %s \n", startsWith)
 
 		if hasPrev {
-			querystr += "AND "
+			queryStr += "AND "
 		} else {
 			hasPrev = true
 		}
 
 		newQuery := "title ILIKE ANY($" + strconv.Itoa(numParam) + ") "
-		querystr += newQuery
+		queryStr += newQuery
 
-		startsWithPatternFormat(&startsWith)
+		startsWithRegexFormat(&startsWith)
 
 		numParam++
 
@@ -823,14 +827,14 @@ func QueryAll(
 		shouldAnalyze = ""
 	}
 
-	querystr += shouldAnalyze + " ORDER BY max_installs using> "
-	querystr += "LIMIT $" + strconv.Itoa(numParam) + " "
+	queryStr += shouldAnalyze + " ORDER BY max_installs using> "
+	queryStr += "LIMIT $" + strconv.Itoa(numParam) + " "
 	numParam++
-	querystr += "OFFSET $" + strconv.Itoa(numParam)
+	queryStr += "OFFSET $" + strconv.Itoa(numParam)
 
-	fmt.Printf("%s %v\n", querystr, args)
+	fmt.Printf("%s %v\n", queryStr, args)
 
-	rows, err := db.Query(querystr, args...)
+	rows, err := db.Query(queryStr, args...)
 
 	if rows != nil {
 		defer rows.Close()
