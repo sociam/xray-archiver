@@ -339,7 +339,6 @@ func GetAppCompanyFreq() ([]CompanyCoverage, error) {
 			&row.TotalApps,
 			&row.CompanyFreq)
 		results = append(results, row)
-		//util.Log.Debug("Row Scanned: " + fmt.Sprint(i))
 	}
 	util.Log.Debug("Rows Scanned")
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
@@ -403,7 +402,6 @@ func GetAppTypeFreq() ([]CompanyTypeCoverage, error) {
 			&row.TotalApps,
 			&row.TypeFreq)
 		results = append(results, row)
-		//util.Log.Debug("Row Scanned: " + fmt.Sprint(i))
 	}
 	util.Log.Debug("Rows Scanned")
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
@@ -435,7 +433,6 @@ func GetGenreHostAverages() ([]GenreStats, error) {
 			&row.AppCount,
 			&row.GenreAvg)
 		results = append(results, row)
-		//util.Log.Debug("Row Scanned: " + fmt.Sprint(i))
 	}
 	util.Log.Debug("Rows Scanned")
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
@@ -513,34 +510,6 @@ func GetApps(num, start int) ([]App, error) {
 		} else {
 			ret = append(ret, app)
 		}
-	}
-
-	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
-		util.Log.Err("Databse err", rows.Err())
-		return []App{}, rows.Err()
-	}
-
-	return ret, nil
-}
-
-// GetLatestApps returns a list of the newest app versions.
-//
-// TODO: THIS IS WRONG.
-func GetLatestApps(num, start int) ([]App, error) {
-	//TOOD: db join for only only latest to get through
-	rows, err := db.Query("SELECT * FROM apps LIMIT $1 OFFSET $2", num, start)
-	if rows != nil {
-		defer rows.Close()
-	}
-	if err != nil {
-		return []App{}, err
-	}
-
-	ret := make([]App, 0, num)
-
-	for i := 0; rows.Next(); i++ {
-		ret = append(ret, App{})
-		rows.Scan(&ret[i].ID, pq.Array(&ret[i].Vers))
 	}
 
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {

@@ -86,7 +86,7 @@ func analyze(app *util.App) error {
 	} else {
 		fmt.Printf("App uses reflect: %v\n", app.UsesReflect)
 
-		err = db.SetReflect(app.DBID, app.UsesReflect)
+		err = db.SetAppReflect(app.DBID, app.UsesReflect)
 		if err != nil {
 			fmt.Printf("Error writing reflect usage to DB: %s\n", err.Error())
 		}
