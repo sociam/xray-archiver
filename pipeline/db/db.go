@@ -665,13 +665,13 @@ func GetAltApps(appID string) ([]AltApp, error) {
 	return result, nil
 }
 
-func arrRegexAnyFormat(arr *[]string) {
+func asPGAny(arr *[]string) {
 	for i, v := range *arr {
 		(*arr)[i] = "%" + v + "%"
 	}
 }
 
-func startsWithRegexFormat(arr *[]string) {
+func asPGStartsWith(arr *[]string) {
 	for i, v := range *arr {
 		(*arr)[i] = v + "%"
 	}
