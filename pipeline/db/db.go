@@ -693,7 +693,7 @@ func extendWhereQuery(querystr *string, colName string, numParam *int, arr *[]st
 	newQuery := colName + "ILIKE ANY($" + strconv.Itoa(*numParam) + ") "
 	*querystr += newQuery
 
-	arrRegexAnyFormat(arr)
+	asPGAny(arr)
 
 	*numParam++
 }
@@ -810,7 +810,7 @@ func QueryAll(
 		newQuery := "title ILIKE ANY($" + strconv.Itoa(numParam) + ") "
 		queryStr += newQuery
 
-		startsWithRegexFormat(&startsWith)
+		asPGStartsWith(&startsWith)
 
 		numParam++
 
