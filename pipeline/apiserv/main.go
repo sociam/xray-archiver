@@ -3,11 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/sociam/xray-archiver/pipeline/db"
 	"github.com/sociam/xray-archiver/pipeline/util"
@@ -58,6 +60,35 @@ func writeData(w http.ResponseWriter, mime string, status int, data interface{})
 		util.Log.Err("error writing data", err1)
 	}
 }
+
+// //yeah, a map of string to some data is fine but the array setup? check for empty? or null?
+// func writeMultiSuccessData(w http.ResponseWriter, mime string, data map[string][]interface{}) {
+// 	w.WriteHeader(http.StatusMultiStatus)
+// 	var err1 error
+// 	w.Header().Set("Content-Type", mime)
+// 	switch mime {
+// 	case "application/nahmate":
+// 		err1 = util.WriteDEAN(w, data)
+// 	case "text/plain":
+// 		_, err1 = w.Write(toBytes(data))
+// 	default:
+// 		w.Header().Set("Content-Type", "application/json")
+// 		fallthrough
+// 	case "application/json":
+// 		//if array empty failed the lookup... can not have a domain without a host
+// 		// for _, i := range data {
+// 		// 	if len(i) > 1
+// 		// 		response := fmt.print(data, http.StatusOK)
+// 		// 		err1 = util.WriteJSON(w, response) //Need to append into data key... still want key on outside
+// 		// 	else
+// 		// 		err1 = util.WriteJSON(w,data)
+// 		// }
+// 	}
+// 	if err1 != nil {
+// 		util.Log.Err("error writing data", err1)
+// 	}
+
+// }
 
 func mimeCheck(mime string) string {
 	mimes := strings.Split(mime, ",")
@@ -129,6 +160,91 @@ func parseOffset(num string) (val string, oops string, err error) {
 	}
 
 	return num, "", err
+}
+
+func genreHostAvgEndpoint(w http.ResponseWriter, r *http.Request) {
+	mime := r.Header.Get("Accept")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	util.Log.Debug("Genre Host Requst...")
+	//Check input
+	if r.Method == "POST" || r.Method == "GET" {
+		mime = mimeCheck(mime)
+		if mime == "" {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+			return
+		}
+		//alts, err := db.GetAltApps(appID)
+		alts, err := db.GetGenreHostAverages()
+		if err != nil {
+			writeErr(w, mime, http.StatusBadRequest, "Fail", "For some reason we couldn't fetch the stats table you requested.")
+			return
+		}
+		writeData(w, mime, http.StatusOK, alts)
+	}
+}
+
+func companyGenreCoverageEndpoint(w http.ResponseWriter, r *http.Request) {
+	mime := r.Header.Get("Accept")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	util.Log.Debug("Genre Host Requst...")
+	//Check input
+	if r.Method == "POST" || r.Method == "GET" {
+		mime = mimeCheck(mime)
+		if mime == "" {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+			return
+		}
+		//alts, err := db.GetAltApps(appID)
+		alts, err := db.GetCompanyGenreCoverage()
+		if err != nil {
+			writeErr(w, mime, http.StatusBadRequest, "Fail", "For some reason we couldn't fetch the stats table you requested.")
+			return
+		}
+		writeData(w, mime, http.StatusOK, alts)
+	}
+}
+
+func appCompanyFreqEndpoint(w http.ResponseWriter, r *http.Request) {
+	mime := r.Header.Get("Accept")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	util.Log.Debug("Genre Host Requst...")
+	//Check input
+	if r.Method == "POST" || r.Method == "GET" {
+		mime = mimeCheck(mime)
+		if mime == "" {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+			return
+		}
+		//alts, err := db.GetAltApps(appID)
+		alts, err := db.GetAppCompanyFreq()
+		if err != nil {
+			writeErr(w, mime, http.StatusBadRequest, "Fail", "For some reason we couldn't fetch the stats table you requested.")
+			return
+		}
+		writeData(w, mime, http.StatusOK, alts)
+	}
+}
+
+func appTypeFreqEndpoint(w http.ResponseWriter, r *http.Request) {
+	mime := r.Header.Get("Accept")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	util.Log.Debug("Genre Host Requst...")
+	//Check input
+	if r.Method == "POST" || r.Method == "GET" {
+		mime = mimeCheck(mime)
+		if mime == "" {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+			return
+		}
+		//alts, err := db.GetAltApps(appID)
+		alts, err := db.GetAppTypeFreq()
+		if err != nil {
+			writeErr(w, mime, http.StatusBadRequest, "Fail", "For some reason we couldn't fetch the stats table you requested.")
+			return
+		}
+
+		writeData(w, mime, http.StatusOK, alts)
+	}
 }
 
 func fetchIDEndpoint(w http.ResponseWriter, r *http.Request) {
@@ -269,6 +385,9 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 			case "appId":
 				appIDs = val
 
+			case "nocache":
+				util.Log.Debug("No Cache flag. Good Stuff.")
+
 			default:
 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "passed form values did not match params", name)
 				return
@@ -340,12 +459,110 @@ func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// func getHostLoci(w http.ResponseWriter, r *http.Request) {
+// 	util.Log.Debug("Host lookup requested")
+// 	mime := r.Header.Get("Accept")
+// 	if r.Method == "POST" || r.Method == "GET" {
+// 		mime = mimeCheck(mime)
+// 		if mime == "" {
+// 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+// 			return
+// 		}
+
+// 		split := strings.Split(r.URL.Path, "/")
+
+// 		if len(split) < 3 {
+// 			writeErr(w, mime, http.StatusBadRequest, "bad_hosts", "Bad app slashes specified")
+// 			return
+// 		}
+
+// 		hostname := split[3]
+// 		util.Log.Debug("Attempting to lookup hosts: ", hostname)
+// 		geoip, err := util.GetHostGeoIP(hostname)
+
+// 		if err != nil {
+// 			writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
+// 			return
+// 		}
+
+// 		writeData(w, mime, http.StatusOK, geoip)
+// 	}
+// }
+
+func fetchHosts(w http.ResponseWriter, r *http.Request) {
+	mime := r.Header.Get("Accept")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	if r.Method == "POST" || r.Method == "GET" {
+		mime = mimeCheck(mime)
+		if mime == "" {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+			return
+		}
+
+		util.Log.Debug("Parsing Form Params.")
+		//need to take a hosts list of []string
+		err := r.ParseForm()
+		if err != nil {
+			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
+			return
+		}
+
+		hostsParams := r.Form["hosts"][0]
+		util.Log.Debug("Raw host params: %s\n", hostsParams)
+
+		hosts := strings.Split(hostsParams, ",")
+		util.Log.Debug("Checking over hosts: %s\n", hosts)
+
+		hostToGeoip := map[string][]util.GeoIPInfo{}
+
+		wg := sync.WaitGroup{}
+		for i := range hosts {
+			j := i
+			util.Log.Debug("Getting host geo ip: %s\n", hosts[i])
+			wg.Add(1)
+			go func() {
+				var geoip []util.GeoIPInfo
+
+				geoip, err = util.GetHostGeoIP(util.Cfg.GeoIPEndpoint, hosts[j])
+
+				if err != nil {
+					// TODO: immedoiately fail? change status to accepted 202 and 200 and
+					// BADREQUEST when all is well with all hosts.
+
+					// immediately failing is impossible with parallelization (or very
+					// hard) and I don't think we should use http statuses in a non-standard way -sauyon
+
+					// writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
+					util.Log.Notice("Host %s could not be found: %s", hosts[j], err.Error())
+					hostToGeoip[hosts[j]] = nil
+				} else {
+					hostToGeoip[hosts[j]] = geoip
+				}
+				wg.Done()
+			}()
+		}
+
+		wg.Wait()
+
+		writeData(w, mime, http.StatusOK, hostToGeoip)
+	}
+
+}
+
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
 var port = flag.Uint("port", 8118, "Port to serve on.")
 
 func init() {
-	util.LoadCfg(*cfgFile, util.APIServ)
-	db.Open(util.Cfg, true)
+	var err error
+	err = util.LoadCfg(*cfgFile, util.APIServ)
+	if err != nil {
+		log.Fatalf("Failed to read config: %s", err.Error())
+	}
+	err = db.Open(util.Cfg, true)
+	if err != nil {
+		log.Fatalf("Failed to open a connection to the database: %s", err.Error())
+	}
 }
 
 func main() {
@@ -355,5 +572,10 @@ func main() {
 	http.HandleFunc("/api/apps", appsEndpoint)
 	http.HandleFunc("/api/alt/", altAppsEndpoint)
 	http.HandleFunc("/api/fetch", fetchIDEndpoint)
+	http.HandleFunc("/api/stats/genre_host_averages", genreHostAvgEndpoint)
+	http.HandleFunc("/api/stats/app_company_freq", appCompanyFreqEndpoint)
+	http.HandleFunc("/api/stats/app_type_freq", appTypeFreqEndpoint)
+	http.HandleFunc("/api/stats/company_genre_coverage", companyGenreCoverageEndpoint)
+	http.HandleFunc("/api/hosts", fetchHosts)
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }

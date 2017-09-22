@@ -1,5 +1,7 @@
 [Unit]
 Description=Google Play Store APK downloader for the xray project.
+Requires=token-dispenser.service
+After=token-dispenser.service
 
 [Service]
 Environment=NODE_ENV=production

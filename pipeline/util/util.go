@@ -6,6 +6,9 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
+	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path"
@@ -229,4 +232,57 @@ func WriteDEAN(w io.Writer, data interface{}) error {
 	WriteJSON(w, data)
 	w.Write([]byte("mate."))
 	return nil
+}
+
+// GetJSON from valid url string gets json
+func GetJSON(url string, target interface{}) error {
+	client := &http.Client{Timeout: 10 * time.Second}
+	r, err := client.Get(url)
+	if err != nil {
+		return err
+	}
+	if r.StatusCode != http.StatusOK {
+		return fmt.Errorf("Got status %d while attempting to get GeoIP data", r.StatusCode)
+	}
+	defer r.Body.Close()
+
+	return json.NewDecoder(r.Body).Decode(target)
+}
+
+// GeoIPInfo stores apphosts data for geolocation
+type GeoIPInfo struct {
+	IP          string  `json:"ip"`
+	CountryCode string  `json:"country_code"`
+	CountryName string  `json:"country_name"`
+	RegionCode  string  `json:"region_code"`
+	RegionName  string  `json:"region_name"`
+	City        string  `json:"city"`
+	ZipCode     string  `json:"zip_code"`
+	TimeZone    string  `json:"time_zone"`
+	Latitude    float64 `json:"latitude"`
+	Longitude   float64 `json:"longitude"`
+	MetroCode   int     `json:"metro_code"`
+}
+
+// GetHostGeoIP grabs geo location information from hostname
+func GetHostGeoIP(geoipHost, host string) ([]GeoIPInfo, error) {
+	hosts, err := net.LookupHost(host)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make([]GeoIPInfo, 0, len(hosts))
+	for _, host := range hosts {
+		var inf GeoIPInfo
+		//TODO: fix?
+		err = GetJSON(geoipHost+"/"+url.PathEscape(host), &inf)
+		if err != nil {
+			//TODO: better handling?
+			fmt.Printf("Couldn't lookup geoip info for %s: %s \n", host, err.Error())
+		} else {
+			ret = append(ret, inf)
+		}
+	}
+
+	return ret, nil
 }

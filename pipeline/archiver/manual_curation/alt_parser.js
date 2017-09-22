@@ -1,111 +1,93 @@
-'use strict';
 const fs = require('fs');
 const logger = require('../../util/logger');
-const _ = require('lodash');
 
 const DB = require('../../db/db');
-var db = new DB('suggester');
+const db = new DB('suggester');
 
 const childProcess = require('child_process');
 
-
 function readCSV(path) {
-    var lines = fs.readFileSync(path).toString().split('\n');
-    var json = [];
-    lines.forEach((line) => {
-        var split = line.split(',');
-        json.push({
-            'source': split[0].replace('\r', ''),
-            'alt': split[1].replace('\r', '')
-        });
-    });
-    return json;
+    const lines = fs.readFileSync(path).toString().split('\n');
+    const pairs = lines.reduce((json, line) => {
+        const split = line.replace('\r', '').split(',');
+        return json.concat([
+            { source: split[0], alt: split[1] },
+            { source: split[1], alt: split[0] },
+        ]);
+    }, []);
+    logger.debug(pairs);
+    return pairs;
 }
 
-function cartesianProductAltArray() {
-    return _.reduce(arguments, function(a, b) {
-        return _.flatten(_.map(a, function(x) {
-            return _.map(b, function(y) {
-                return x.concat(y);
-            });
-        }), true);
-    }, [
-        []
+function flatten(arr) {
+    return arr.reduce((a, b) => a.concat(b), []);
+}
+
+function cartesianProductAltArray(...args) {
+    return args.reduce((prods, arr) =>
+        flatten(prods.map((prod) => arr.map((v) => prod.concat(v)))), [
+        [],
     ]);
 }
 
 function nwayAlts(alts) {
-    var curr = alts[0].source;
-    var group = [];
-    var nway = [];
+    let curr = alts[0].source;
+    let group = [];
+    let nway = [];
     alts.forEach((alt) => {
         if (alt.source != curr) {
-            var res = cartesianProductAltArray(group, group);
+            const res = cartesianProductAltArray(group, group);
             nway = nway.concat(res);
             group = [];
             curr = alt.source;
         }
         group.push(alt.alt);
     });
-    var res = cartesianProductAltArray(group, group);
+    const res = cartesianProductAltArray(group, group);
     nway = nway.concat(res);
     return nway;
 }
 
 function parseAltCSVToJSON(path) {
-    var array = readCSV(path);
+    const array = readCSV(path);
     return array.concat(nwayAlts(array).map((alt) => {
-        if (alt[0] != alt[1]) {
-            return {
-                'source': alt[0],
-                'alt': alt[1]
-            };
-        }
+        return { source: alt[0], alt: alt[1] };
     }));
 }
 
 function parseAltCSVtoArray(path) {
-    var lines = fs.readFileSync(path).toString().split('\n');
-    var arr = _.flatten(_.map(lines, (line) => {
-        return line.split(',');
-
-    }));
-    return _.uniqBy(arr, (e) => {
-        return e;
-    });
-
+    const lines = fs.readFileSync(path).toString().split('\n');
+    const arr = flatten(lines.map((line) => line.split(',')));
+    return arr.reduce((res, e) => res.includes(e) ? res : res.concat([e]), []);
 }
 
 function scrapeAppID(appID) {
-    logger.debug('Attempting to Scrape ' + appID);
-    return childProcess.execSync('node ../retriever/idFetch.js ' + appID,
+    logger.debug(`Attempting to Scrape ${appID}`);
+    return childProcess.execSync(`node ../retriever/idFetch.js ${appID}`,
         (error, stdout, stderr) => {
-            logger.debug('stdout: ' + stdout);
-            logger.debug('stderr: ' + stderr);
+            logger.debug(`stdout: ${stdout}`);
+            logger.debug(`stderr: ${stderr}`);
             if (error !== null) {
-                logger.debug('exec error: ' + error);
+                logger.debug(`exec error: ${error}`);
             }
         });
-
 }
 
 function main() {
-    var alts = parseAltCSVToJSON('alt_apps.csv');
-    var apps = parseAltCSVtoArray('alt_apps.csv');
+    const alts = parseAltCSVToJSON('alt_apps.csv');
+    const apps = parseAltCSVtoArray('alt_apps.csv');
 
-    logger.debug('Apps Parsed. Line Count:' + apps.length);
-    logger.debug('App-Alt Pairs Parsed: ' + alts.length);
-    _.forEach(apps, (app) => {
+    logger.debug(`Apps Parsed. Line Count: ${apps.length}`);
+    logger.debug(`App-Alt Pairs Parsed: ${alts.length}`);
+    apps.forEach((app) => {
         scrapeAppID(app.replace('\r', ''));
     });
 
-    _.forEach(alts, (app) => {
+    alts.forEach((app) => {
         db.insertManualSuggestion(app)
             .then((res) => logger.debug(res))
             .catch((err) => logger.err(err));
-
     });
 }
-
 
 main();

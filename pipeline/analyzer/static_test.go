@@ -8,11 +8,10 @@ func TestHostRe(t *testing.T) {
 	hostre.Longest()
 
 	goodHosts := map[string]string{
-		"google.com":        "google.com",
-		"tripadvisor.com":   "tripadvisor.com",
-		"wow.isaname.co.uk": "wow.isaname.co.uk",
-		"test.foob.ar":      "test.foob.ar",
-		"!jkfd.com":         "jkfd.com",
+		"https://google.com":       "google.com",
+		"https://tripadvisor.com":  "tripadvisor.com",
+		"http://wow.isaname.co.uk": "wow.isaname.co.uk",
+		"http://test.foob.ar":      "test.foob.ar",
 	}
 
 	for str, host := range goodHosts {
@@ -25,6 +24,8 @@ func TestHostRe(t *testing.T) {
 		"http://www",
 		"@mfd.com",
 		"jkfd@jkfdkd.com",
+		"!jkfd.com",
+		"Thing.java",
 	}
 
 	for _, str := range badHosts {

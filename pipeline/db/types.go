@@ -36,6 +36,42 @@ type AppVersion struct {
 	IsAnalyzed  bool      `json:"isAnalyzed"`
 }
 
+// GenreStats represents a row from the Genre average statistics table
+type GenreStats struct {
+	Category  string  `json:"category"`
+	HostCount int64   `json:"hostCount"`
+	AppCount  int64   `json:"appCount"`
+	GenreAvg  float64 `json:"genreAvg"`
+}
+
+// CompanyCoverage represents a row from the company_app_coverage statistics
+// table found in the XRay DB.
+type CompanyCoverage struct {
+	Company     string  `json:"company"`
+	Type        string  `json:"type"`
+	AppCount    int64   `json:"appCount"`
+	TotalApps   int64   `json:"totalApps"`
+	CompanyFreq float64 `json:"companyFreq"`
+}
+
+// CompanyGenreCoverage Stats for company Genre Coverage.
+type CompanyGenreCoverage struct {
+	Company      string  `json:"company"`
+	CompanyCount int64   `json:"companyCount"`
+	Genre        string  `json:"genre"`
+	GenreTotal   int64   `json:"genreTotal"`
+	CoveragePct  float64 `json:"companyPct"`
+}
+
+// CompanyTypeCoverage represents a row from the app_type_coverage statistics
+// table found in the XRay DB
+type CompanyTypeCoverage struct {
+	Type      string  `json:"type"`
+	AppCount  int64   `json:"appCount"`
+	TotalApps int64   `json:"totalApps"`
+	TypeFreq  float64 `json:"typeFreq"`
+}
+
 // AltApp represents Alternative App title and playstore url. Used in API
 type AltApp struct {
 	AltAppTitle     string `json:"altAppTitle"`

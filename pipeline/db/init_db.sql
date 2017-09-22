@@ -88,6 +88,11 @@ create table app_hosts(
   pis    int[]
 );
 
+create table app_companies(
+  id         int references app_versions(id) primary key not null,
+  companies  text[]
+);
+
 create table manual_alts(
   source_id  text not null,
   alt_id     text not null,
@@ -117,6 +122,13 @@ create table hosts(
   company  text references companies(id)
 );
 
+create table company_domains (
+  company text not null,
+  domain  text not null,
+  type    text         ,
+  primary key(company, domain)
+);
+
 create user explorer;
 create user retriever;
 create user downloader;
@@ -126,17 +138,20 @@ create user suggester;
 
 grant insert, select on search_terms to explorer;
 
-grant select, insert on apps to retriever;
+grant select, insert, update on apps to retriever;
 grant select, insert on app_versions to retriever;
+grant usage on app_versions_id_seq to retriever;
 grant select, insert on playstore_apps to retriever;
 grant select, update on search_terms to retriever;
 grant select, insert, update on developers to retriever;
+grant usage on developers_id_seq to retriever;
 
 grant select, update on app_versions to downloader;
 grant select on playstore_apps to downloader;
 
-grant select, update, insert on apps to analyzer;
-grant select, update, insert on app_versions to analyzer;
+grant select, insert, update on apps to analyzer;
+grant select, insert, update on app_versions to analyzer;
+grant usage on app_versions_id_seq to analyzer;
 grant select  on playstore_apps to analyzer;
 grant select, insert, update on app_perms to analyzer;
 
@@ -154,9 +169,11 @@ grant select on companies to apiserv;
 grant select on hosts to apiserv;
 grant select on alt_apps to apiserv;
 grant select on manual_alts to apiserv;
+grant select on company_domains to apiserv;
 
 grant select, update, insert on alt_apps to suggester;
 grant select, update, insert on manual_alts to suggester;
+grant select, update, insert on company_domains to suggester;
 grant select, update on app_versions to suggester;
 grant select on playstore_apps to suggester;
 

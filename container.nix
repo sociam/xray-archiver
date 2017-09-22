@@ -21,6 +21,7 @@ let xraypkg = (pkgs.callPackage ./default.nix {}); in
 
   environment.etc."xray/config.json".text = ''
     {
+        "geoipurl": "http://sociamnat.cs.ox.ac.uk:8003/geoip",
         "datadir": "/var/lib/xray",
         "unpackdir": "/tmp/unpacked_apks",
         "credDownload": "/etc/xray/credentials.conf",
