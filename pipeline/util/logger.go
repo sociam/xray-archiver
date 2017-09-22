@@ -20,13 +20,8 @@ const (
 	DEBUG
 )
 
-// func log(level DebugLevel, args ...string) {
-// 	fmt.Println(prefixes[level], args)
-// }
-
 type logger struct{}
 
-// Log is the namespace for the logger functions
 var Log = logger{}
 
 func (l logger) Log(level int, str string, args ...interface{}) {
