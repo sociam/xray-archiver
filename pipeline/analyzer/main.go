@@ -52,7 +52,7 @@ func analyze(app *util.App) error {
 	} else {
 		app.Perms = manifest.getPerms()
 		fmt.Printf("Permissions found: %v\n\n", app.Perms)
-		err = db.AddPerms(app)
+		err = db.AddAppPerms(app)
 		if err != nil {
 			fmt.Printf("Error writing permissions to DB: %s\n", err.Error())
 		}
@@ -60,7 +60,7 @@ func analyze(app *util.App) error {
 			app.Icon = "/" + url.PathEscape(app.ID) + "/" + url.PathEscape(app.Store) +
 				"/" + url.PathEscape(app.Region) + "/" + url.PathEscape(app.Ver) + "/icon.png"
 			fmt.Printf("Got icon: %s\n", app.Icon)
-			err = db.SetIcon(app.DBID, app.Icon)
+			err = db.SetAppIcon(app.DBID, app.Icon)
 			if err != nil {
 				fmt.Printf("Error setting icon of app in DB: %s\n", err.Error())
 			}
@@ -74,7 +74,7 @@ func analyze(app *util.App) error {
 	} else {
 		fmt.Printf("Hosts found: %v\n\n", app.Hosts)
 
-		err = db.AddHosts(app, app.Hosts)
+		err = db.AddAppHosts(app, app.Hosts)
 		if err != nil {
 			fmt.Printf("Error writing hosts to DB: %s\n", err.Error())
 		}

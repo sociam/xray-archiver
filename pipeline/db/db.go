@@ -17,7 +17,7 @@ type xrayDb struct {
 var useDB bool
 var db xrayDb
 
-// Open opens the database with the given config. If enable is false, the
+// Open the database connection with the given config. If enable is false, the
 // functions that modify the database are noops.
 func Open(cfg util.Config, enable bool) error {
 	if enable {
@@ -33,10 +33,7 @@ func Open(cfg util.Config, enable bool) error {
 	return nil
 }
 
-//TODO: make Add* functions take a db id and what to add instead of a util.App
-
-// SetLastAnalyzeAttempt sets the last_analyzed_attempt of an app to the
-// current time.
+// Updates the analyze attempt if id
 func SetLastAnalyzeAttempt(id int64) error {
 	rows, err := db.Query("UPDATE app_versions SET last_analyze_attempt = $1 WHERE id = $2", time.Now(), id)
 	if rows != nil {
@@ -48,9 +45,9 @@ func SetLastAnalyzeAttempt(id int64) error {
 	return nil
 }
 
-// AddPackages is a function that allows you to add packages to the Xray DB. The
-// argument app must contain a DB ID and an array of package names.
-func AddPackages(app *util.App) error {
+// AddAppPackages is a function that allows you to add packages used byt a given App in the Database. The
+// argument app must contain a database ID and an array of package names.
+func AddAppPackages(app *util.App) error {
 	if !useDB || app.DBID == 0 {
 		return nil
 	}
@@ -88,9 +85,9 @@ func AddPackages(app *util.App) error {
 	return nil
 }
 
-// AddPerms is a function that allows you to add permissions to the Xray DB. The
+// AddAppPerms is a function that allows you to add permissions to apps in the app database. The
 // argument app must contain a DB ID and an array of permissions.
-func AddPerms(app *util.App) error {
+func AddAppPerms(app *util.App) error {
 	if !useDB || app.DBID == 0 {
 		return nil
 	}
@@ -130,8 +127,8 @@ func AddPerms(app *util.App) error {
 	return nil
 }
 
-// SetIcon is a function that sets the icon field of the DB.
-func SetIcon(id int64, icon string) error {
+// SetAppIcon is a function that sets the icon field of the DB.
+func SetAppIcon(id int64, icon string) error {
 	if !useDB || id == 0 {
 		return nil
 	}
@@ -143,9 +140,9 @@ func SetIcon(id int64, icon string) error {
 	return err
 }
 
-// AddHosts is a function that allows you to add hosts to the Xray DB. The
+// AddAppHosts is a function that allows you to add hosts to the Xray DB. The
 // argument app must contain a DB ID.
-func AddHosts(app *util.App, hosts []string) error {
+func AddAppHosts(app *util.App, hosts []string) error {
 	if !useDB || app.DBID == 0 {
 		return nil
 	}
@@ -180,8 +177,8 @@ func AddHosts(app *util.App, hosts []string) error {
 	return nil
 }
 
-// SetReflect sets the value of uses_reflect for an app version
-func SetReflect(id int64, val bool) error {
+// SetAppReflect sets the value of uses_reflect for an app version
+func SetAppReflect(id int64, val bool) error {
 	rows, err := db.Query("UPDATE app_versions SET uses_reflect = $1 WHERE id = $2", val, id)
 	if rows != nil {
 		rows.Close()
@@ -213,17 +210,8 @@ func GetAppVersion(app, store, region, version string) (AppVersion, error) {
 		return AppVersion{}, err
 	}
 
-	// TODO: Check implementation
 	err = db.QueryRow("SELECT * FROM app_hosts WHERE id = $1", appVer.ID).Scan(
 		pq.Array(&appVer.Hosts))
-
-	if err != nil {
-		return AppVersion{}, err
-	}
-
-	// TODO: Check implementation
-	err = db.QueryRow("SELECT * FROM app_perms WHERE id = $1", appVer.ID).Scan(
-		pq.Array(&appVer.Perms))
 
 	if err != nil {
 		return AppVersion{}, err
@@ -248,14 +236,6 @@ func GetAppVersionByID(id int64) (AppVersion, error) {
 
 	err = db.QueryRow("SELECT * FROM app_hosts WHERE id = $1", appVer.ID).Scan(
 		pq.Array(&appVer.Hosts))
-	if err != nil {
-		return AppVersion{}, err
-	}
-
-	// TODO: Check implementation
-	err = db.QueryRow("SELECT * FROM app_perms WHERE id = $1", appVer.ID).Scan(
-		pq.Array(&appVer.Perms))
-
 	if err != nil {
 		return AppVersion{}, err
 	}
