@@ -8,7 +8,7 @@ begin;
 --
 -- Features in the "genre_host_averages" API Endpoint.
 ---------------------------------------------------------------------------------------------------
-drop table if exists genre_host_averages
+drop table if exists genre_host_averages cascade;
 create table genre_host_averages as
   select category, host_count, app_count, host_count/app_count::float as host_avg from (
     select p.genre as category, sum(array_length(v.hosts,1)
@@ -17,6 +17,32 @@ create table genre_host_averages as
     group by genre) as genre_freq;
 
 grant select on genre_host_averages to apiserv;
+
+---------------------------------------------------------------------------------------------------
+--  Counts by Genre
+--
+--  Todo -- API Endpoint.
+--
+---------------------------------------------------------------------------------------------------
+drop table if exists genre_counts;
+create table genre_counts as
+  select genre, count(*) from playstore_apps p inner join app_versions v on (p.id = v.id) 
+    where v.analyzed = true
+    group by genre;
+grant select on genre_counts to apiserv;
+
+---------------------------------------------------------------------------------------------------
+-- Standard Deviation of hosts found in each genre
+---------------------------------------------------------------------------------------------------
+create view genre_host_variance as
+  select squared_sum/n-1 
+  from (
+    select sum(diff_squared) as squared_sum
+  from (
+    select ((host_avg - 20.391152325979)*(host_avg-20.391152325979)) as diff_squared
+  from genre_host_averages) as sums) as sum ,(
+    select count(*) as n
+  from genre_host_averages) as count;
 
 ---------------------------------------------------------------------------------------------------
 -- table of distinct hosts 
@@ -44,7 +70,8 @@ create table host_app_coverage as
   select hosts, count(*) from distinct_app_hosts
     group by hosts;
 
-grant select on host domains to apiserv;
+grant select on host_app_coverage to apiserv;
+
 
 ---------------------------------------------------------------------------------------------------
 -- Table of all possible Host names and a heuristic regex for the domain of the host.
@@ -62,7 +89,7 @@ grant select on host_domains to apiserv;
 ---------------------------------------------------------------------------------------------------
 drop table if exists host_domain_companies;
 create table host_domain_companies as 
-  select distinct d.hosts, d.domain, d.domain_plus, coalesce(c.company, 'unknown') as company
+  select distinct d.hosts, d.domain, d.domain_plus, coalesce(c.company, 'unknown') as company, coalesce(c.type, 'unknown') as type
     from host_domains d left outer join company_domains c
       on( d.domain = c.domain 
          or d.domain_plus = c.domain
@@ -80,8 +107,30 @@ grant select on host_domain_companies to apiserv;
 ---------------------------------------------------------------------------------------------------
 drop table if exists distinct_app_companies;
 create table distinct_app_companies as
-  select distinct hdc.company, dah.id from host_domain_companies hdc, distinct_app_hosts dah
+  select distinct hdc.company, hdc.type, dah.id from host_domain_companies hdc, distinct_app_hosts dah
   where hdc.hosts = dah.hosts;
+
+---------------------------------------------------------------------------------------------------
+--
+--  genre company coverage.
+--
+--
+---------------------------------------------------------------------------------------------------
+
+drop table if exists company_genre_coverage;
+create table company_genre_coverage as 
+select company, company_count, genre, genre_total, (company_count/genre_total::float)*100 as coverage_pct from (
+  select  count(dac.company) as company_count, dac.company, p.genre, genre_totals.genre_total from distinct_app_companies dac, playstore_apps p, app_versions v, (
+    select count(*) as genre_total, genre from  playstore_apps p, app_versions v
+      where v.id  = p.id and v.analyzed = true
+      group by genre
+  ) as genre_totals
+    where dac.id = v.id and dac.id = p.id and v.analyzed = true and genre_totals.genre = p.genre
+    group by p.genre, dac.company, genre_totals.genre_total
+    order by p.genre, company_count
+) as totals;
+
+grant select on company_genre_coverage to apiserv;
 
 ---------------------------------------------------------------------------------------------------
 -- Counts of the amount of apps that feature a host name tied to a company.
@@ -90,31 +139,63 @@ create table distinct_app_companies as
 ---------------------------------------------------------------------------------------------------
 drop table if exists company_app_coverage;
 create table company_app_coverage as
-  select company, app_count, total_apps, app_count/total_apps::float as company_freq from (
+  select distinct t2.company, t2.type, app_count, total_apps, app_count/total_apps::float as company_freq from (
     select company, count(*) as app_count, total_apps
-        from distinct_app_companies,( 
-          select count(*) as total_apps
-            from app_versions where analyzed = true
-            ) as total_app_count 
+        from distinct_app_companies,( select count(*) as total_apps from app_versions where analyzed = true ) as total_app_count 
           group by company, total_apps
-          order by app_count using >
-  ) as company_app_counts;
+  ) as company_app_counts,
+  distinct_app_companies t2
+  where company_app_counts.company = t2.company
+  order by app_count using >;
  grant select on company_app_coverage to apiserv;
 
 ---------------------------------------------------------------------------------------------------
+-- Counts of the amount of apps that feature a host name tied to a specific purpose
+--
+-- This table features in the 'app_type_freq' API endpoint.
+---------------------------------------------------------------------------------------------------
+ drop table if exists app_type_coverage;
+ create table app_type_coverage as 
+  select type, app_count, total_apps, app_count/total_apps::float as type_freq from (
+    select type, count(*) as app_count, total_apps
+        from (select distinct type, id from distinct_app_companies) as distinct_app_types,
+             (select count(*) as total_apps from app_versions where analyzed = true ) as total_app_count 
+          group by type, total_apps
+          order by app_count using >
+  ) as type_app_counts;
+ grant select on app_type_coverage to apiserv;
+
+
+
+-----
+-- company per app variance
+-----
+create table company_per_app_varianvce as
+select diffSum/count as variance, diffSum, count from (
+  select sum(diff) as diffSum 
+  from (
+       select ((count-6.98820683086)*(count-6.98820683086)) as diff from (
+          select count(*)
+          from distinct_app_companies group by id ) as counts ) as diffs) as diffsums,
+(select count (*) as count from (select distinct id from distinct_app_companies) as ids
+) as counts;
+
+
+commit;
+---------------------------------------------------------------------------------
 -- Other Views. might be useful at somepoint. but they turned out to be too slow.
 ---------------------------------------------------------------------------------------------------
 
 -- SUMMARY STATISTICS VIEWS
 
 -- Average number of hosts for each genre
-create view genre_host_averages as
-  select category, host_count, app_count, host_count/app_count::float as host_avg
-  from (select p.genre as category, sum(array_length(v.hosts,1)) as host_count, count(p.genre) as app_count
-          from playstore_apps p inner join app_hosts v on (p.id = v.id)
-            group by genre) as genre_freq;
+-- create view genre_host_averages as
+--   select category, host_count, app_count, host_count/app_count::float as host_avg
+--   from (select p.genre as category, sum(array_length(v.hosts,1)) as host_count, count(p.genre) as app_count
+--           from playstore_apps p inner join app_hosts v on (p.id = v.id)
+--             group by genre) as genre_freq;
 
-grant select on genre_host_averages to apiserv;
+-- grant select on genre_host_averages to apiserv;
 
 -- All Hosts
 -- create view all_hosts as
@@ -148,4 +229,3 @@ grant select on genre_host_averages to apiserv;
 
 -- grant select on all_hosts, known_hosts, host_freq, known_host_freq to apiserv;
 
-commit;
