@@ -581,14 +581,12 @@ func GetAltApps(appID string) ([]AltApp, error) {
 		// Scanning from database into alt app object / nullable strings
 		err = rows.Scan(
 			&AppID,
-
 			&AltAppTitle,
 			&AltToURL,
 			&GPlayURL,
 			&GPlayID,
 			&IconURL,
 			&OfficialSiteURL,
-
 			&altApp.IsScraped)
 
 		// putting nullable strings into alt app object.
@@ -804,8 +802,7 @@ func QueryAll(
 
 		//Potential null values
 		var summ, desc, genre, famGenre, video, icon, devStoreSite, devSite sql.NullString
-		//var perms []string
-		//var packages []string
+
 		hosts, perms, pkgs, recentChanges := []sql.NullString{}, []sql.NullString{}, []sql.NullString{}, []sql.NullString{}
 		var err error
 		//Cannot just cast straight into types because of the postgre type conversion
@@ -831,19 +828,19 @@ func QueryAll(
 			&appData.Store,
 			&appData.Region,
 			&appData.Ver,
-			&icon, //&appData.Icon,
+			&icon,
 			&appData.IsAnalyzed,
 			pq.Array(&appData.Dev.Emails),
 			&appData.Dev.Name,
-			&devStoreSite,    //&appData.Dev.StoreSite,
-			&devSite,         //&appData.Dev.Site,
-			pq.Array(&hosts), //pq.Array(&appData.Hosts),
-			pq.Array(&perms), //pq.Array(&appData.Perms),
-			pq.Array(&pkgs))  //pq.Array(&appData.Packages))
+			&devStoreSite,
+			&devSite,
+			pq.Array(&hosts),
+			pq.Array(&perms),
+			pq.Array(&pkgs))
 		if err != nil {
 			util.Log.Err("Database Query", err)
 		} else {
-			util.Log.Debug("Casting data into correct structures")
+			util.Log.Debug("Casting quried data into app structure")
 			playInf.Summary = summ.String
 			playInf.Description = desc.String
 			playInf.Genre = genre.String
