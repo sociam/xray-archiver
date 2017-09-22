@@ -137,14 +137,14 @@ func genreHostAvgEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	util.Log.Debug("Genre Host Requst...")
-	//Check input
+
 	if r.Method == "POST" || r.Method == "GET" {
 		mime = mimeCheck(mime)
 		if mime == "" {
 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
 			return
 		}
-		//alts, err := db.GetAltApps(appID)
+
 		alts, err := db.GetGenreHostAverages()
 		if err != nil {
 			writeErr(w, mime, http.StatusBadRequest, "Fail", "Couldn't fetch the stats table you requested.")
@@ -231,7 +231,7 @@ func fetchIDEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		err := r.ParseForm()
 		if err != nil {
-			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
+			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s ", err.Error())
 			return
 		}
 
@@ -244,21 +244,15 @@ func fetchIDEndpoint(w http.ResponseWriter, r *http.Request) {
 				util.Log.Debug("appID form param found.")
 				util.Log.Debug("Value of appID: %s", val)
 
+				//TODO: change to another parse, maybe rewrite in go the idFetch
 				_, err := exec.Command("node", "../archiver/retriever/idFetch.js", val[0]).Output()
-				//out, err := exec.Command("ls", "/var/xray/pipeline/archiver/retriever/").Output()
 
 				if err != nil {
 					fmt.Printf("%s\n\n", err)
 					writeErr(w, mime, http.StatusConflict, "conflict", "{'appID':'"+val[0]+"', 'status':'Couldnt fetch or app already exists'}")
 					return
 				}
-				//outStr := string(out[:])
-				//fmt.Printf("%s\n\n", out)
-				//fmt.Println(outStr)
-				//fmt.Printf("%s\n\n", out)
 				writeData(w, mime, http.StatusOK, "{'appID':'"+val[0]+"', 'status':'success'}")
-				//wg := new(sync.WaitGroup)
-				//exeCmd("ls /var/xray/pipeline/archiver/retriever/ ", wg)
 			}
 		}
 	}
@@ -268,7 +262,6 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	//Check input
 	if r.Method == "POST" || r.Method == "GET" {
 		mime = mimeCheck(mime)
 		if mime == "" {
@@ -283,15 +276,13 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		//Default apps
+		//Default app setup
 
 		limit := "10"
-
 		offset := "0"
 		isFull := false
 		onlyAnalyzed := false //Default is true as most desire is for analyzed apps
 		store := "play"
-
 		titles := []string{}
 		developers := []string{}
 		genres := []string{}
@@ -350,13 +341,12 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 			case "genre":
 				genres = val
-				//Valid genre constant check
 
 			case "appId":
 				appIDs = val
 
 			case "nocache":
-				util.Log.Debug("No Cache flag. Good Stuff.")
+				util.Log.Debug("No Cache flag. Good Stuff")
 
 			default:
 				writeErr(w, mime, http.StatusBadRequest, "bad_form", "passed form values did not match params", name)
@@ -397,7 +387,6 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// altAppsEndpoint allows for external entities to query for alternative apps based on app ID.
 func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -418,7 +407,6 @@ func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		appID := split[3]
 
-		//alts, err := db.GetAltApps(appID)
 		alts, err := db.GetManualAltApps(appID)
 		if err != nil {
 			writeErr(w, mime, http.StatusBadRequest, "bad_app", "Seems like we couldn't find your app... Probs means that we don't have any alts: "+appID)
@@ -428,36 +416,6 @@ func altAppsEndpoint(w http.ResponseWriter, r *http.Request) {
 		writeData(w, mime, http.StatusOK, alts)
 	}
 }
-
-// func getHostLoci(w http.ResponseWriter, r *http.Request) {
-// 	util.Log.Debug("Host lookup requested")
-// 	mime := r.Header.Get("Accept")
-// 	if r.Method == "POST" || r.Method == "GET" {
-// 		mime = mimeCheck(mime)
-// 		if mime == "" {
-// 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
-// 			return
-// 		}
-
-// 		split := strings.Split(r.URL.Path, "/")
-
-// 		if len(split) < 3 {
-// 			writeErr(w, mime, http.StatusBadRequest, "bad_hosts", "Bad app slashes specified")
-// 			return
-// 		}
-
-// 		hostname := split[3]
-// 		util.Log.Debug("Attempting to lookup hosts: ", hostname)
-// 		geoip, err := util.GetHostGeoIP(hostname)
-
-// 		if err != nil {
-// 			writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
-// 			return
-// 		}
-
-// 		writeData(w, mime, http.StatusOK, geoip)
-// 	}
-// }
 
 func fetchHosts(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
@@ -472,7 +430,9 @@ func fetchHosts(w http.ResponseWriter, r *http.Request) {
 
 		util.Log.Debug("Parsing Form Params.")
 		//need to take a hosts list of []string
+
 		err := r.ParseForm()
+
 		if err != nil {
 			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
 			return
