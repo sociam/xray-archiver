@@ -61,35 +61,6 @@ func writeData(w http.ResponseWriter, mime string, status int, data interface{})
 	}
 }
 
-// //yeah, a map of string to some data is fine but the array setup? check for empty? or null?
-// func writeMultiSuccessData(w http.ResponseWriter, mime string, data map[string][]interface{}) {
-// 	w.WriteHeader(http.StatusMultiStatus)
-// 	var err1 error
-// 	w.Header().Set("Content-Type", mime)
-// 	switch mime {
-// 	case "application/nahmate":
-// 		err1 = util.WriteDEAN(w, data)
-// 	case "text/plain":
-// 		_, err1 = w.Write(toBytes(data))
-// 	default:
-// 		w.Header().Set("Content-Type", "application/json")
-// 		fallthrough
-// 	case "application/json":
-// 		//if array empty failed the lookup... can not have a domain without a host
-// 		// for _, i := range data {
-// 		// 	if len(i) > 1
-// 		// 		response := fmt.print(data, http.StatusOK)
-// 		// 		err1 = util.WriteJSON(w, response) //Need to append into data key... still want key on outside
-// 		// 	else
-// 		// 		err1 = util.WriteJSON(w,data)
-// 		// }
-// 	}
-// 	if err1 != nil {
-// 		util.Log.Err("error writing data", err1)
-// 	}
-
-// }
-
 func mimeCheck(mime string) string {
 	mimes := strings.Split(mime, ",")
 	for _, mime := range mimes {
@@ -176,7 +147,7 @@ func genreHostAvgEndpoint(w http.ResponseWriter, r *http.Request) {
 		//alts, err := db.GetAltApps(appID)
 		alts, err := db.GetGenreHostAverages()
 		if err != nil {
-			writeErr(w, mime, http.StatusBadRequest, "Fail", "For some reason we couldn't fetch the stats table you requested.")
+			writeErr(w, mime, http.StatusBadRequest, "Fail", "Couldn't fetch the stats table you requested.")
 			return
 		}
 		writeData(w, mime, http.StatusOK, alts)
@@ -187,17 +158,17 @@ func companyGenreCoverageEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	util.Log.Debug("Genre Host Requst...")
-	//Check input
+
 	if r.Method == "POST" || r.Method == "GET" {
 		mime = mimeCheck(mime)
 		if mime == "" {
 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
 			return
 		}
-		//alts, err := db.GetAltApps(appID)
+
 		alts, err := db.GetCompanyGenreCoverage()
 		if err != nil {
-			writeErr(w, mime, http.StatusBadRequest, "Fail", "For some reason we couldn't fetch the stats table you requested.")
+			writeErr(w, mime, http.StatusBadRequest, "Fail", "Couldn't fetch the stats table you requested.")
 			return
 		}
 		writeData(w, mime, http.StatusOK, alts)
@@ -208,17 +179,17 @@ func appCompanyFreqEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	util.Log.Debug("Genre Host Requst...")
-	//Check input
+
 	if r.Method == "POST" || r.Method == "GET" {
 		mime = mimeCheck(mime)
 		if mime == "" {
 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
 			return
 		}
-		//alts, err := db.GetAltApps(appID)
+
 		alts, err := db.GetAppCompanyFreq()
 		if err != nil {
-			writeErr(w, mime, http.StatusBadRequest, "Fail", "For some reason we couldn't fetch the stats table you requested.")
+			writeErr(w, mime, http.StatusBadRequest, "Fail", "Couldn't fetch the stats table you requested.")
 			return
 		}
 		writeData(w, mime, http.StatusOK, alts)
@@ -229,17 +200,17 @@ func appTypeFreqEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	util.Log.Debug("Genre Host Requst...")
-	//Check input
+
 	if r.Method == "POST" || r.Method == "GET" {
 		mime = mimeCheck(mime)
 		if mime == "" {
 			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
 			return
 		}
-		//alts, err := db.GetAltApps(appID)
+
 		alts, err := db.GetAppTypeFreq()
 		if err != nil {
-			writeErr(w, mime, http.StatusBadRequest, "Fail", "For some reason we couldn't fetch the stats table you requested.")
+			writeErr(w, mime, http.StatusBadRequest, "Fail", "Couldn't fetch the stats table you requested.")
 			return
 		}
 
@@ -251,7 +222,6 @@ func fetchIDEndpoint(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	//Check input
 	if r.Method == "POST" || r.Method == "GET" {
 		mime = mimeCheck(mime)
 		if mime == "" {
