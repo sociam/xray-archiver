@@ -31,7 +31,7 @@ async function fetchAppData(searchTerm, numberOfApps, perSecond) {
         term: searchTerm,
         num: numberOfApps,
         throttle: perSecond,
-        region: region,
+        country: region,
         fullDetail: true,
     });
 
