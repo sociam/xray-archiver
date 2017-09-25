@@ -1,6 +1,6 @@
 const gplay = require('google-play-scraper');
-const _ = require('lodash');
 
+const Promise = require('bluebird');
 const logger = require('../../util/logger');
 const db = new(require('../../db/db'))('retriever');
 
