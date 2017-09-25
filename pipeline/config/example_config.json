@@ -1,10 +1,7 @@
 {
-    "edihost": "edi.sociam.org",
     "datadir": "/var/xray",
     "unpackdir": "/tmp/unpacked_apks",
-    "sockpath": "/var/run/xray/apks",
     "credDownload": "/etc/xray/credentials.conf",
-    "wordStashDir": "/etc/xray/wordStashDir",
     "db": {
         "database": "xraydb",
         "host": "localhost",
