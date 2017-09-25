@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/lib/pq"
@@ -664,15 +665,13 @@ func GetAltApps(appID string) ([]AltApp, error) {
 	return result, nil
 }
 
-// precentifyArray produces a Postgres compatable 'like any' string intended
-// to be used as part of a larger query.
-func percentifyArray(arr *[]string) {
+func asPGAny(arr *[]string) {
 	for i, v := range *arr {
 		(*arr)[i] = "%" + v + "%"
 	}
 }
 
-func percentifyStartifyArrayify(arr *[]string) {
+func asPGStartsWith(arr *[]string) {
 	for i, v := range *arr {
 		(*arr)[i] = v + "%"
 	}
@@ -682,67 +681,174 @@ var appStoreTable = map[string]string{
 	"play": "playstore_apps",
 }
 
-// QuickQuery depricates all of dean's queries.
-func QuickQuery(
+func extendWhereQuery(querystr *string, colName string, numParam *int, arr *[]string, hasPrev *bool) {
+	util.Log.Debug("Attempting to query params %s \n", *arr)
+
+	if *hasPrev {
+		*querystr += "AND "
+	} else {
+		*hasPrev = true
+	}
+
+	newQuery := colName + "ILIKE ANY($" + strconv.Itoa(*numParam) + ") "
+	*querystr += newQuery
+
+	asPGAny(arr)
+
+	*numParam++
+}
+
+// QueryAll depricates all of dean's queries.
+func QueryAll(
 	onlyAnalyzed bool, appStore string, limit string, offset string, developers []string,
 	genres []string, permissions []string, appIDs []string, titles []string, startsWith []string,
 ) ([]AppVersion, error) {
 
+	var queryStr string
+	//TODO: Left as join will be built later
+	// querystr = "SELECT " +
+	// 	"a.id, a.title, a.summary, a.description, a.store_url, a.price, a.free, a.rating, " +
+	// 	"a.num_reviews, a.genre, a.family_genre, a.min_installs, a.max_installs, a.updated, " +
+	// 	"a.android_ver, a.content_rating, a.recent_changes, v.app, v.store, v.region, " +
+	// 	"v.version, v.icon, v.analyzed, d.email, d.name, d.store_site, d.site, h.hosts, p.permissions, " +
+	// 	"pkg.packages " +
+	// 	"FROM " + appStoreTable[appStore] + " a " +
+	// 	"FULL OUTER JOIN app_versions v ON (a.id = v.id) " +
+	// 	"FULL OUTER JOIN developers d ON (a.developer = d.id) " +
+	// 	"FULL OUTER JOIN app_hosts h ON (a.id = h.id) " +
+	// 	"FULL OUTER JOIN app_perms p ON (a.id = p.id) " +
+	// 	"FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) " +
+
+	queryStr = "SELECT " +
+		"id, title, summary, description, store_url, price, free, rating, " +
+		"num_reviews, genre, family_genre, min_installs, max_installs, updated, " +
+		"android_ver, content_rating, recent_changes, app, store, region, " +
+		"version, icon, analyzed, email, name, store_site, site, hosts, permissions, " +
+		"packages " +
+		"FROM  all_apps_data " +
+		"WHERE "
+
+	var args []interface{}
+
+	numParam := 1
+	hasPrev := false
+
+	//TODO: future me will fix this later... however considering the horrible *quick*query a better refactor is needed...
+	//This better refcator will sepeate each select as it's own component. Get ids then get where matching. Would require
+	//multiple joins but if the views are setup should not matter
+
+	if len(titles) > 0 {
+		extendWhereQuery(&queryStr, "title ", &numParam, &titles, &hasPrev)
+		args = append(args, pq.Array(&titles))
+	}
+
+	if len(developers) > 0 {
+		extendWhereQuery(&queryStr, "name ", &numParam, &developers, &hasPrev)
+		args = append(args, pq.Array(&developers))
+	}
+
+	if len(genres) > 0 {
+		util.Log.Debug("Attempting to query params %s \n", genres)
+
+		if hasPrev {
+			queryStr += "AND "
+		} else {
+			hasPrev = true
+		}
+
+		newQuery := "app IN( "
+
+		for i := numParam; i < numParam+len(genres)-1; numParam++ {
+			newQuery += "$" + strconv.Itoa(i) + ", "
+			util.Log.Debug("Adding arg ", genres[i])
+			args = append(args, genres[i])
+		}
+
+		newQuery += "$" + strconv.Itoa(numParam) + ") "
+		numParam++
+		util.Log.Debug("Adding arg ", genres[len(genres)-1])
+		args = append(args, genres[len(genres)-1])
+
+		queryStr += newQuery
+	}
+
+	if len(appIDs) > 0 {
+		util.Log.Debug("Attempting to query params %s \n", appIDs)
+
+		if hasPrev {
+			queryStr += "AND "
+		} else {
+			hasPrev = true
+		}
+
+		newQuery := "app IN( "
+
+		for i := numParam; i < numParam+len(appIDs)-1; numParam++ {
+			newQuery += "$" + strconv.Itoa(i) + ", "
+			util.Log.Debug("Adding arg ", appIDs[i])
+			args = append(args, appIDs[i])
+		}
+
+		newQuery += "$" + strconv.Itoa(numParam) + ") "
+		numParam++
+		util.Log.Debug("Adding arg ", appIDs[len(appIDs)-1])
+		args = append(args, appIDs[len(appIDs)-1])
+
+		queryStr += newQuery
+
+	}
+
+	if len(startsWith) > 0 {
+		util.Log.Debug("Attempting to query params %s \n", startsWith)
+
+		if hasPrev {
+			queryStr += "AND "
+		} else {
+			hasPrev = true
+		}
+
+		newQuery := "title ILIKE ANY($" + strconv.Itoa(numParam) + ") "
+		queryStr += newQuery
+
+		asPGStartsWith(&startsWith)
+
+		numParam++
+
+		args = append(args, pq.Array(&startsWith))
+	}
+
+	args = append(args, limit, offset)
+
 	var shouldAnalyze string
 
 	if onlyAnalyzed {
-		shouldAnalyze = "AND v.analyzed = true "
+		shouldAnalyze = "AND analyzed = true "
 	} else {
 		shouldAnalyze = ""
 	}
 
-	querystr := "SELECT " +
-		"a.id, a.title, a.summary, a.description, a.store_url, a.price, a.free, a.rating, " +
-		"a.num_reviews, a.genre, a.family_genre, a.min_installs, a.max_installs, a.updated, " +
-		"a.android_ver, a.content_rating, a.recent_changes, v.app, v.store, v.region, " +
-		"v.version, v.icon, v.analyzed, d.email, d.name, d.store_site, d.site, h.hosts, p.permissions, " +
-		"pkg.packages " +
-		"FROM " + appStoreTable[appStore] + " a " +
-		"FULL OUTER JOIN app_versions v ON (a.id = v.id) " +
-		"FULL OUTER JOIN developers d ON (a.developer = d.id) " +
-		"FULL OUTER JOIN app_hosts h ON (a.id = h.id) " +
-		"FULL OUTER JOIN app_perms p ON (a.id = p.id) " +
-		"FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) " +
-		//Table Join Appends
-		//+ "NATURAL JOIN app_perms " + "NATURAL JOIN app_packages"
-		"WHERE a.title ILIKE ANY($1) AND d.name ILIKE ANY($2) AND a.genre ILIKE ANY($3) " +
-		//" AND LOWER(app_perms.permissions) like any " + percentifyArray(permissions) + //TODO: s a array so need to check the arrays...
-		"AND v.app ILIKE ANY($4) AND a.title ILIKE ANY($5) " + shouldAnalyze + "ORDER BY a.max_installs using> LIMIT $6 OFFSET $7"
+	queryStr += shouldAnalyze + " ORDER BY max_installs using> "
+	queryStr += "LIMIT $" + strconv.Itoa(numParam) + " "
+	numParam++
+	queryStr += "OFFSET $" + strconv.Itoa(numParam)
 
-	percentifyArray(&titles)
-	percentifyArray(&developers)
-	percentifyArray(&genres)
-	percentifyArray(&appIDs)
-	percentifyStartifyArrayify(&startsWith)
+	fmt.Printf("%s %v\n", queryStr, args)
 
-	args := []interface{}{
-		pq.Array(&titles),
-		pq.Array(&developers),
-		pq.Array(&genres),
-		pq.Array(&appIDs),
-		pq.Array(&startsWith),
-		limit,
-		offset,
-	}
-	fmt.Printf("%s %v\n", querystr, args)
-
-	rows, err := db.Query(querystr, args...)
+	rows, err := db.Query(queryStr, args...)
 
 	if rows != nil {
 		defer rows.Close()
 	}
-
 	if err != nil {
+		util.Log.Debug("Failed to grab app query", err)
 		return []AppVersion{}, err
 	}
 
+	util.Log.Debug("Examining rows")
+
 	result := []AppVersion{}
 	for i := 0; rows.Next(); i++ {
+		util.Log.Debug("Casting Row: ", i)
 
 		var appData AppVersion
 		var playInf PlayStoreInfo
@@ -788,9 +894,7 @@ func QuickQuery(
 		if err != nil {
 			util.Log.Err("Database Query", err)
 		} else {
-
-			//info.FamilyGenre = famGenre.Valid ? famGenre.String : ""
-			//TODO: ight be able to get away with nul being "" after the scan stage
+			util.Log.Debug("Casting data into correct structures")
 			playInf.Summary = summ.String
 			playInf.Description = desc.String
 			playInf.Genre = genre.String
@@ -824,7 +928,6 @@ func QuickQuery(
 	}
 
 	return result, nil
-
 }
 
 // GetAppsToAnalyze returns a list of up to 10 apps that have analyzed=False and
