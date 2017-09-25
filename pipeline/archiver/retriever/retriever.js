@@ -42,6 +42,54 @@ async function fetchAppData(searchTerm, numberOfApps, perSecond) {
     return res;
 }
 
+
+// function scrapePlayStore() {
+//     return Promise.map(db.getStaleSearchTerms(1), (term) => {
+//         logger.debug('Marking search term as being used:', term.search_term);
+//         db.updateLastSearchedDate(term.search_term)
+//             .then(() => logger.debug('Search Term Updated:', term.search_term))
+//             .catch((err) => logger.err('Error Updating search term.', term.search_term, err));
+//         const appData = fetchAppData(term, 1, 1)
+//             .catch((err) => logger.err('Error scraping playstore', err));
+
+//         Promise.filter(appData, (d) => {
+//             const res = db.doesAppExist(d);
+//             logger.debug(res ? 'App Exists' : 'App doesn\' exist');
+//             return !res;
+//         }).then((data) => {
+//             Promise.each(data, (d) => {
+//                 logger.debug('inserting data');
+//                 insertAppData(d)
+//                     .then(() => logger.debug('Data Inserted'))
+//                     .catch((err) => logger.err('ERROR', err));
+//             });
+//         });
+//     }).then(() => Promise.resolve(true));
+// }
+
+function scrapePlayStore() {
+    return Promise.map(db.getStaleSearchTerms(1), (term) => {
+        logger.debug('Marking search term as being used:', term.search_term);
+        db.updateLastSearchedDate(term.search_term)
+            .then(() => logger.debug('Search Term Updated:', term.search_term))
+            .catch((err) => logger.err('Error Updating search term.', term.search_term, err));
+        fetchAppData(term, 1, 1)
+            .then((appData) => {
+                logger.debug('Filtering existing apps');
+                Promise.filter(appData, (d) => !db.doesAppExist(d))
+                    .then((data) => {
+                        logger.debug('inserting apps.');
+                        Promise.each(data, (d) => {
+                            insertAppData(d)
+                                .then(() => logger.debug('Data Inserted'))
+                                .catch((err) => logger.err('ERROR', err));
+                        });
+                    });
+            })
+            .catch((err) => logger.err('Error scraping playstore', err));
+    });
+}
+
 function scrapeFromSearchTerm() {
     return db.getStaleSearchTerms(1)
         .then(
