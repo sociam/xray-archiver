@@ -50,7 +50,7 @@ func SetLastAnalyzeAttempt(id int64) error {
 
 // AddPackages is a function that allows you to add packages to the Xray DB. The
 // argument app must contain a DB ID and an array of package names.
-func AddPackages(app *util.App) error {
+func AddPackages(app *util.App, analyser string) error {
 	if !useDB || app.DBID == 0 {
 		return nil
 	}
@@ -64,8 +64,8 @@ func AddPackages(app *util.App) error {
 			return err
 		}
 		// If the app doesn't exist, insert with whole list of packages
-		rows, err := db.Query("INSERT INTO app_packages VALUES ($1, $2)",
-			app.DBID, pq.Array(&app.Packages))
+		rows, err := db.Query("INSERT INTO app_packages VALUES ($1, $2, $3)",
+			app.DBID, analyser, pq.Array(&app.Packages))
 		if rows != nil {
 			rows.Close()
 		}
@@ -90,7 +90,7 @@ func AddPackages(app *util.App) error {
 
 // AddPerms is a function that allows you to add permissions to the Xray DB. The
 // argument app must contain a DB ID and an array of permissions.
-func AddPerms(app *util.App) error {
+func AddPerms(app *util.App, analyser string) error {
 	if !useDB || app.DBID == 0 {
 		return nil
 	}
@@ -107,8 +107,8 @@ func AddPerms(app *util.App) error {
 		if err != sql.ErrNoRows {
 			return err
 		}
-		rows, err := db.Query("INSERT INTO app_perms VALUES ($1, $2)",
-			app.DBID, pq.Array(&sPerms))
+		rows, err := db.Query("INSERT INTO app_perms VALUES ($1, $2, $3)",
+			app.DBID, pq.Array(&sPerms), analyser)
 		if rows != nil {
 			rows.Close()
 		}
@@ -145,7 +145,7 @@ func SetIcon(id int64, icon string) error {
 
 // AddHosts is a function that allows you to add hosts to the Xray DB. The
 // argument app must contain a DB ID.
-func AddHosts(app *util.App, hosts []string) error {
+func AddHosts(app *util.App, hosts []string, analyser string) error {
 	if !useDB || app.DBID == 0 {
 		return nil
 	}
@@ -157,8 +157,8 @@ func AddHosts(app *util.App, hosts []string) error {
 		if err != sql.ErrNoRows {
 			return err
 		}
-		rows, err := db.Query("INSERT INTO app_hosts(id, hosts) VALUES ($1, $2)",
-			app.DBID, pq.Array(&hosts))
+		rows, err := db.Query("INSERT INTO app_hosts(id, hosts) VALUES ($1, $2, $3)",
+			app.DBID, pq.Array(&hosts), analyser)
 		if rows != nil {
 			rows.Close()
 		}

@@ -73,19 +73,22 @@ create table search_terms(
 
 create table app_packages (
   id            int  references app_versions(id) primary key not null,
+  analyser     text                                                  ,
   packages   text[]                                          not null
 );
 
 create table app_perms(
   id             int references app_versions(id) primary key not null,
+  analyser      text                                                 ,
   permissions text[]                                         not null
 );
 
 -- Contains the hostnames that were found in apps via analysis
 create table app_hosts(
-  id       int references app_versions(id) primary key not null,
-  hosts text[]                                                 ,
-  pis    int[]
+  id          int references app_versions(id) primary key not null,
+  hosts    text[]                                                 ,
+  analyser   text                                                 ,
+  pis       int[]
 );
 
 create table app_companies(

@@ -52,7 +52,7 @@ func analyze(app *util.App) error {
 	} else {
 		app.Perms = manifest.getPerms()
 		fmt.Printf("Permissions found: %v\n\n", app.Perms)
-		err = db.AddPerms(app)
+		err = db.AddPerms(app, "$h1t")
 		if err != nil {
 			fmt.Printf("Error writing permissions to DB: %s\n", err.Error())
 		}
@@ -74,7 +74,7 @@ func analyze(app *util.App) error {
 	} else {
 		fmt.Printf("Hosts found: %v\n\n", app.Hosts)
 
-		err = db.AddHosts(app, app.Hosts)
+		err = db.AddHosts(app, app.Hosts, "$h1t")
 		if err != nil {
 			fmt.Printf("Error writing hosts to DB: %s\n", err.Error())
 		}
@@ -97,7 +97,7 @@ func analyze(app *util.App) error {
 	// 	fmt.Println("Error finding packages: ", err.Error())
 	// } else {
 	// 	fmt.Println("Packages found: ", app.Packages)
-	// 	err = db.AddPackages(app)
+	// 	err = db.AddPackages(app , "$h1t")
 	// 	if err != nil {
 	// 		fmt.Printf("Error writing packages to DB: %s\n", err.Error())
 	// 	}
