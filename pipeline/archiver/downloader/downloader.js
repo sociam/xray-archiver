@@ -1,5 +1,6 @@
 /*
-Download process spawner
+Downloader pricess spawner that synchronously downloads 
+apps not downloaded from the database.
 */
 
 const Promise = require('bluebird');
@@ -37,7 +38,7 @@ async function resolveAPKDir(appData) {
 }
 
 function downloadApp(appData, appSavePath) {
-    // Command line args for gplay cli
+
     const args = ['-pd', appData.app, '-f', appSavePath, '-c', config.credDownload];
     const spw = require('child-process-promise').spawn;
     logger.debug(`Passing args to downloader${args}`);
@@ -63,7 +64,7 @@ function downloadApp(appData, appSavePath) {
 
 async function download(app) {
     logger.info('Starting download attempt for:', app.app);
-    // Could be move to the call to DL app. but this is where the whole DL process starts.
+
     db.updatedDlAttempt(app);
     let appSavePath;
     try {
@@ -85,23 +86,19 @@ async function download(app) {
         const apkPath = path.join(appSavePath, `${app.app}.apk`);
 
         if (fs.existsSync(apkPath)) {
-            // Perform a check on apk size
             await fs.stat(apkPath, async(err, stats) => {
                 if (stats.size == 0 || stats.size == undefined) {
                     await fs.rmdir(appSavePath).catch(logger.warning);
                     return Promise.reject('File did not successfully download and is a empty size');
                 }
-
                 await db.updateDownloadedApp(app);
                 return undefined;
             });
         }
     } catch (err) {
-        // TODO: Maybe do something else? Destroying process as we have apks that
-        // don't exist in db...
         return Promise.reject('Err when updated the downloaded app', err);
     }
-    return undefined;
+    return undefined; //TODO: handle this return
 }
 
 async function main() {

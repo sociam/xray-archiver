@@ -1,3 +1,8 @@
+/*
+Independent script to update all company details to the database.
+Dependent on company_details.json, mapping the name, domaind and the typetag only as of right now
+
+*/
 'use-strict';
 const fs = require('fs');
 const logger = require('../../util/logger');

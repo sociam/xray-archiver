@@ -6,55 +6,11 @@ const logger = require('../../util/logger');
 const DB = require('../../db/db');
 const db = new DB('explorer');
 
-/**
- * Wipes a file at a specified location of text
- * @param {*Location of the file to be written to...} location
- */
-/*
-function wipeScrapedWords(location) {
-    fs.writeFile(location, '', (err) => {
-        if (err) {
-            logger.err(err.message);
-        }
-    });
-}
-*/
 
-/**
- *  Writes a word to a file at a specified location
- * @param {*The word to be written to a file...} word
- * @param {*The location of the file to be written to...} location
- */
-/*
-function writeScrapedWords(word, location) {
-    fs.appendFile(location, `${word}\n`, (err) => {
-        if (err) {
-            logger.err(err.message);
-        }
-    });
-}
-*/
 
-/**
- * Used returns an array where each line is a search term.
- * @param {*the location of the file that is to be read} filepath
- */
 /*
-function openSearchTerms(filepath) {
-    return fs.readFileSync(filepath).toString().split('\n');
-}
-*/
-
-/**
- * Parses a file of search terms, adding each line as a search term to the DB
- * @param {*Location of a file to import search terms from} filepath
+TODO:
  */
-/*
-function importFileTerms(filepath) {
-    openSearchTerms(filepath).forEach((term) => db.insertSearchTerm(term));
-}
-*/
-
 function flatten(arr) {
     return arr.reduce((a, b) => a.concat(b), []);
 }
@@ -75,9 +31,7 @@ function cartesianProductChars(...args) {
  *
  * @param {*The list of words used to get autocompletes} startingWords
  */
-// TODO: Store scraped word to the Database not txt
 function scrapeSuggestedWords(startingWords) {
-    // TODO: return array of suggested search terms
     Promise.each(startingWords, (letter) => {
         return gplay.suggest({ term: letter, throttle: 10, region: 'uk' })
             .then((suggestion) => {
