@@ -168,9 +168,9 @@ create materialized view company_app_coverage as
 
 
 
------
+---------------------------------------------------------------------------------------------------
 -- company per app variance
------
+---------------------------------------------------------------------------------------------------
 drop materialized view if exists company_per_app_varianvce;
 create materialized view company_per_app_variance as
 select diffSum/count as variance, diffSum, count from (
