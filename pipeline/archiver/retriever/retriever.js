@@ -25,57 +25,67 @@ function insertAppData(appData) {
 }
 
 // TODO Add Permission list to app Data JSON
-const fetchAppData = (searchTerm, numberOfApps, perSecond) => {
-    return gplay.search({
-        term: searchTerm,
-        num: numberOfApps,
-        throttle: perSecond,
-        region: region,
-        fullDetail: true,
-    }).catch((err) => Promise.reject(err));
-};
+async function fetchAppData(searchTerm, numberOfApps, perSecond) {
+    let res = [];
 
-let noErr = true;
-
-(async() => {
-    while (noErr) {
-        await db.getStaleSearchTerms(1)
-            .then(
-                (searchTerms) => {
-                    const terms = searchTerms.map((term) => term.search_term);
-                    logger.debug('Marking Search terms as being used:', terms);
-                    terms.forEach((term) => db.updateLastSearchedDate(term)
-                        .then(
-                            () => logger.debug('Last Search date updated:', term),
-                            (err) => logger.err('ERROR SETTING SEARCH DATE FOR:', term, err)
-                        )
-                    );
-                    logger.debug('Fetching App data for searchterms:', terms);
-                    return Promise.all(terms.map((term) => fetchAppData(term, 120, 1)));
-                },
-                (err) => {
-                    noErr = false;
-                    logger.err('ERROR READING SEARCH TERMS FROM DATABASE:', err);
-                }
-            ).then(
-                (appDatas) => {
-                    const appData = appDatas.reduce((a, b) => a.concat(b), []);
-                    logger.debug('Filtering apps that already exist: ',
-                        appData.map((data) => data.appId));
-                    return appData.filter((appData) => db.doesAppExist(appData));
-                },
-                (err) => logger.err('ERROR FETCHING APP DATA FOR SEARCH TERMS:', err)
-            ).then(
-                (appDatas) => {
-                    logger.debug('App Data doesn\'t exist:', appDatas.map((data) => data.appId));
-                    return appDatas.forEach((data) => insertAppData(data)
-                        .catch((err) => logger.err('ERROR INSERTING APP INTO DATABASE:', err)));
-                },
-                (err) => logger.err('ERROR CHECKING EXISTANCE OF AN APP:', err)
-            );
+    try {
+        res = await gplay.search({
+            term: searchTerm,
+            num: numberOfApps,
+            throttle: perSecond,
+            region: region,
+            fullDetail: true,
+        });
+    } catch (err) {
+        logger.err(err);
     }
-})();
+    return res;
+}
 
+function scrapeFromSearchTerm() {
+    return db.getStaleSearchTerms(1)
+        .then(
+            (searchTerms) => {
+                const terms = searchTerms.map((term) => term.search_term);
+                logger.debug('Marking Search terms as being used:', terms);
+                terms.forEach((term) => db.updateLastSearchedDate(term)
+                    .then(() => logger.debug('Last Search date updated:', term))
+                    .catch((err) => logger.err('ERROR SETTING SEARCH DATE FOR:', term, err))
+                );
+                logger.debug('Fetching App data for searchterms:', terms);
+                return Promise.all(terms.map((term) => fetchAppData(term, 1, 1) /* Need to catch...*/ ));
+            },
+            (err) => {
+                logger.err('ERROR READING SEARCH TERMS FROM DATABASE:', err);
+            }
+        ).then(
+            (appDatas) => {
+                const appData = appDatas.reduce((a, b) => a.concat(b), []);
+                logger.debug('Filtering apps that already exist: ',
+                    appData.map((data) => data.appId));
+                return appData.filter((appData) => !db.doesAppExist(appData) /* Need to catch...*/ );
+            },
+            (err) => logger.err('ERROR FETCHING APP DATA FOR SEARCH TERMS:', err)
+        ).then(
+            (appDatas) => {
+                logger.debug('App Data doesn\'t exist:', appDatas.map((data) => data.appId));
+                appDatas.forEach((data) => insertAppData(data)
+                    .catch((err) => logger.err('ERROR INSERTING APP INTO DATABASE:', err)));
+            },
+            (err) => logger.err('ERROR CHECKING EXISTANCE OF AN APP:', err)
+        );
+}
+
+async function scrape() {
+    await scrapeFromSearchTerm()
+        .then(() => {
+            scrape();
+        })
+        .catch((err) => logger.err('ERROR:', err));
+    logger.debug('\n\n\n\n\n\n\n\n\n\n\n\n');
+}
+
+scrape();
 // // TODO: Move this to DB.
 // return Promise.all(_.map(appDatas, async(appData) => {
 //     logger.debug(`inserting ${appData.title} to the DB`);
