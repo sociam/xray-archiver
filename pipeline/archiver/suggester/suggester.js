@@ -17,8 +17,7 @@ function addGPlayURL(altApp, URL) {
         return altApp;
     }
     altApp.gPlayURL = URL;
-    altApp.gPlayAppID = URL.split('id=')[1]; // TODO: cut App ID from string.
-
+    altApp.gPlayAppID = URL.split('id=')[1]; 
     if (!altApp.gPlayAppID) {
         altApp.gPlayAppID = '';
     }
@@ -53,7 +52,7 @@ function addOfficialSiteURL(altApp, URL) {
  */
 function scrapeAltAppPage(altApp) {
     return request(altApp.altToURL, (err, res, html) => {
-        // if there wasn't an err with the request.
+
         if (err) {
             logger.err(`Failed to fetch HTML: ${err}`);
             return err;
@@ -124,7 +123,7 @@ function scrapePageForAlts(URLString, appID) {
 
         // for each ID find the Title and URL to AltTo page.
         altApps = altIDs.map((altID) => {
-            // logger.debug(altID);
+         
             const aTag = $(`#${altID}`).find('h3').find('a').first();
             return {
                 title: aTag.text(),

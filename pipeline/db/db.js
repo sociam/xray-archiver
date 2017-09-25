@@ -177,9 +177,6 @@ class DB {
         return res.rows;
     }
 
-    /**
-     * 
-     */
     async insertCompanyDomain(company, domain, type) {
         logger.debug(`Inserting - Company: ${company}  Domain: ${domain}`);
         try {

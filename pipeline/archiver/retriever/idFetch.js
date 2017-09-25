@@ -1,7 +1,6 @@
 // External Packages
 const gplay = require('google-play-scraper');
 
-// Our own packages.
 const logger = require('../../util/logger');
 const Database = require('../../db/db');
 const db = new Database('retriever');
@@ -40,13 +39,12 @@ function insertAppData(appData) {
     if (!appData.version || appData.version === 'Varies with device') {
         logger.debug('Version not found defaulting too', appData.updated);
 
-        // let formatDate = appData.updated.replace(/\s+/g, '').replace(',', '/');
         const formatDate = new Date(appData.updated).toISOString().substring(0, 10);
         appData.version = formatDate;
     }
 
     // push the app data to the DB
-    return db.insertPlayApp(appData, 'us');
+    return db.insertPlayApp(appData, 'us'); //TODO: need to pass parameter for country or missing suggestions
 }
 
 function fetchAppData(appID) {
@@ -54,7 +52,6 @@ function fetchAppData(appID) {
         appId: appID,
         fullDetails: true,
     }).then((res) => {
-        // logger.debug(res);
         return insertAppData(res)
             .then((res) => {
                 return `App inserted into the DB. Response: ${res}`;

@@ -43,7 +43,7 @@ function scrapeSuggestedWords(startingWords) {
     });
 }
 
-// TODO this stuff needs moving somewhere...
+//Alphabet 
 const single = 'abcdefghijklmnopqrstuvwxyz '.split('');
 const double = cartesianProductChars(single, single);
 const triple = cartesianProductChars(single, single, single);
