@@ -1,6 +1,6 @@
 /* eslint no-console: 0 */
 /*
-Simply logger to correctly error messages to systemd.
+To log error messages to systemd.
 */
 
 const util = require('util');
