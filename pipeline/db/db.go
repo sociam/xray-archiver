@@ -851,6 +851,7 @@ func QueryAll(
 	util.Log.Debug("Examining rows")
 
 	result := []AppVersion{}
+	util.Log.Debug("wtf?")
 	for i := 0; rows.Next(); i++ {
 		util.Log.Debug("Casting Row: ", i)
 
@@ -926,6 +927,8 @@ func QueryAll(
 			result = append(result, appData)
 		}
 	}
+
+	util.Log.Debug("Done examining rows.")
 
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
 		util.Log.Err("Database err", rows.Err())

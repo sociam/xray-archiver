@@ -402,6 +402,7 @@ func appsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 		results, err := db.QueryAll(onlyAnalyzed, store, limit, offset, developers, genres, permissions, appIDs, titles, startsWith)
 
+		util.Log.Debug("Results found %v", results)
 		if err != nil {
 			util.Log.Err("Error querying database: ", err.Error())
 			writeErr(w, mime, http.StatusInternalServerError, "internal_error", "An internal error occurred")
