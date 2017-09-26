@@ -89,4 +89,12 @@ function scrape() {
     logger.debug('Moving onto the next search term');
 }
 
+async function whileTrue() {
+    while (true) {
+        await scrapeFromSearchTerm();
+    }
+}
+
+//whileTrue();
+
 scrape();
