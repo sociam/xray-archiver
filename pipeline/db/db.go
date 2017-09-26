@@ -706,7 +706,7 @@ func QueryAll(
 
 	var queryStr string
 	//TODO: Left as join will be built later
-	// querystr = "SELECT " +
+	// queryStr = "SELECT " +
 	// 	"a.id, a.title, a.summary, a.description, a.store_url, a.price, a.free, a.rating, " +
 	// 	"a.num_reviews, a.genre, a.family_genre, a.min_installs, a.max_installs, a.updated, " +
 	// 	"a.android_ver, a.content_rating, a.recent_changes, v.app, v.store, v.region, " +
@@ -717,7 +717,7 @@ func QueryAll(
 	// 	"FULL OUTER JOIN developers d ON (a.developer = d.id) " +
 	// 	"FULL OUTER JOIN app_hosts h ON (a.id = h.id) " +
 	// 	"FULL OUTER JOIN app_perms p ON (a.id = p.id) " +
-	// 	"FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) " +
+	// 	"FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) "
 
 	queryStr = "SELECT " +
 		"id, title, summary, description, store_url, price, free, rating, " +
@@ -725,7 +725,7 @@ func QueryAll(
 		"android_ver, content_rating, recent_changes, app, store, region, " +
 		"version, icon, analyzed, email, name, store_site, site, hosts, permissions, " +
 		"packages " +
-		"FROM  all_apps_data " +
+		"FROM  matview.apps_play_data " +
 		"WHERE "
 
 	var args []interface{}
