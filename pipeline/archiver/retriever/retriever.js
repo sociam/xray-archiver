@@ -51,7 +51,8 @@ function scrapeFromSearchTerm() {
                     .catch((err) => logger.err('ERROR SETTING SEARCH DATE FOR:', term, err))
                 );
                 logger.debug('Fetching App data for searchterms:', terms);
-                return Promise.all(terms.map((term) => fetchAppData(term, 120, 1) /* Need to catch...*/ ));
+                return Promise.all(terms.map((term) => fetchAppData(term, 120, 1)
+                    .catch((err) => logger.err('Looks like its errrrr-ed...', err))));
             },
             (err) => {
                 logger.err('ERROR READING SEARCH TERMS FROM DATABASE:', err);
@@ -63,7 +64,8 @@ function scrapeFromSearchTerm() {
                     appData.map((data) => data.appId));
                 const data = Promise.all(appData.forEach((appData) => {
                     db.doesAppExist(appData)
-                        .then((res) => res ? logger.debug('App Not Added') : insertAppData(appData));
+                        .then((res) => res ? logger.debug('App Not Added') : insertAppData(appData))
+                        .catch((err) => logger.err('Looks like its errrrr-ed...', err));
                 })); /* Need to catch...*/
                 logger.debug(data);
                 return data;
@@ -78,8 +80,8 @@ function scrapeFromSearchTerm() {
         );
 }
 
-async function scrape() {
-    await scrapeFromSearchTerm()
+function scrape() {
+    scrapeFromSearchTerm()
         .then(() => {
             scrape();
         })
