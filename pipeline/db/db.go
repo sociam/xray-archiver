@@ -836,7 +836,11 @@ func QueryAll(
 	numParam++
 	queryStr += "OFFSET $" + strconv.Itoa(numParam)
 
-	fmt.Printf("%s %v\n", queryStr, args)
+	fmt.Printf("%s ", queryStr, args)
+
+	for _, arg := range args {
+		util.Log.Debug("Args to postgres query: %v", arg)
+	}
 
 	rows, err := db.Query(queryStr, args...)
 
