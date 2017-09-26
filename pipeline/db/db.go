@@ -736,13 +736,13 @@ func QueryAll(
 	//TODO: future me will fix this later... however considering the horrible *quick*query a better refactor is needed...
 	//This better refcator will sepeate each select as it's own component. Get ids then get where matching. Would require
 	//multiple joins but if the views are setup should not matter
-	util.Log.Debug("Got titles %s \n", titles)
+	util.Log.Debug("Requested where  titles %s \n", titles)
 	if len(titles) > 0 {
 		extendWhereQuery(&queryStr, "title ", &numParam, &titles, &hasPrev)
 		args = append(args, pq.Array(&titles))
 	}
 
-	util.Log.Debug("Got developers %s \n", developers)
+	util.Log.Debug("Requested where  developers %s \n", developers)
 	if len(developers) > 0 {
 		extendWhereQuery(&queryStr, "name ", &numParam, &developers, &hasPrev)
 		args = append(args, pq.Array(&developers))
