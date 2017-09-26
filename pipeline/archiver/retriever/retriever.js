@@ -1,6 +1,4 @@
 const gplay = require('google-play-scraper');
-
-const Promise = require('bluebird');
 const logger = require('../../util/logger');
 const db = new(require('../../db/db'))('retriever');
 
@@ -42,54 +40,6 @@ async function fetchAppData(searchTerm, numberOfApps, perSecond) {
     return res;
 }
 
-
-// function scrapePlayStore() {
-//     return Promise.map(db.getStaleSearchTerms(1), (term) => {
-//         logger.debug('Marking search term as being used:', term.search_term);
-//         db.updateLastSearchedDate(term.search_term)
-//             .then(() => logger.debug('Search Term Updated:', term.search_term))
-//             .catch((err) => logger.err('Error Updating search term.', term.search_term, err));
-//         const appData = fetchAppData(term, 1, 1)
-//             .catch((err) => logger.err('Error scraping playstore', err));
-
-//         Promise.filter(appData, (d) => {
-//             const res = db.doesAppExist(d);
-//             logger.debug(res ? 'App Exists' : 'App doesn\' exist');
-//             return !res;
-//         }).then((data) => {
-//             Promise.each(data, (d) => {
-//                 logger.debug('inserting data');
-//                 insertAppData(d)
-//                     .then(() => logger.debug('Data Inserted'))
-//                     .catch((err) => logger.err('ERROR', err));
-//             });
-//         });
-//     }).then(() => Promise.resolve(true));
-// }
-
-function scrapePlayStore() {
-    return Promise.map(db.getStaleSearchTerms(1), (term) => {
-        logger.debug('Marking search term as being used:', term.search_term);
-        db.updateLastSearchedDate(term.search_term)
-            .then(() => logger.debug('Search Term Updated:', term.search_term))
-            .catch((err) => logger.err('Error Updating search term.', term.search_term, err));
-        fetchAppData(term, 1, 1)
-            .then((appData) => {
-                logger.debug('Filtering existing apps');
-                Promise.filter(appData, (d) => !db.doesAppExist(d))
-                    .then((data) => {
-                        logger.debug('inserting apps.');
-                        Promise.each(data, (d) => {
-                            insertAppData(d)
-                                .then(() => logger.debug('Data Inserted'))
-                                .catch((err) => logger.err('ERROR', err));
-                        });
-                    });
-            })
-            .catch((err) => logger.err('Error scraping playstore', err));
-    });
-}
-
 function scrapeFromSearchTerm() {
     return db.getStaleSearchTerms(1)
         .then(
@@ -101,7 +51,7 @@ function scrapeFromSearchTerm() {
                     .catch((err) => logger.err('ERROR SETTING SEARCH DATE FOR:', term, err))
                 );
                 logger.debug('Fetching App data for searchterms:', terms);
-                return Promise.all(terms.map((term) => fetchAppData(term, 1, 1) /* Need to catch...*/ ));
+                return Promise.all(terms.map((term) => fetchAppData(term, 120, 1) /* Need to catch...*/ ));
             },
             (err) => {
                 logger.err('ERROR READING SEARCH TERMS FROM DATABASE:', err);
@@ -111,9 +61,13 @@ function scrapeFromSearchTerm() {
                 const appData = appDatas.reduce((a, b) => a.concat(b), []);
                 logger.debug('Filtering apps that already exist: ',
                     appData.map((data) => data.appId));
-                return appData.filter((appData) => !db.doesAppExist(appData) /* Need to catch...*/ );
-            },
-            (err) => logger.err('ERROR FETCHING APP DATA FOR SEARCH TERMS:', err)
+                const data = Promise.all(appData.forEach((appData) => {
+                    db.doesAppExist(appData)
+                        .then((res) => res ? logger.debug('App Not Added') : insertAppData(appData));
+                })); /* Need to catch...*/
+                logger.debug(data);
+                return data;
+            }, (err) => logger.err('ERROR FETCHING APP DATA FOR SEARCH TERMS:', err)
         ).then(
             (appDatas) => {
                 logger.debug('App Data doesn\'t exist:', appDatas.map((data) => data.appId));
@@ -130,31 +84,7 @@ async function scrape() {
             scrape();
         })
         .catch((err) => logger.err('ERROR:', err));
-    logger.debug('\n\n\n\n\n\n\n\n\n\n\n\n');
+    logger.debug('Moving onto the next search term');
 }
 
 scrape();
-// // TODO: Move this to DB.
-// return Promise.all(_.map(appDatas, async(appData) => {
-//     logger.debug(`inserting ${appData.title} to the DB`);
-
-//     const appExists = await db.doesAppExist(appData).catch(logger.err);
-//     if (!appExists) {
-//         return insertAppData(appData).catch((err) => logger.err(err));
-//     } else {
-//         logger.debug('App already existing', appData.appId);
-//         return Promise.reject('App Already Exists');
-//     }
-// }));
-// // }
-
-// (async() => {
-//     const dbRows = await db.getStaleSearchTerms();
-//     Promise.each(dbRows, async(dbRow) => {
-//         logger.info(`searching for: ${dbRow.search_term}`);
-//         return fetchAppData(dbRow.search_term, 60, 1)
-//             .then(await db.updateLastSearchedDate(dbRow.search_term)
-//                 .catch(logger.err))
-//             .catch(logger.err);
-//     });
-// })();
