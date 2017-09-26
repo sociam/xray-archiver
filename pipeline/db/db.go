@@ -682,7 +682,7 @@ var appStoreTable = map[string]string{
 }
 
 func extendWhereQuery(querystr *string, colName string, numParam *int, arr *[]string, hasPrev *bool) {
-	util.Log.Debug("Attempting to query params %s \n", *arr)
+	util.Log.Debug("Attempting to extend query params %s \n", *arr)
 
 	if *hasPrev {
 		*querystr += "AND "
@@ -736,17 +736,19 @@ func QueryAll(
 	//TODO: future me will fix this later... however considering the horrible *quick*query a better refactor is needed...
 	//This better refcator will sepeate each select as it's own component. Get ids then get where matching. Would require
 	//multiple joins but if the views are setup should not matter
-
+	util.Log.Debug("Got titles %s \n", titles)
 	if len(titles) > 0 {
 		extendWhereQuery(&queryStr, "title ", &numParam, &titles, &hasPrev)
 		args = append(args, pq.Array(&titles))
 	}
 
+	util.Log.Debug("Got developers %s \n", developers)
 	if len(developers) > 0 {
 		extendWhereQuery(&queryStr, "name ", &numParam, &developers, &hasPrev)
 		args = append(args, pq.Array(&developers))
 	}
 
+	util.Log.Debug("Requested where genres %s \n", genres)
 	if len(genres) > 0 {
 		util.Log.Debug("Attempting to query params %s \n", genres)
 
@@ -772,6 +774,7 @@ func QueryAll(
 		queryStr += newQuery
 	}
 
+	util.Log.Debug("Requested where genres %s \n", appIDs)
 	if len(appIDs) > 0 {
 		util.Log.Debug("Attempting to query params %s \n", appIDs)
 
@@ -798,6 +801,7 @@ func QueryAll(
 
 	}
 
+	util.Log.Debug("Requested where startsWith %s \n", startsWith)
 	if len(startsWith) > 0 {
 		util.Log.Debug("Attempting to query params %s \n", startsWith)
 
