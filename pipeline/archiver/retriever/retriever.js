@@ -68,15 +68,7 @@ function scrapeFromSearchTerm() {
                         .catch((err) => logger.err('Looks like its errrrr-ed...', err));
                 })); /* Need to catch...*/
                 logger.debug(data);
-                return data;
             }, (err) => logger.err('ERROR FETCHING APP DATA FOR SEARCH TERMS:', err)
-        ).then(
-            (appDatas) => {
-                logger.debug('App Data doesn\'t exist:', appDatas.map((data) => data.appId));
-                appDatas.forEach((data) => insertAppData(data)
-                    .catch((err) => logger.err('ERROR INSERTING APP INTO DATABASE:', err)));
-            },
-            (err) => logger.err('ERROR CHECKING EXISTANCE OF AN APP:', err)
         );
 }
 
@@ -95,6 +87,6 @@ async function whileTrue() {
     }
 }
 
-//whileTrue();
+whileTrue();
 
-scrape();
+// scrape();
