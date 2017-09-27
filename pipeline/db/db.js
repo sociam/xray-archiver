@@ -294,9 +294,8 @@ class DB {
             return updateRes;
         } catch (err) {
             logger.err('Error updating last searched date for search terms:', err);
-            throw err;
-        } finally {
             client.release();
+            throw err;
         }
     }
 
@@ -328,9 +327,8 @@ class DB {
             }
         } catch (err) {
             logger.err('Error inserting search term into the database', err);
-            throw err;
-        } finally {
             client.release();
+            throw err;
         }
     }
 
