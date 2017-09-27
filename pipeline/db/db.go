@@ -855,7 +855,7 @@ func QueryAll(
 	util.Log.Debug("Examining rows")
 
 	result := []AppVersion{}
-	util.Log.Debug("wtf?")
+
 	for i := 0; rows.Next(); i++ {
 		util.Log.Debug("Casting Row: ", i)
 
