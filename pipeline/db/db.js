@@ -281,9 +281,9 @@ class DB {
      * Used to track 'stale' search terms.
      */
     async updateLastSearchedDate(searchTerm) {
+        logger.debug(`Setting last searched date for ${searchTerm} to current date`);
+        const client = await this.connect();
         try {
-            logger.debug(`Setting last searched date for ${searchTerm} to current date`);
-            const client = await this.connect();
             logger.debug('connected');
 
             logger.debug(`checking if ${searchTerm} exists in db.`);
@@ -299,6 +299,8 @@ class DB {
         } catch (err) {
             logger.err('Error updating last searched date for search terms:', err);
             throw err;
+        } finally {
+            client.release();
         }
     }
 
@@ -306,10 +308,9 @@ class DB {
      *  Add a search term to the table if it doesn't already exist.
      */
     async insertSearchTerm(searchTerm) {
+        const client = await this.connect();
+        logger.debug('Connected');
         try {
-            const client = await this.connect();
-            logger.debug('Connected');
-
             logger.debug(`Checking if ${searchTerm} exists before adding to search_terms`);
             const checkRes = await client.lquery('SELECT search_term FROM search_terms WHERE search_term = $1', [searchTerm]);
 
@@ -332,6 +333,8 @@ class DB {
         } catch (err) {
             logger.err('Error inserting search term into the database', err);
             throw err;
+        } finally {
+            client.release();
         }
     }
 
