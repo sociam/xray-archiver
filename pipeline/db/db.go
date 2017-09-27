@@ -682,7 +682,7 @@ var appStoreTable = map[string]string{
 }
 
 func extendWhereQuery(querystr *string, colName string, numParam *int, arr *[]string, hasPrev *bool) {
-	util.Log.Debug("Attempting to query params %s \n", *arr)
+	util.Log.Debug("Attempting to extend query params %s \n", *arr)
 
 	if *hasPrev {
 		*querystr += "AND "
@@ -706,7 +706,7 @@ func QueryAll(
 
 	var queryStr string
 	//TODO: Left as join will be built later
-	// querystr = "SELECT " +
+	// queryStr = "SELECT " +
 	// 	"a.id, a.title, a.summary, a.description, a.store_url, a.price, a.free, a.rating, " +
 	// 	"a.num_reviews, a.genre, a.family_genre, a.min_installs, a.max_installs, a.updated, " +
 	// 	"a.android_ver, a.content_rating, a.recent_changes, v.app, v.store, v.region, " +
@@ -717,7 +717,7 @@ func QueryAll(
 	// 	"FULL OUTER JOIN developers d ON (a.developer = d.id) " +
 	// 	"FULL OUTER JOIN app_hosts h ON (a.id = h.id) " +
 	// 	"FULL OUTER JOIN app_perms p ON (a.id = p.id) " +
-	// 	"FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) " +
+	// 	"FULL OUTER JOIN app_packages pkg  ON (a.id = pkg.id) "
 
 	queryStr = "SELECT " +
 		"id, title, summary, description, store_url, price, free, rating, " +
@@ -725,7 +725,7 @@ func QueryAll(
 		"android_ver, content_rating, recent_changes, app, store, region, " +
 		"version, icon, analyzed, email, name, store_site, site, hosts, permissions, " +
 		"packages " +
-		"FROM  all_apps_data " +
+		"FROM  mat_view.apps_play_data " +
 		"WHERE "
 
 	var args []interface{}
@@ -736,17 +736,19 @@ func QueryAll(
 	//TODO: future me will fix this later... however considering the horrible *quick*query a better refactor is needed...
 	//This better refcator will sepeate each select as it's own component. Get ids then get where matching. Would require
 	//multiple joins but if the views are setup should not matter
-
+	util.Log.Debug("Requested where  titles %s \n", titles)
 	if len(titles) > 0 {
 		extendWhereQuery(&queryStr, "title ", &numParam, &titles, &hasPrev)
 		args = append(args, pq.Array(&titles))
 	}
 
+	util.Log.Debug("Requested where  developers %s \n", developers)
 	if len(developers) > 0 {
 		extendWhereQuery(&queryStr, "name ", &numParam, &developers, &hasPrev)
 		args = append(args, pq.Array(&developers))
 	}
 
+	util.Log.Debug("Requested where genres %s \n", genres)
 	if len(genres) > 0 {
 		util.Log.Debug("Attempting to query params %s \n", genres)
 
@@ -772,6 +774,7 @@ func QueryAll(
 		queryStr += newQuery
 	}
 
+	util.Log.Debug("Requested where genres %s \n", appIDs)
 	if len(appIDs) > 0 {
 		util.Log.Debug("Attempting to query params %s \n", appIDs)
 
@@ -798,6 +801,7 @@ func QueryAll(
 
 	}
 
+	util.Log.Debug("Requested where startsWith %s \n", startsWith)
 	if len(startsWith) > 0 {
 		util.Log.Debug("Attempting to query params %s \n", startsWith)
 
@@ -832,7 +836,11 @@ func QueryAll(
 	numParam++
 	queryStr += "OFFSET $" + strconv.Itoa(numParam)
 
-	fmt.Printf("%s %v\n", queryStr, args)
+	fmt.Printf("%s\n", queryStr)
+
+	for _, arg := range args {
+		util.Log.Debug("Args to postgres query: %v", arg)
+	}
 
 	rows, err := db.Query(queryStr, args...)
 
@@ -847,6 +855,7 @@ func QueryAll(
 	util.Log.Debug("Examining rows")
 
 	result := []AppVersion{}
+
 	for i := 0; rows.Next(); i++ {
 		util.Log.Debug("Casting Row: ", i)
 
@@ -922,6 +931,8 @@ func QueryAll(
 			result = append(result, appData)
 		}
 	}
+
+	util.Log.Debug("Done examining rows.")
 
 	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
 		util.Log.Err("Database err", rows.Err())
