@@ -5,7 +5,6 @@ const pg = require('pg');
 const logger = require('../util/logger');
 
 class DB {
-
     /**
      *  DB Class constructor - Initialises all config for pg db connections
      *  as well as a pool for connecting to xray db.
