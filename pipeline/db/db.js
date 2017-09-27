@@ -246,9 +246,7 @@ class DB {
             logger.debug('Company and Domain don\'t exist. Inserting now.');
             await this.query('INSERT INTO company_domains VALUES($1, $2, $3)', [company, domain, type]);
         } catch (err) {
-            logger.err(`Error Occured: ${err}`);
-        } finally {
-            logger.debug('Finally Reached on Company-domain insert.');
+            logger.err(`Error inserting company domain: ${err}`);
         }
     }
 
@@ -270,9 +268,7 @@ class DB {
                 logger.debug(`${altPair.source} and ${altPair.alt} Already Exist!`);
             }
         } catch (err) {
-            logger.err(`ERROR!!!!!${err}`);
-        } finally {
-            logger.debug(' -- Got To Finally -- ');
+            logger.err(`Error inserting manual suggestion ${err}`);
         }
     }
 
