@@ -725,7 +725,7 @@ func QueryAll(
 		"android_ver, content_rating, recent_changes, app, store, region, " +
 		"version, icon, analyzed, email, name, store_site, site, hosts, permissions, " +
 		"packages " +
-		"FROM  matview.apps_play_data " +
+		"FROM  mat_view.apps_play_data " +
 		"WHERE "
 
 	var args []interface{}
