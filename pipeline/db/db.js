@@ -297,7 +297,7 @@ class DB {
             client.release();
             return updateRes;
         } catch (err) {
-            logger.err('Error upading last searched date for search terms:', err);
+            logger.err('Error updating last searched date for search terms:', err);
             throw err;
         }
     }
