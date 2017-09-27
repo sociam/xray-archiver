@@ -8,8 +8,8 @@ begin;
 --
 -- Features in the "genre_host_averages" API Endpoint.
 ---------------------------------------------------------------------------------------------------
-drop table if exists genre_host_averages cascade;
-create table genre_host_averages as
+drop materialized view if exists genre_host_averages cascade;
+create materialized view genre_host_averages as
   select category, host_count, app_count, host_count/app_count::float as host_avg from (
     select p.genre as category, sum(array_length(v.hosts,1)
   ) as host_count, count(p.genre) as app_count
@@ -24,8 +24,8 @@ grant select on genre_host_averages to apiserv;
 --  Todo -- API Endpoint.
 --
 ---------------------------------------------------------------------------------------------------
-drop table if exists genre_counts;
-create table genre_counts as
+drop materialized view if exists genre_counts;
+create materialized view genre_counts as
   select genre, count(*) from playstore_apps p inner join app_versions v on (p.id = v.id) 
     where v.analyzed = true
     group by genre;
@@ -34,7 +34,8 @@ grant select on genre_counts to apiserv;
 ---------------------------------------------------------------------------------------------------
 -- Standard Deviation of hosts found in each genre
 ---------------------------------------------------------------------------------------------------
-create view genre_host_variance as
+drop materialized view if exists genre_host_variance;
+create materialized view genre_host_variance as
   select squared_sum/n-1 
   from (
     select sum(diff_squared) as squared_sum
@@ -47,8 +48,8 @@ create view genre_host_variance as
 ---------------------------------------------------------------------------------------------------
 -- table of distinct hosts 
 ---------------------------------------------------------------------------------------------------
-drop table if exists distinct_hosts;
-create table distinct_hosts as
+drop materialized view if exists distinct_hosts;
+create materialized view distinct_hosts as
   select distinct hosts from ( 
     select unnest(hosts) as hosts from app_hosts
   ) as unpack_hosts;
@@ -56,8 +57,8 @@ create table distinct_hosts as
 ---------------------------------------------------------------------------------------------------
 -- table of app-host pairs
 ---------------------------------------------------------------------------------------------------
-drop table if exists distinct_app_hosts;
-create table distinct_app_hosts as
+drop materialized view if exists distinct_app_hosts;
+create materialized view distinct_app_hosts as
   select distinct id, hosts from ( 
     select id, unnest(hosts) as hosts from app_hosts
   ) as unpack_hosts;
@@ -65,8 +66,8 @@ create table distinct_app_hosts as
 ---------------------------------------------------------------------------------------------------
 -- table counting the number of apps that feature specific hosts.
 ---------------------------------------------------------------------------------------------------
-drop table if exists host_app_coverage;
-create table host_app_coverage as
+drop materialized view if exists host_app_coverage;
+create materialized view host_app_coverage as
   select hosts, count(*) from distinct_app_hosts
     group by hosts;
 
@@ -76,8 +77,8 @@ grant select on host_app_coverage to apiserv;
 ---------------------------------------------------------------------------------------------------
 -- Table of all possible Host names and a heuristic regex for the domain of the host.
 ---------------------------------------------------------------------------------------------------
-drop table if exists host_domains;
-create table host_domains as
+drop materialized view if exists host_domains;
+create materialized view host_domains as
   select hosts,
     substring(hosts from '(([^\.]*)\.([^\.]*)$)') as domain,
     substring(hosts from '(([^\.]*)\.([^\.]*)\.([^\.]*)$)') as domain_plus from distinct_hosts;
@@ -87,8 +88,8 @@ grant select on host_domains to apiserv;
 ---------------------------------------------------------------------------------------------------
 -- Table of Host, heuristic based domain and company for that domain.
 ---------------------------------------------------------------------------------------------------
-drop table if exists host_domain_companies;
-create table host_domain_companies as 
+drop materialized view if exists host_domain_companies;
+create materialized view host_domain_companies as 
   select distinct d.hosts, d.domain, d.domain_plus, coalesce(c.company, 'unknown') as company, coalesce(c.type, 'unknown') as type
     from host_domains d left outer join company_domains c
       on( d.domain = c.domain 
@@ -105,8 +106,8 @@ grant select on host_domain_companies to apiserv;
 -- to different types of companies
 -- NOTE - Expand to include information on the 
 ---------------------------------------------------------------------------------------------------
-drop table if exists distinct_app_companies;
-create table distinct_app_companies as
+drop materialized view if exists distinct_app_companies;
+create materialized view distinct_app_companies as
   select distinct hdc.company, hdc.type, dah.id from host_domain_companies hdc, distinct_app_hosts dah
   where hdc.hosts = dah.hosts;
 
@@ -117,8 +118,8 @@ create table distinct_app_companies as
 --
 ---------------------------------------------------------------------------------------------------
 
-drop table if exists company_genre_coverage;
-create table company_genre_coverage as 
+drop materialized view if exists company_genre_coverage;
+create materialized view company_genre_coverage as 
 select company, company_count, genre, genre_total, (company_count/genre_total::float)*100 as coverage_pct from (
   select  count(dac.company) as company_count, dac.company, p.genre, genre_totals.genre_total from distinct_app_companies dac, playstore_apps p, app_versions v, (
     select count(*) as genre_total, genre from  playstore_apps p, app_versions v
@@ -137,8 +138,8 @@ grant select on company_genre_coverage to apiserv;
 --
 -- This table features in the 'app_company_freq' API endpoint.
 ---------------------------------------------------------------------------------------------------
-drop table if exists company_app_coverage;
-create table company_app_coverage as
+drop materialized view if exists company_app_coverage;
+create materialized view company_app_coverage as
   select distinct t2.company, t2.type, app_count, total_apps, app_count/total_apps::float as company_freq from (
     select company, count(*) as app_count, total_apps
         from distinct_app_companies,( select count(*) as total_apps from app_versions where analyzed = true ) as total_app_count 
@@ -154,8 +155,8 @@ create table company_app_coverage as
 --
 -- This table features in the 'app_type_freq' API endpoint.
 ---------------------------------------------------------------------------------------------------
- drop table if exists app_type_coverage;
- create table app_type_coverage as 
+ drop materialized view if exists app_type_coverage;
+ create materialized view app_type_coverage as 
   select type, app_count, total_apps, app_count/total_apps::float as type_freq from (
     select type, count(*) as app_count, total_apps
         from (select distinct type, id from distinct_app_companies) as distinct_app_types,
@@ -167,10 +168,11 @@ create table company_app_coverage as
 
 
 
------
+---------------------------------------------------------------------------------------------------
 -- company per app variance
------
-create table company_per_app_varianvce as
+---------------------------------------------------------------------------------------------------
+drop materialized view if exists company_per_app_varianvce;
+create materialized view company_per_app_variance as
 select diffSum/count as variance, diffSum, count from (
   select sum(diff) as diffSum 
   from (
