@@ -111,14 +111,14 @@ func (app *App) Unpack() error {
 	cmd := exec.Command("unzip", apkPath, "-d", outDir, "-o")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("%s unpacking apk; output below:\n%s",
+		return fmt.Errorf("%s unzipping apk; output below:\n%s",
 			err.Error(), string(out))
 	}
 
-	cmd := exec.Command("androaxml", "-i", path.Join(outDir, "AndroidManifest.xml"), "-o", path.Join(outDir, "ParsedAndroidManifest.xml"))
+	cmd = exec.Command("androaxml", "-i", path.Join(outDir, "AndroidManifest.xml"), "-o", path.Join(outDir, "ParsedAndroidManifest.xml"))
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("%s unpacking apk; output below:\n%s",
+		return fmt.Errorf("%s parsing android xml; output below:\n%s",
 			err.Error(), string(out))
 	}
 	return nil
