@@ -1,9 +1,7 @@
 {
-    "datadir": "/usr/local/var/xray",
+    "datadir": "/var/xray",
     "unpackdir": "/tmp/unpacked_apks",
-    "sockpath": "/var/run/xray/apks",
     "credDownload": "/etc/xray/credentials.conf",
-    "wordStashDir": "/etc/xray/wordStashDir",
     "db": {
         "database": "xraydb",
         "host": "localhost",
@@ -20,18 +18,28 @@
             "user": "explorer",
             "password": ""
         }
-
     },
     "downloader": {
         "db": {
             "user": "downloader",
             "password": ""
         }
-
     },
     "analyzer": {
         "db": {
             "user": "analyzer",
+            "password": ""
+        }
+    },
+    "apiserv": {
+        "db": {
+            "user": "apiserv",
+            "password": ""
+        }
+    },
+    "suggester": {
+      "db": {
+            "user": "suggester",
             "password": ""
         }
     }

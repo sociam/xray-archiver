@@ -1,10 +1,14 @@
 package main
 
 import (
-	"github.com/sociam/xray/pipeline/util"
+	"github.com/sociam/xray-archiver/pipeline/util"
 )
 
-var unit util.Unit = util.Unit{}
+var unit = util.Unit{}
+
+var badHosts = map[string]util.Unit{
+	"example.com": unit,
+}
 
 var mobTrackers = map[string]util.Unit{
 	"Inmobi": unit, "Mopub": unit, "Facebook": unit, "Chartboost": unit,

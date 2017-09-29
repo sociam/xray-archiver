@@ -1,5 +1,7 @@
 # X-Ray Archiver
 
+[![build status](https://circleci.com/gh/sociam/xray-archiver.png?circle-token=:circle-token)](https://circleci.com/gh/sociam/xray-archiver)
+
 SOCIAM Project for the archiving of Mobile applications. Stores Application metadata
 
 ## App Data Retriever
@@ -22,6 +24,9 @@ A Postgres database contains a series of tables required by all elements of the 
 
 An init_db.sql file located in the db folder of this project can be used to initial a postgres database.
 
+## API Server
+An API server has been developed to allow others to interface with the data collected and generated. Information regarding this API can be found in the [API ReadMe](https://github.com/sociam/xray-archiver/tree/develop/pipeline/apiserv)
+
 # Installation
 
 ## install.sh
@@ -31,9 +36,9 @@ An init_db.sql file located in the db folder of this project can be used to init
 *info about the init db sql file.*
 
 ## Dependencies:
-* Node 
+* Node
     * See - package.json
 * [Gplaycli] (https://github.com/matlink/gplaycli)
     * Expecting gplaycli installed to path
-* PostgreSQL 
-    * db setup to handle the app data scraped. See db/init_db.sql. 
+* PostgreSQL
+    * db setup to handle the app data scraped. See db/init_db.sql.
