@@ -108,7 +108,7 @@ func (app *App) Unpack() error {
 		return os.ErrPermission
 	}
 
-	cmd := exec.Command("unzip", apkPath, "-d", outDir, "-o")
+	cmd := exec.Command("unzip", "-o", apkPath, "-d", outDir)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s unzipping apk; output below:\n%s",
