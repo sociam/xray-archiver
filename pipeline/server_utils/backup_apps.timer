@@ -1,0 +1,10 @@
+[Unit]
+Description=Run weekly app data backup
+
+[Timer]
+OnCalendar=daily 03:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+
