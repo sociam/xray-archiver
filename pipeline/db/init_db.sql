@@ -89,9 +89,9 @@ create table app_hosts(
 );
 
 create table app_analyses(
-  id       int references app_versions(id) primary key not null,
-  analyzer text                                        not null,
-  analysis jsonb                                       not null,
+  id       int references app_versions(id) not null,
+  analyzer text                            not null,
+  analysis jsonb                           not null,
   primary key (id, analyzer)
 );
 
