@@ -1,17 +1,17 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
 	"strconv"
 	"time"
 
-	"github.com/lib/pq"
+	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/pgtype"
 	"github.com/sociam/xray-archiver/pipeline/util"
 )
 
 type xrayDb struct {
-	*sql.DB
+	*pgx.ConnPool
 }
 
 var useDB bool
@@ -22,13 +22,21 @@ var db xrayDb
 func Open(cfg util.Config, enable bool) error {
 	if enable {
 		useDB = true
-		sqlDb, err := sql.Open("postgres",
-			fmt.Sprintf("dbname='%s' user='%s' password='%s' host='%s' port='%d' sslmode='disable'",
-				cfg.DB.Database, cfg.DB.User, cfg.DB.Password, cfg.DB.Host, cfg.DB.Port))
+		pool, err := pgx.NewConnPool(pgx.ConnPoolConfig{
+			pgx.ConnConfig{
+				Host:      cfg.DB.Host,
+				Port:      (uint16)(cfg.DB.Port),
+				Database:  cfg.DB.Database,
+				User:      cfg.DB.User,
+				Password:  cfg.DB.Password,
+				TLSConfig: nil,
+			},
+			5, nil, 0,
+		})
 		if err != nil {
 			return err
 		}
-		db = xrayDb{sqlDb}
+		db = xrayDb{pool}
 	}
 	return nil
 }
@@ -48,6 +56,38 @@ func SetLastAnalyzeAttempt(id int64) error {
 	return nil
 }
 
+func AddAnalysis(id int64, analyzer string, analysis map[string]interface{}) error {
+	if !useDB || id == 0 {
+		return nil
+	}
+
+	row := db.QueryRow("SELECT id FROM app_analyses WHERE id = $1 AND analyzer = $2", id, analyzer)
+	err := row.Scan(nil)
+	if err != nil {
+		if err != pgx.ErrNoRows {
+			return err
+		}
+
+		rows, err := db.Query("INSERT INTO app_analyses VALUES ($1, $2, $3)", id, analyzer, analysis)
+		if rows != nil {
+			rows.Close()
+		}
+		if err != nil {
+			return err
+		}
+	} else {
+		rows, err := db.Query("UPDATE app_analyses SET analysis = $3 WHERE id = $1 AND analyzer = $2", id, analyzer, analysis)
+		if rows != nil {
+			rows.Close()
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // AddPackages is a function that allows you to add packages to the Xray DB. The
 // argument app must contain a DB ID and an array of package names.
 func AddPackages(app *util.App) error {
@@ -58,14 +98,14 @@ func AddPackages(app *util.App) error {
 	var dbPkgs []string
 	// Check if app and packages already exist.
 	err := db.QueryRow("SELECT packages FROM app_packages WHERE id = $1", app.DBID).
-		Scan(pq.Array(&dbPkgs))
+		Scan(&dbPkgs)
 	if err != nil {
-		if err != sql.ErrNoRows {
+		if err != pgx.ErrNoRows {
 			return err
 		}
 		// If the app doesn't exist, insert with whole list of packages
 		rows, err := db.Query("INSERT INTO app_packages VALUES ($1, $2)",
-			app.DBID, pq.Array(&app.Packages))
+			app.DBID, &app.Packages)
 		if rows != nil {
 			rows.Close()
 		}
@@ -76,7 +116,7 @@ func AddPackages(app *util.App) error {
 		// The app already exists, only add new packages for that app.
 		bothPkgs := util.UniqAppend(app.Packages, dbPkgs)
 		rows, err := db.Query("UPDATE app_packages SET packages = $1 WHERE id = $2",
-			pq.Array(&bothPkgs), app.DBID)
+			bothPkgs, app.DBID)
 		if rows != nil {
 			rows.Close()
 		}
@@ -102,13 +142,13 @@ func AddPerms(app *util.App) error {
 
 	var dbPerms []string
 	err := db.QueryRow("SELECT permissions FROM app_perms WHERE id = $1", app.DBID).
-		Scan(pq.Array(&dbPerms))
+		Scan(&dbPerms)
 	if err != nil {
-		if err != sql.ErrNoRows {
+		if err != pgx.ErrNoRows {
 			return err
 		}
 		rows, err := db.Query("INSERT INTO app_perms VALUES ($1, $2)",
-			app.DBID, pq.Array(&sPerms))
+			app.DBID, &sPerms)
 		if rows != nil {
 			rows.Close()
 		}
@@ -118,7 +158,7 @@ func AddPerms(app *util.App) error {
 	} else {
 		bothPerms := util.UniqAppend(sPerms, dbPerms)
 		rows, err := db.Query("UPDATE app_perms SET permissions = $1 WHERE id = $2",
-			pq.Array(&bothPerms), app.DBID)
+			&bothPerms, app.DBID)
 		if rows != nil {
 			rows.Close()
 		}
@@ -152,13 +192,13 @@ func AddHosts(app *util.App, hosts []string) error {
 
 	var dbHosts []string
 	err := db.QueryRow("SELECT hosts FROM app_hosts WHERE id = $1", app.DBID).
-		Scan(pq.Array(&dbHosts))
+		Scan(&dbHosts)
 	if err != nil {
-		if err != sql.ErrNoRows {
+		if err != pgx.ErrNoRows {
 			return err
 		}
 		rows, err := db.Query("INSERT INTO app_hosts(id, hosts) VALUES ($1, $2)",
-			app.DBID, pq.Array(&hosts))
+			app.DBID, &hosts)
 		if rows != nil {
 			rows.Close()
 		}
@@ -168,7 +208,7 @@ func AddHosts(app *util.App, hosts []string) error {
 	} else {
 		bothHosts := util.UniqAppend(hosts, dbHosts)
 		rows, err := db.Query("UPDATE app_hosts SET hosts = $1 WHERE id = $2",
-			pq.Array(&bothHosts), app.DBID)
+			&bothHosts, app.DBID)
 		if rows != nil {
 			rows.Close()
 		}
@@ -215,7 +255,7 @@ func GetAppVersion(app, store, region, version string) (AppVersion, error) {
 
 	// TODO: Check implementation
 	err = db.QueryRow("SELECT * FROM app_hosts WHERE id = $1", appVer.ID).Scan(
-		pq.Array(&appVer.Hosts))
+		&appVer.Hosts)
 
 	if err != nil {
 		return AppVersion{}, err
@@ -223,7 +263,7 @@ func GetAppVersion(app, store, region, version string) (AppVersion, error) {
 
 	// TODO: Check implementation
 	err = db.QueryRow("SELECT * FROM app_perms WHERE id = $1", appVer.ID).Scan(
-		pq.Array(&appVer.Perms))
+		&appVer.Perms)
 
 	if err != nil {
 		return AppVersion{}, err
@@ -247,14 +287,14 @@ func GetAppVersionByID(id int64) (AppVersion, error) {
 	// TODO: Check implementation
 
 	err = db.QueryRow("SELECT * FROM app_hosts WHERE id = $1", appVer.ID).Scan(
-		pq.Array(&appVer.Hosts))
+		&appVer.Hosts)
 	if err != nil {
 		return AppVersion{}, err
 	}
 
 	// TODO: Check implementation
 	err = db.QueryRow("SELECT * FROM app_perms WHERE id = $1", appVer.ID).Scan(
-		pq.Array(&appVer.Perms))
+		&appVer.Perms)
 
 	if err != nil {
 		return AppVersion{}, err
@@ -268,7 +308,7 @@ func GetDeveloper(id int64) (Developer, error) {
 	var dev Developer
 
 	err := db.QueryRow("SELECT * from developers WHERE id = $1", id).Scan(
-		pq.Array(&dev.Emails),
+		&dev.Emails,
 		&dev.Name,
 		&dev.StoreSite,
 		&dev.Site)
@@ -294,13 +334,13 @@ func GetDevelopers(num, start int) ([]Developer, error) {
 	for i := 0; rows.Next(); i++ {
 		ret = append(ret, Developer{})
 		rows.Scan(
-			pq.Array(&ret[i].Emails),
+			&ret[i].Emails,
 			&ret[i].Name,
 			&ret[i].Site,
 			&ret[i].StoreSite)
 	}
 
-	if rows.Err() != sql.ErrNoRows {
+	if rows.Err() != pgx.ErrNoRows {
 		return []Developer{}, err
 	}
 
@@ -314,17 +354,17 @@ func GetCompany(id string) (Company, error) {
 	err := db.QueryRow("SELECT * from companies WHERE id = $1", id).Scan(
 		&comp.ID,
 		&comp.Name,
-		pq.Array(&comp.Hosts),
+		&comp.Hosts,
 		&comp.Founded,
 		&comp.Acquired,
-		pq.Array(&comp.Type),
+		&comp.Type,
 		&comp.TypeTag,
 		&comp.Jurisdiction,
 		&comp.Parent,
 		&comp.Capital,
 		&comp.Equity,
 		&comp.Size,
-		pq.Array(&comp.DataSources),
+		&comp.DataSources,
 		&comp.Description)
 
 	if err != nil {
@@ -362,7 +402,7 @@ func GetAppCompanyFreq() ([]CompanyCoverage, error) {
 		//util.Log.Debug("Row Scanned: " + fmt.Sprint(i))
 	}
 	util.Log.Debug("Rows Scanned")
-	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+	if rows.Err() != pgx.ErrNoRows && rows.Err() != nil {
 		util.Log.Err("Error Scanning Rows ", rows.Err())
 		return []CompanyCoverage{}, err
 	}
@@ -394,7 +434,7 @@ func GetCompanyGenreCoverage() ([]CompanyGenreCoverage, error) {
 		results = append(results, row)
 	}
 	util.Log.Debug("Rows Scanned")
-	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+	if rows.Err() != pgx.ErrNoRows && rows.Err() != nil {
 		util.Log.Err("Error Scanning Rows ", rows.Err())
 		return []CompanyGenreCoverage{}, err
 	}
@@ -426,7 +466,7 @@ func GetAppTypeFreq() ([]CompanyTypeCoverage, error) {
 		//util.Log.Debug("Row Scanned: " + fmt.Sprint(i))
 	}
 	util.Log.Debug("Rows Scanned")
-	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+	if rows.Err() != pgx.ErrNoRows && rows.Err() != nil {
 		util.Log.Err("Error Scanning Rows ", rows.Err())
 		return []CompanyTypeCoverage{}, err
 	}
@@ -458,7 +498,7 @@ func GetGenreHostAverages() ([]GenreStats, error) {
 		//util.Log.Debug("Row Scanned: " + fmt.Sprint(i))
 	}
 	util.Log.Debug("Rows Scanned")
-	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+	if rows.Err() != pgx.ErrNoRows && rows.Err() != nil {
 		util.Log.Err("Error Scanning Rows ", rows.Err())
 		return []GenreStats{}, err
 	}
@@ -482,21 +522,21 @@ func GetCompanies(num, start int) ([]Company, error) {
 		rows.Scan(
 			&ret[i].ID,
 			&ret[i].Name,
-			pq.Array(&ret[i].Hosts),
+			&ret[i].Hosts,
 			&ret[i].Founded,
 			&ret[i].Acquired,
-			pq.Array(&ret[i].Type),
+			&ret[i].Type,
 			&ret[i].TypeTag,
 			&ret[i].Jurisdiction,
 			&ret[i].Parent,
 			&ret[i].Capital,
 			&ret[i].Equity,
 			&ret[i].Size,
-			pq.Array(&ret[i].DataSources),
+			&ret[i].DataSources,
 			&ret[i].Description)
 	}
 
-	if rows.Err() != sql.ErrNoRows {
+	if rows.Err() != pgx.ErrNoRows {
 		return []Company{}, err
 	}
 
@@ -506,7 +546,7 @@ func GetCompanies(num, start int) ([]Company, error) {
 // GetApp gets an app given its id, in the form com.example.app.
 func GetApp(id string) (App, error) {
 	var app App
-	err := db.QueryRow("SELECT * FROM apps WHERE id = $1", id).Scan(&app.ID, pq.Array(&app.Vers))
+	err := db.QueryRow("SELECT * FROM apps WHERE id = $1", id).Scan(&app.ID, &app.Vers)
 	if err != nil {
 		return App{}, err
 	}
@@ -527,7 +567,7 @@ func GetApps(num, start int) ([]App, error) {
 		var app App
 		err := rows.Scan(
 			&app.ID,
-			pq.Array(&app.Vers))
+			&app.Vers)
 		if err != nil {
 			util.Log.Err("Database err:", err)
 		} else {
@@ -535,7 +575,7 @@ func GetApps(num, start int) ([]App, error) {
 		}
 	}
 
-	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+	if rows.Err() != pgx.ErrNoRows && rows.Err() != nil {
 		util.Log.Err("Databse err", rows.Err())
 		return []App{}, rows.Err()
 	}
@@ -560,10 +600,10 @@ func GetLatestApps(num, start int) ([]App, error) {
 
 	for i := 0; rows.Next(); i++ {
 		ret = append(ret, App{})
-		rows.Scan(&ret[i].ID, pq.Array(&ret[i].Vers))
+		rows.Scan(&ret[i].ID, &ret[i].Vers)
 	}
 
-	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+	if rows.Err() != pgx.ErrNoRows && rows.Err() != nil {
 		util.Log.Err("Databse err", rows.Err())
 		return []App{}, rows.Err()
 	}
@@ -588,18 +628,20 @@ func GetManualAltApps(appID string) ([]string, error) {
 	result := []string{}
 
 	for i := 0; rows.Next(); i++ {
-		str := sql.NullString{}
+		var str *string
 
 		err = rows.Scan(&str)
 
 		if err != nil {
 			fmt.Println(err)
 		} else {
-			result = append(result, str.String)
+			if str != nil {
+				result = append(result, *str)
+			}
 		}
 	}
 
-	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+	if rows.Err() != pgx.ErrNoRows && rows.Err() != nil {
 		util.Log.Err("Database err", rows.Err())
 	}
 
@@ -627,7 +669,7 @@ func GetAltApps(appID string) ([]AltApp, error) {
 	for i := 0; rows.Next(); i++ {
 		var altApp AltApp
 		// initialising nullable strings for populating from database
-		var AppID, AltAppTitle, AltToURL, GPlayURL, GPlayID, IconURL, OfficialSiteURL sql.NullString
+		var AppID, AltAppTitle, AltToURL, GPlayURL, GPlayID, IconURL, OfficialSiteURL pgtype.Text
 
 		// Scanning from database into alt app object / nullable strings
 		err = rows.Scan(
@@ -657,7 +699,7 @@ func GetAltApps(appID string) ([]AltApp, error) {
 		}
 	}
 
-	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+	if rows.Err() != pgx.ErrNoRows && rows.Err() != nil {
 		util.Log.Err("Database err", rows.Err())
 	}
 
@@ -739,13 +781,13 @@ func QueryAll(
 	util.Log.Debug("Requested where  titles %s \n", titles)
 	if len(titles) > 0 {
 		extendWhereQuery(&queryStr, "title ", &numParam, &titles, &hasPrev)
-		args = append(args, pq.Array(&titles))
+		args = append(args, &titles)
 	}
 
 	util.Log.Debug("Requested where  developers %s \n", developers)
 	if len(developers) > 0 {
 		extendWhereQuery(&queryStr, "name ", &numParam, &developers, &hasPrev)
-		args = append(args, pq.Array(&developers))
+		args = append(args, &developers)
 	}
 
 	util.Log.Debug("Requested where genres %s \n", genres)
@@ -818,7 +860,7 @@ func QueryAll(
 
 		numParam++
 
-		args = append(args, pq.Array(&startsWith))
+		args = append(args, &startsWith)
 	}
 
 	args = append(args, limit, offset)
@@ -863,10 +905,10 @@ func QueryAll(
 		var playInf PlayStoreInfo
 
 		//Potential null values
-		var summ, desc, genre, famGenre, video, icon, devStoreSite, devSite sql.NullString
+		var summ, desc, genre, famGenre, video, icon, devStoreSite, devSite pgtype.Text
 		//var perms []string
 		//var packages []string
-		hosts, perms, pkgs, recentChanges := []sql.NullString{}, []sql.NullString{}, []sql.NullString{}, []sql.NullString{}
+		var hosts, perms, pkgs, recentChanges pgtype.TextArray
 		var err error
 		//Cannot just cast straight into types because of the postgre type conversion
 		err = rows.Scan(
@@ -886,20 +928,20 @@ func QueryAll(
 			&playInf.Updated,
 			&playInf.AndroidVer,
 			&playInf.ContentRating,
-			pq.Array(&recentChanges),
+			&recentChanges,
 			&appData.App,
 			&appData.Store,
 			&appData.Region,
 			&appData.Ver,
 			&icon, //&appData.Icon,
 			&appData.IsAnalyzed,
-			pq.Array(&appData.Dev.Emails),
+			&appData.Dev.Emails,
 			&appData.Dev.Name,
-			&devStoreSite,    //&appData.Dev.StoreSite,
-			&devSite,         //&appData.Dev.Site,
-			pq.Array(&hosts), //pq.Array(&appData.Hosts),
-			pq.Array(&perms), //pq.Array(&appData.Perms),
-			pq.Array(&pkgs))  //pq.Array(&appData.Packages))
+			&devStoreSite, //&appData.Dev.StoreSite,
+			&devSite,      //&appData.Dev.Site,
+			&hosts,        //pq.Array(&appData.Hosts),
+			&perms,        //pq.Array(&appData.Perms),
+			&pkgs)         //pq.Array(&appData.Packages))
 		if err != nil {
 			util.Log.Err("Database Query", err)
 		} else {
@@ -913,16 +955,16 @@ func QueryAll(
 			appData.Dev.StoreSite = devStoreSite.String
 			appData.Dev.Site = devSite.String
 
-			for _, host := range hosts {
+			for _, host := range hosts.Elements {
 				appData.Hosts = append(appData.Hosts, host.String)
 			}
-			for _, perm := range perms {
+			for _, perm := range perms.Elements {
 				appData.Perms = append(appData.Perms, perm.String)
 			}
-			for _, pkg := range pkgs {
+			for _, pkg := range pkgs.Elements {
 				appData.Packages = append(appData.Packages, pkg.String)
 			}
-			for _, change := range recentChanges {
+			for _, change := range recentChanges.Elements {
 				playInf.RecentChanges = append(playInf.RecentChanges, change.String)
 			}
 
@@ -934,7 +976,7 @@ func QueryAll(
 
 	util.Log.Debug("Done examining rows.")
 
-	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+	if rows.Err() != pgx.ErrNoRows && rows.Err() != nil {
 		util.Log.Err("Database err", rows.Err())
 	}
 
@@ -954,10 +996,10 @@ func GetAppsToAnalyze() ([]AppVersion, error) {
 	ret := make([]AppVersion, 0, 10)
 	for i := 0; rows.Next(); i++ {
 		var cur AppVersion
-		var screenFlags sql.NullInt64
-		var icon sql.NullString
+		var screenFlags pgtype.Int8
+		var icon pgtype.Text
 		err := rows.Scan(&cur.ID, &cur.App, &cur.Store, &cur.Region, &cur.Ver, &screenFlags, &icon)
-		cur.ScreenFlags = screenFlags.Int64
+		cur.ScreenFlags = screenFlags.Int
 		cur.Icon = icon.String
 
 		if err != nil {
@@ -967,7 +1009,7 @@ func GetAppsToAnalyze() ([]AppVersion, error) {
 		}
 	}
 
-	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+	if rows.Err() != pgx.ErrNoRows && rows.Err() != nil {
 		return []AppVersion{}, err
 	}
 

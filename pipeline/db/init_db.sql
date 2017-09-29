@@ -88,6 +88,13 @@ create table app_hosts(
   pis    int[]
 );
 
+create table app_analyses(
+  id       int references app_versions(id) primary key not null,
+  analyzer text                                        not null,
+  analysis jsonb                                       not null,
+  primary key (id, analyzer)
+);
+
 create table app_companies(
   id         int references app_versions(id) primary key not null,
   companies  text[]

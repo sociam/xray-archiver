@@ -28,6 +28,9 @@ func analyze(app *util.App) error {
 		return fmt.Errorf("le cri (failed to set last_analyze_attempt, is the db set up properly?)")
 	}
 
+	analyzer := "crapalyzer"
+	analysis := make(map[string]interface{})
+
 	err = app.Unpack()
 	if err != nil {
 		fmt.Println()
@@ -52,18 +55,12 @@ func analyze(app *util.App) error {
 	} else {
 		app.Perms = manifest.getPerms()
 		fmt.Printf("Permissions found: %v\n\n", app.Perms)
-		err = db.AddPerms(app)
-		if err != nil {
-			fmt.Printf("Error writing permissions to DB: %s\n", err.Error())
-		}
+		analysis["perms"] = app.Perms
 		if gotIcon {
 			app.Icon = "/" + url.PathEscape(app.ID) + "/" + url.PathEscape(app.Store) +
 				"/" + url.PathEscape(app.Region) + "/" + url.PathEscape(app.Ver) + "/icon.png"
 			fmt.Printf("Got icon: %s\n", app.Icon)
-			err = db.SetIcon(app.DBID, app.Icon)
-			if err != nil {
-				fmt.Printf("Error setting icon of app in DB: %s\n", err.Error())
-			}
+			analysis["icon"] = app.Icon
 		}
 	}
 
@@ -74,10 +71,7 @@ func analyze(app *util.App) error {
 	} else {
 		fmt.Printf("Hosts found: %v\n\n", app.Hosts)
 
-		err = db.AddHosts(app, app.Hosts)
-		if err != nil {
-			fmt.Printf("Error writing hosts to DB: %s\n", err.Error())
-		}
+		analysis["hosts"] = app.Hosts
 	}
 
 	err = checkReflect(app)
@@ -86,10 +80,7 @@ func analyze(app *util.App) error {
 	} else {
 		fmt.Printf("App uses reflect: %v\n", app.UsesReflect)
 
-		err = db.SetReflect(app.DBID, app.UsesReflect)
-		if err != nil {
-			fmt.Printf("Error writing reflect usage to DB: %s\n", err.Error())
-		}
+		analysis["usesReflect"] = app.UsesReflect
 	}
 
 	// app.Packages, err = findPackages(app)
@@ -103,9 +94,14 @@ func analyze(app *util.App) error {
 	// 	}
 	// }
 
-	err = db.SetAnalyzed(app.DBID)
+	err = db.AddAnalysis(app.DBID, analyzer, analysis)
 	if err != nil {
-		fmt.Printf("Error setting analyzed for app %d! This will result in looping!\n", app.DBID)
+		fmt.Printf("<3>Error inserting analysis for app %d!\n", app.DBID)
+	} else {
+		err = db.SetAnalyzed(app.DBID)
+		if err != nil {
+			fmt.Printf("<3>Error setting analyzed for app %d! This will result in looping!\n", app.DBID)
+		}
 	}
 
 	err = app.Cleanup()
