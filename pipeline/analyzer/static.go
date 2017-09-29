@@ -30,7 +30,7 @@ type manifestApp struct {
 
 func parseManifest(app *util.App) (manifest *AndroidManifest, gotIcon bool, err error) {
 	manifest = &AndroidManifest{}
-	manifestFile, err := os.Open(path.Join(app.OutDir(), "AndroidManifest.xml"))
+	manifestFile, err := os.Open(path.Join(app.OutDir(), "ParsedAndroidManifest.xml"))
 	if err != nil {
 		return nil, false, err
 	}
