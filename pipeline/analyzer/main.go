@@ -148,6 +148,7 @@ func runServer() {
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
 var daemon = flag.Bool("daemon", false, "run analyzer as a daemon")
 var useDb = flag.Bool("db", false, "add app information to the db specified in the config file")
+var appIDPtr = flag.String("app", "", "ID of an app to be analysed")
 
 func init() {
 	var err error
@@ -163,6 +164,12 @@ func init() {
 }
 
 func main() {
+
+
+	if *appIDPtr != "" {
+		fmt.Println(*appIDPtr);
+	}
+
 	if err := os.MkdirAll(util.Cfg.DataDir, 0755); err != nil {
 		panic(err)
 	}
