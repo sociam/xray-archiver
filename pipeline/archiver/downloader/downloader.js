@@ -88,7 +88,13 @@ async function download(app) {
             // Perform a check on apk size
             await fs.stat(apkPath, async(err, stats) => {
                 if (stats.size == 0 || stats.size == undefined) {
-                    await fs.rmdir(appSavePath).catch(logger.warning);
+                    try {
+                        fs.unlinkSync(apkPath);
+                        fs.rmdirSync(appSavePath);
+                    } catch (e) {
+                        logger.warning(e);
+                    }
+                    // old version ->  wait fs.rmdir(appSavePath).catch(logger.warning);
                     return Promise.reject('File did not successfully download and is a empty size');
                 }
 
