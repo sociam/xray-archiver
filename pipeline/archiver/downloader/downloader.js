@@ -78,7 +78,7 @@ async function download(app) {
     } catch (err) {
         logger.debug('Attempting to remove created dir');
         await fs.rmdir(appSavePath).catch(logger.warning);
-        throw new Error(`Downloading failed with err: ${err.message});
+        throw new Error(`Downloading failed with err: ${err.message}`);
     }
 
     const apkPath = path.join(appSavePath, `${app.app}.apk`);
