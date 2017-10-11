@@ -81,33 +81,34 @@ async function download(app) {
         return Promise.reject('Downloading failed with err:', err.message);
     }
 
-    try {
-        const apkPath = path.join(appSavePath, `${app.app}.apk`);
+    const apkPath = path.join(appSavePath, `${app.app}.apk`);
 
-        if (fs.existsSync(apkPath)) {
-            // Perform a check on apk size
-            await fs.stat(apkPath, async(err, stats) => {
-                if (stats.size == 0 || stats.size == undefined) {
-                    try {
-                        fs.unlinkSync(apkPath);
-                        fs.rmdirSync(appSavePath);
-                    } catch (e) {
-                        logger.warning(e);
-                    }
-                    // old version ->  await fs.rmdir(appSavePath).catch(logger.warning);
-                    return Promise.reject('File did not successfully download and is a empty size');
-                }
-
-                await db.updateDownloadedApp(app);
-                return undefined;
-            });
+    if (fs.existsSync(apkPath)) {
+        // Perform a check on apk size
+        try {
+            var stats = fs.statSync(apkPath);
+        } catch (e) {
+            throw 'Unable to stat file: ' + e;
         }
-    } catch (err) {
-        // TODO: Maybe do something else? Destroying process as we have apks that
-        // don't exist in db...
-        return Promise.reject('Err when updated the downloaded app', err);
+        if (stats.size == 0 || stats.size == undefined) {
+            try {
+                fs.unlinkSync(apkPath);
+                fs.rmdirSync(appSavePath);
+            } catch (e) {
+                logger.warning(e);
+            }
+            // old version ->  await fs.rmdir(appSavePath).catch(logger.warning);
+            throw 'File did not successfully download and is a empty size';
+        }
+
+        try {
+            await db.updateDownloadedApp(app);
+        } catch (err) {
+            // TODO: Maybe do something else? Destroying process as we have apks that
+            // don't exist in db...
+            throw 'Err when updated the downloaded app' + err;
+        }
     }
-    return undefined;
 }
 
 async function main() {
