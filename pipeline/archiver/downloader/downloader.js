@@ -94,7 +94,7 @@ async function download(app) {
                     } catch (e) {
                         logger.warning(e);
                     }
-                    // old version ->  wait fs.rmdir(appSavePath).catch(logger.warning);
+                    // old version ->  await fs.rmdir(appSavePath).catch(logger.warning);
                     return Promise.reject('File did not successfully download and is a empty size');
                 }
 
