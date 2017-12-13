@@ -9,8 +9,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sociam/xray-archiver/pipeline/db"
-	"github.com/sociam/xray-archiver/pipeline/util"
+	// "github.com/sociam/xray-archiver/pipeline/db"
+	"../db"
+	
+	// "github.com/sociam/xray-archiver/pipeline/util"
+	"../util"
 )
 
 func analyze(app *util.App) error {
