@@ -62,10 +62,13 @@ function processAPK(client, dirname) {
 		    return getAnalysis(client, pkg, version).then((has) => {
 		    	console.log('getAnalysis results ', has);
 			// interpret results.. and if successful then check to delete file!
-			if (has.analysis) {
-			    console.info('i think we have a true');
-			} else {
-    			    console.info('i think we have a false');
+			if (!has.analysis) {
+			    console.info('i think we have a false');
+			    // then do analysis here...
+			    // then deletion			    
+			} else {			    
+    			    console.info('i think we have a true');
+			    // just go straight to deletion
 			}
 			return Promise.resolve();
 		    }).catch((ea) => {
