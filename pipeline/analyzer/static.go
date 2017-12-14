@@ -12,7 +12,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/sociam/xray-archiver/pipeline/util"
+	//"github.com/sociam/xray-archiver/pipeline/util"
+	"../util"
 )
 
 // AndroidManifest is a struct representing the interesting parts of the

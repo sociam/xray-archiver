@@ -11,8 +11,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/sociam/xray-archiver/pipeline/db"
-	"github.com/sociam/xray-archiver/pipeline/util"
+	//"github.com/sociam/xray-archiver/pipeline/db"
+	"../db"
+	//"github.com/sociam/xray-archiver/pipeline/util"
+	"../util"
 )
 
 // Err - convenience struct for marshalling errors

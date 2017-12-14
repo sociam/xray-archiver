@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/lib/pq"
-	"github.com/sociam/xray-archiver/pipeline/util"
+	//"github.com/sociam/xray-archiver/pipeline/util"
+	"../util"
 )
 
 type xrayDb struct {

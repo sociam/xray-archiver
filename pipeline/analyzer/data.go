@@ -1,7 +1,8 @@
 package main
 
 import (
-	"github.com/sociam/xray-archiver/pipeline/util"
+	//"github.com/sociam/xray-archiver/pipeline/util"
+	"../util"
 )
 
 var unit = util.Unit{}
