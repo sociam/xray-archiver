@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+	"errors"
 
 	"github.com/lib/pq"
 	// "github.com/sociam/xray-archiver/pipeline/util"
@@ -15,22 +16,16 @@ type xrayDb struct {
 	*sql.DB
 }
 
-var useDB bool
 var db xrayDb
 
 // Open opens the database with the given config. If enable is false, the
 // functions that modify the database are noops.
-func Open(cfg util.Config, enable bool) error {
-	if enable {
-		useDB = true
-		sqlDb, err := sql.Open("postgres",
-			fmt.Sprintf("dbname='%s' user='%s' password='%s' host='%s' port='%d' sslmode='disable'",
-				cfg.DB.Database, cfg.DB.User, cfg.DB.Password, cfg.DB.Host, cfg.DB.Port))
-		if err != nil {
-			return err
-		}
-		db = xrayDb{sqlDb}
-	}
+func Open(cfg util.Config) error {
+	sqlDb, err := sql.Open("postgres",
+		fmt.Sprintf("dbname='%s' user='%s' password='%s' host='%s' port='%d' sslmode='disable'",
+			cfg.DB.Database, cfg.DB.User, cfg.DB.Password, cfg.DB.Host, cfg.DB.Port))
+	if err != nil { return err }
+	db = xrayDb{sqlDb}
 	return nil
 }
 
@@ -52,8 +47,9 @@ func SetLastAnalyzeAttempt(id int64) error {
 // AddPackages is a function that allows you to add packages to the Xray DB. The
 // argument app must contain a DB ID and an array of package names.
 func AddPackages(app *util.App) error {
-	if !useDB || app.DBID == 0 {
-		return nil
+	
+	if app.DBID == 0 {
+		return errors.New(fmt.Sprintf("DBID is nil, giving up %v", app))
 	}
 
 	var dbPkgs []string
@@ -92,9 +88,7 @@ func AddPackages(app *util.App) error {
 // AddPerms is a function that allows you to add permissions to the Xray DB. The
 // argument app must contain a DB ID and an array of permissions.
 func AddPerms(app *util.App) error {
-	if !useDB || app.DBID == 0 {
-		return nil
-	}
+	if app.DBID == 0 { return errors.New(fmt.Sprintf("DBID is nil, giving up %v", &app)) }
 
 	sPerms := make([]string, 0, len(app.Perms))
 	for _, perm := range app.Perms {
@@ -133,9 +127,7 @@ func AddPerms(app *util.App) error {
 
 // SetIcon is a function that sets the icon field of the DB.
 func SetIcon(id int64, icon string) error {
-	if !useDB || id == 0 {
-		return nil
-	}
+	if id == 0 { return errors.New("id is nil") }
 
 	rows, err := db.Query("UPDATE app_versions SET icon = $1 WHERE id = $2", icon, id)
 	if rows != nil {
@@ -147,9 +139,7 @@ func SetIcon(id int64, icon string) error {
 // AddHosts is a function that allows you to add hosts to the Xray DB. The
 // argument app must contain a DB ID.
 func AddHosts(app *util.App, hosts []string) error {
-	if !useDB || app.DBID == 0 {
-		return nil
-	}
+	if app.DBID == 0 { return errors.New("DBID is 0") }
 
 	var dbHosts []string
 	err := db.QueryRow("SELECT hosts FROM app_hosts WHERE id = $1", app.DBID).
@@ -543,6 +533,19 @@ func GetApps(num, start int) ([]App, error) {
 
 	return ret, nil
 }
+
+// GetApps returns a list of apps.
+func GetDBID(app, store, region, ver string) (int64, error) {
+	// fmt.Println("hello DBID", app, store, region, ver, db);
+	var idd int64
+	// err := db.QueryRow("SELECT v.id FROM app_versions WHERE v.app=$1", app).Scan(pq.Array(&idd))
+	err := db.QueryRow("SELECT v.id FROM app_versions as v WHERE v.app=$1 AND v.store=$2 AND v.region=$3 AND v.version=$4", app, store, region, ver).Scan(&idd) // pq.Array(&idd))
+	if err != nil {
+		return 0, err
+	}
+	return idd, nil
+}
+
 
 // GetLatestApps returns a list of the newest app versions.
 //

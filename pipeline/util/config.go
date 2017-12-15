@@ -42,7 +42,7 @@ type APIServCfg struct {
 type Config struct {
 	GeoIPEndpoint string      `json:"geoipurl"`
 	DataDir       string      `json:"datadir"`
-	AppDir        string      `json:"-"`
+	AppDir        string      `json:"appdir"`
 	UnpackDir     string      `json:"unpackdir"`
 	Analyzer      AnalyzerCfg `json:"analyzer"`
 	APIServ       APIServCfg  `json:"apiserv"`
@@ -80,7 +80,9 @@ func LoadCfg(cfgFile string, requester int) error {
 	if Cfg.DataDir == "" {
 		Cfg.DataDir = "/var/xray"
 	}
-	Cfg.AppDir = path.Join(Cfg.DataDir, "apps")
+	if Cfg.AppDir == "" {
+		Cfg.AppDir = path.Join(Cfg.DataDir, "apps")
+	}
 	if Cfg.UnpackDir == "" {
 		Cfg.UnpackDir, err = ioutil.TempDir("", "xray-analyzer")
 	}

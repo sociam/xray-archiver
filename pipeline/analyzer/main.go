@@ -8,6 +8,8 @@ import (
 	"os"
 	"sync"
 	"time"
+	"strings"
+	"errors"
 
 	// "github.com/sociam/xray-archiver/pipeline/db"
 	"../db"
@@ -150,7 +152,8 @@ func runServer() {
 
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
 var daemon = flag.Bool("daemon", false, "run analyzer as a daemon")
-var useDb = flag.Bool("db", false, "add app information to the db specified in the config file")
+// this flag is just not necessary and causes problems
+// var useDb = flag.Bool("db", false, "add app information to the db specified in the config file")
 
 func init() {
 	var err error
@@ -159,19 +162,20 @@ func init() {
 	if err != nil {
 		log.Fatalf("Failed to read config: %s", err.Error())
 	}
-	err = db.Open(util.Cfg, *useDb)
+	err = db.Open(util.Cfg)
 	if err != nil {
 		log.Fatalf("Failed to open a connection to the database: %s", err.Error())
 	}
+	// fmt.Println("DB Opened", util.Cfg)
 }
 
 func main() {
-	if err := os.MkdirAll(util.Cfg.DataDir, 0755); err != nil {
-		panic(err)
-	}
-	if err := os.MkdirAll(util.Cfg.AppDir, 0755); err != nil {
-		panic(err)
-	}
+	// if err := os.MkdirAll(util.Cfg.DataDir, 0755); err != nil {
+	//	panic(err)
+	// }
+	// if err := os.MkdirAll(util.Cfg.AppDir, 0755); err != nil {
+	// 	panic(err)
+	// }
 	if err := os.MkdirAll(util.Cfg.UnpackDir, 0755); err != nil {
 		panic(err)
 	}
@@ -184,12 +188,25 @@ func main() {
 			flag.Usage()
 			os.Exit(64)
 		}
-
 		for _, appPath := range flag.Args() {
-			app := util.AppByPath(appPath)
-			app.Store = "cli"
-			fmt.Println("Analyzing apk ", appPath)
-			analyze(app)
+			marr := strings.Split(appPath, "/")
+			if len(marr) != 4 {
+				fmt.Println(errors.New("Error: APK argument must have four parts delimited by slashes: appid/appstore/region/version"))
+				os.Exit(64)
+			} 
+			// app := util.AppByPath(appPath)
+			// app.Store = "cli"
+			// fmt.Println("Analyzing apk ", appPath)
+			mappid, mstore, mregion, mversion := marr[0], marr[1], marr[2], marr[3]
+			fmt.Printf("app: %v, store %v, region %v, version %v \n", mappid, mstore, mregion, mversion)
+			dbid, err := db.GetDBID(mappid,mstore,mregion,mversion)
+			if err != nil {
+				fmt.Println("Err ", err)
+				os.Exit(64)	
+			}
+			appapp := util.NewApp(dbid, mappid, mstore, mregion, mversion)
+			fmt.Println("created appapp >> ", appapp)
+			analyze(appapp)
 		}
 	}
 }
