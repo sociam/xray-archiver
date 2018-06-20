@@ -53,7 +53,6 @@ function importFileTerms(filepath) {
     openSearchTerms(filepath).forEach((term) => db.insertSearchTerm(term));
 }
 */
-
 function flatten(arr) {
     return arr.reduce((a, b) => a.concat(b), []);
 }
@@ -74,11 +73,10 @@ function cartesianProductChars(...args) {
  *
  * @param {*The list of words used to get autocompletes} startingWords
  */
-// TODO: Store scraped word to the Database not txt
 async function scrapeSuggestedWords(startingTokens) {
     // TODO: return array of suggested search terms
     for (const token of startingTokens) {
-        const suggestions = await gplay.suggest({ term: token, throttle: 10, region: 'uk' });
+        const suggestions = await gplay.suggest({ region: 'uk', term: token, throttle: 10 });
         for (const suggestion of suggestions) {
             logger.debug(`Inserting to DB: ${suggestion}`);
             await db.insertSearchTerm(suggestion).catch((err) => logger.err(err));
