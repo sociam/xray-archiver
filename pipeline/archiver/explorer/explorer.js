@@ -1,6 +1,5 @@
 
 const gplay = require('google-play-scraper');
-const Promise = require('bluebird');
 
 const logger = require('../../util/logger');
 const DB = require('../../db/db');
@@ -78,10 +77,9 @@ function cartesianProductChars(...args) {
 // TODO: Store scraped word to the Database not txt
 async function scrapeSuggestedWords(startingTokens) {
     // TODO: return array of suggested search terms
-    for(let token of startingTokens) {
-        console.log(token);
-        let suggestions = await gplay.suggest({ term: token, throttle: 10, region: 'uk' });
-        for(let suggestion of suggestions) {
+    for (const token of startingTokens) {
+        const suggestions = await gplay.suggest({ term: token, throttle: 10, region: 'uk' });
+        for (const suggestion of suggestions) {
             logger.debug(`Inserting to DB: ${suggestion}`);
             await db.insertSearchTerm(suggestion).catch((err) => logger.err(err));
         }
