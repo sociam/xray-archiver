@@ -27,35 +27,33 @@ function insertAppData(appData) {
 
 // TODO Add Permission list to app Data JSON
 async function fetchAppData(searchTerm, numberOfApps, perSecond) {
-    const appDatas = await gplay.search({
+    const appSearchResults = await gplay.search({
         term: searchTerm,
         num: numberOfApps,
         throttle: perSecond,
         country: region,
-        fullDetail: true,
+        //fullDetail: true,
     });
 
-    // TODO: Move this to DB.
-    return Promise.all(_.map(appDatas, async(appData) => {
-        logger.debug(`inserting ${appData.title} to the DB`);
+    for (const result of appSearchResults) {
+        logger.debug(`Requsting App Data for: ${result.appId}`);        
+        const appData = await gplay.app({appId:result.appId});
 
+        logger.debug(`inserting ${appData.title} to the DB`);
         const appExists = await db.doesAppExist(appData).catch(logger.err);
         if (!appExists) {
-            return insertAppData(appData).catch((err) => logger.err(err));
+            await insertAppData(appData).catch((err) => logger.err(err));
         } else {
             logger.debug('App already existing', appData.appId);
-            return Promise.reject('App Already Exists');
         }
-    }));
+    }
 }
 
 (async() => {
     const dbRows = await db.getStaleSearchTerms();
-    Promise.each(dbRows, async(dbRow) => {
+    for (const dbRow of dbRows) {
         logger.info(`searching for: ${dbRow.search_term}`);
-        return fetchAppData(dbRow.search_term, 60, 1)
-            .then(await db.updateLastSearchedDate(dbRow.search_term)
-                .catch(logger.err))
-            .catch(logger.err);
-    });
+        await fetchAppData(dbRow.search_term, 250, 10);
+        await db.updateLastSearchedDate(dbRow.search_term);
+    }
 })();
