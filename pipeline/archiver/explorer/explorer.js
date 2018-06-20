@@ -76,17 +76,16 @@ function cartesianProductChars(...args) {
  * @param {*The list of words used to get autocompletes} startingWords
  */
 // TODO: Store scraped word to the Database not txt
-function scrapeSuggestedWords(startingWords) {
+async function scrapeSuggestedWords(startingTokens) {
     // TODO: return array of suggested search terms
-    Promise.each(startingWords, (letter) => {
-        return gplay.suggest({ term: letter, throttle: 10, region: 'uk' })
-            .then((suggestion) => {
-                Promise.each(suggestion, (word) => {
-                    logger.debug(`Inserting to DB: ${word}`);
-                    return db.insertSearchTerm(word).catch((err) => logger.err(err));
-                }).catch(logger.err);
-            }).catch(logger.err);
-    });
+    for(let token of startingTokens) {
+        console.log(token);
+        let suggestions = await gplay.suggest({ term: token, throttle: 10, region: 'uk' });
+        for(let suggestion of suggestions) {
+            logger.debug(`Inserting to DB: ${suggestion}`);
+            await db.insertSearchTerm(suggestion).catch((err) => logger.err(err));
+        }
+    }
 }
 
 // TODO this stuff needs moving somewhere...
