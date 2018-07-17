@@ -416,7 +416,7 @@ class DB {
                     app.minInstalls,
                     app.maxInstalls,
                     devId,
-                    app.updated,
+                    new Date(Number(app.updated)),
                     app.androidVersion,
                     app.contentRating,
                     app.screenshots,
