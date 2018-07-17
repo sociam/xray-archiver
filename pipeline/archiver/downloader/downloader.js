@@ -70,7 +70,7 @@ async function download(app) {
         appSavePath = await resolveAPKDir(app);
     } catch (err) {
         await new Promise((resolve) => setTimeout(resolve, 6000));
-        return Promise.reject('Did not have access to resolve dir', err.message);
+        return Promise.reject(`Did not have access to resolve dir: ${err.message}`);
     }
 
     try {
@@ -78,7 +78,7 @@ async function download(app) {
     } catch (err) {
         logger.debug('Attempting to remove created dir');
         await fs.rmdir(appSavePath).catch(logger.warning);
-        return Promise.reject('Downloading failed with err:', err.message);
+        return Promise.reject(`Downloading failed with err: ${err}`);
     }
 
     try {

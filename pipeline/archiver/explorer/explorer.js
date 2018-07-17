@@ -1,6 +1,5 @@
 
 const gplay = require('google-play-scraper');
-const Promise = require('bluebird');
 
 const logger = require('../../util/logger');
 const DB = require('../../db/db');
@@ -54,7 +53,6 @@ function importFileTerms(filepath) {
     openSearchTerms(filepath).forEach((term) => db.insertSearchTerm(term));
 }
 */
-
 function flatten(arr) {
     return arr.reduce((a, b) => a.concat(b), []);
 }
@@ -75,18 +73,15 @@ function cartesianProductChars(...args) {
  *
  * @param {*The list of words used to get autocompletes} startingWords
  */
-// TODO: Store scraped word to the Database not txt
-function scrapeSuggestedWords(startingWords) {
+async function scrapeSuggestedWords(startingTokens) {
     // TODO: return array of suggested search terms
-    Promise.each(startingWords, (letter) => {
-        return gplay.suggest({ term: letter, throttle: 10, region: 'uk' })
-            .then((suggestion) => {
-                Promise.each(suggestion, (word) => {
-                    logger.debug(`Inserting to DB: ${word}`);
-                    return db.insertSearchTerm(word).catch((err) => logger.err(err));
-                }).catch(logger.err);
-            }).catch(logger.err);
-    });
+    for (const token of startingTokens) {
+        const suggestions = await gplay.suggest({ region: 'uk', term: token, throttle: 10 });
+        for (const suggestion of suggestions) {
+            logger.debug(`Inserting to DB: ${suggestion}`);
+            await db.insertSearchTerm(suggestion).catch((err) => logger.err(err));
+        }
+    }
 }
 
 // TODO this stuff needs moving somewhere...
