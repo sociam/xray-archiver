@@ -11,8 +11,11 @@ create table app_versions(
   store                     text                     not null,
   region                    text                     not null,
   version                   text                     not null,
+  apk_location              text                             , -- Path to the APK for this version of the App.
+  apk_server_location       text                               -- Really an indicator of what VM the APK is stored on.
   screen_flags               int                             ,
   downloaded                bool                     not null,
+  apk_archived              bool                     default false,
   analyzed                  bool                     not null,
   last_dl_attempt      timestamp                             ,
   icon                      text                             ,
