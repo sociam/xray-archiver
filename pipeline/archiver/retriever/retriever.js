@@ -36,16 +36,22 @@ async function fetchAppData(searchTerm, numberOfApps, perSecond) {
     });
 
     for (const result of appSearchResults) {
-        logger.debug(`Requsting App Data for: ${result.appId}`);        
-        const appData = await gplay.app({appId:result.appId});
-
-        logger.debug(`inserting ${appData.title} to the DB`);
-        const appExists = await db.doesAppExist(appData).catch(logger.err);
-        if (!appExists) {
-            await insertAppData(appData).catch((err) => logger.err(err));
-        } else {
-            logger.debug('App already existing', appData.appId);
-        }
+        logger.debug(`Requsting App Data for: ${result.appId}`);
+        await gplay.app(
+            {appId:result.appId}
+        )
+        .then(
+            async (appData) => {
+                logger.debug(`inserting ${appData.title} to the DB`);
+                const appExists = await db.doesAppExist(appData).catch(logger.err);
+                if (!appExists) {
+                    await insertAppData(appData).catch((err) => logger.err(err));
+                } else {
+                    logger.debug('App already exists', appData.appId);
+                }
+            },
+            (err) => logger.err(`Error Requesting appData for App: ${result.appId}. Error: ${err}`)
+        )
     }
 }
 

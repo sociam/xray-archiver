@@ -421,7 +421,7 @@ class DB {
                     app.contentRating,
                     app.screenshots,
                     app.video,
-                    app.recentChanges,
+                    Array.isArray(app.recentChanges) ? app.recentChanges : [app.recentChanges],
                 ]);
             await client.lquery('COMMIT');
         } catch (e) {
