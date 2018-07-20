@@ -186,7 +186,7 @@ class DB {
         }
     }
 
-    async updateDownloadedApp(app, appSavePath="", serverLocation="localhost") {
+    async updateDownloadedApp(app, appSavePath='', serverLocation='localhost') {
         try {
             await this.query(
                 'UPDATE app_versions SET downloaded=True, has_apk_stored=True, apk_location=$1, apk_server_location=$2 WHERE app = $3',
@@ -235,7 +235,7 @@ class DB {
     }
 
     /**
-     * 
+     *
      */
     async insertCompanyDomain(company, domain, type) {
         logger.debug(`Inserting - Company: ${company}  Domain: ${domain}`);
