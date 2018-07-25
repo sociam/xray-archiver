@@ -349,6 +349,26 @@ class DB {
         }
     }
 
+    async selectAppVersion(appId) {
+        try{
+            let res = await this.query("select * from app_versions where id = $1", [appId]);
+            return res.rows[0];
+        }
+        catch {
+            logger.err(`Unable to select App Version with ID: ${appId}. Error: ${err}`);
+        }
+    }
+
+    async selectAllAppPackageNameVersionNumbers() {
+        try {
+            let res = await this.query("select * from apps");
+            return res.rows;
+        }
+        catch(err) {
+            logger.err(`Error selecting apps and version id's. Errrrrror: ${err}`);
+        }
+    }
+
     /**
      *  Inserts App Data scraped from the google play store into the DB.
      */
