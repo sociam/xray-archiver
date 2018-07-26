@@ -7,6 +7,28 @@ const config = require('/etc/xray/config.json');
 
 const fs = require('fs');
 
+var argv = require('minimist')(process.argv.slice(2));
+
+const { execSync } = require('child_process');
+
+
+let argumentsInvalid = false;
+
+// Check Flags are set correctly.
+if(argv.deleteAPK && !argv.updateDB) {
+    console.log(`Invalid argument configuration: UpdateDB Flag must be set to delete APKs.`);
+    argumentsInvalid = true;
+}
+
+// if any of the rsync related flags are set, but they aren't all set.
+if( (argv.rsync || argv.server || argv.root) && !(argv.rsync && argv.root && argv.server)) {
+    console.log(`Invalid argument configuration: When wanting to rsync files, all three rsync flags must be set: rsync, server, and root.`);
+    argumentsInvalid = true;
+}
+
+if(argumentsInvalid) {
+    process.exit();
+}
 
 // Get list of all app package names.
 
@@ -32,14 +54,14 @@ const fs = require('fs');
     // delete old icon after move
 
 
-function resolveAppVersionDir(appInfo) {
+function resolveAppVersionDir(appInfo, rootPath='/var/xray/apps') {
 
     const packageName = appInfo.app;
     const storeName = appInfo.store;
     const region = appInfo.region;
     const version = appInfo.version;
 
-    return `/var/xray/apps/${packageName}/${storeName}/${region}/${version}`;
+    return `${rootPath}/${packageName}/${storeName}/${region}/${version}`;
 }
 
 
@@ -62,29 +84,43 @@ async function main() {
     for(const appVer of appPackageVersions) {
         for(const versionID of appVer.versions) {
             const versionDetails = await db.selectAppVersion(versionID);
+            // If the APK is still on this VM...
+            if(versionDetails.apk_server_location == config.vmname) {
 
-            const appVersionDir = resolveAppVersionDir(versionDetails);
-            const dirExists = fs.existsSync(appVersionDir);
-            await updateAppVersionAPKDBPath(versionID, dirExists ? appVersionDir : '');
+                // Check and update APK status and location.
+                const appVersionDir = resolveAppVersionDir(versionDetails);
 
-            const hasAPK = fs.existsSync(`${appVersionDir}/${versionDetails.app}.apk`);
-            await updateAppversionHasAPKFlag(versionID, hasAPK);
+                const dirExists = fs.existsSync(appVersionDir);
+                await updateAppVersionAPKDBPath(versionID, dirExists ? appVersionDir : '');
 
-            await updateAppVersionAPKServerLocation(versionID, dirExists ? config.vmname : '');
+                const hasAPK = fs.existsSync(`${appVersionDir}/${versionDetails.app}.apk`);
+                await updateAppversionHasAPKFlag(versionID, hasAPK);
 
+                await updateAppVersionAPKServerLocation(versionID, dirExists ? config.vmname : '');
 
-            // Now the DB has been updated... do any extra stuff.
+                // If the flags for rsyncing are set....
+                if( hasAPK && argv.rsync && argv.server && argv.root) {
+                    const rsyncString = `rsync -a --relative ${appVersionDir} ${argv.server}:${argv.root}`;
+                    console.log(`Performing an RSync for app version: ${versionID}.`);
+                    console.log(`RSync String: ${rsyncString}`);
 
-            // IF THERE IS AN APK...
+                    execSync(rsyncString);
 
-                // if rsync flag is set. do something like...
-                // rsync -a --relative /var/xray/apps/zen.basketball/play/uk/1.1.3/ hapax:/
-                // rsync -a --relative ${appVersionDir} ${newServer}:${rootPath}
+                    if(argv.deleteAPK && argv.updateDB) {
+                        console.log(`Deleting old APK now it is moved to ${argv.server}. Deleting: ${apkPath}`);
+                        fs.unlinkSync(apkPath);
+                    }
 
-                // if update DB with rsync flag is set...
-                // updateAppVersionApkDBPath ( versionID, `${rootPath}/${appVersionDir}`);
-                // updateAppVersionAPKServerLocation( versionID, `${newServer}`);
+                    if(argv.updateDB) {
+                        console.log(`Updating DB with new APK storage details: ${argv.server}`);
 
+                        let pathString = argv.root == '/' ? appVersionDir : `${argv.root}/${appVersionDir}`;
+
+                        await updateAppVersionAPKDBPath(versionID, pathString);
+                        await updateAppVersionAPKServerLocation(versionID, argv.server);
+                    }
+                }
+            }
         }
     }
 
