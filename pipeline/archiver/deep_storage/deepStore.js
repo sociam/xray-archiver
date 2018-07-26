@@ -15,13 +15,13 @@ let argumentsInvalid = false;
 
 // Check Flags are set correctly.
 if (argv.deleteAPK && !argv.updateDB) {
-    logger.log('Invalid argument configuration: UpdateDB Flag must be set to delete APKs.');
+    logger.info('Invalid argument configuration: UpdateDB Flag must be set to delete APKs.');
     argumentsInvalid = true;
 }
 
 // if any of the rsync related flags are set, but they aren't all set.
 if ( (argv.rsync || argv.server || argv.root) && !(argv.rsync && argv.root && argv.server)) {
-    logger.log(`Invalid argument configuration: When wanting to rsync files, all three rsync
+    logger.info(`Invalid argument configuration: When wanting to rsync files, all three rsync
                 flags must be set: rsync, server, and root.`);
     argumentsInvalid = true;
 }
@@ -96,19 +96,19 @@ async function main() {
                 if ( hasAPK && argv.rsync && argv.server && argv.root) {
                     const rsyncString =
                         `rsync -a --relative ${appVersionDir} ${argv.server}:${argv.root}`;
-                    logger.log(`Performing an RSync for app version: ${versionID}.`);
-                    logger.log(`RSync String: ${rsyncString}`);
+                    logger.info(`Performing an RSync for app version: ${versionID}.`);
+                    logger.info(`RSync String: ${rsyncString}`);
 
                     execSync(rsyncString);
 
                     if (argv.deleteAPK && argv.updateDB) {
-                        logger.log(`Deleting old APK now it is moved to ${argv.server}.
+                        logger.info(`Deleting old APK now it is moved to ${argv.server}.
                                     Deleting: ${apkPath}`);
                         fs.unlinkSync(apkPath);
                     }
 
                     if (argv.updateDB) {
-                        logger.log(`Updating DB with new APK storage details: ${argv.server}`);
+                        logger.info(`Updating DB with new APK storage details: ${argv.server}`);
 
                         const pathString =
                             argv.root == '/' ? appVersionDir : `${argv.root}/${appVersionDir}`;

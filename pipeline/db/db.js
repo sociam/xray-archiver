@@ -154,11 +154,10 @@ class DB {
     async updateServerLocation(versionID, serverLocation) {
         try {
             await this.query(
-                `update app_versions set apk_server_location = $1 where id = $2`,
+                'update app_versions set apk_server_location = $1 where id = $2',
                 [serverLocation, versionID]
             );
-        }
-        catch(err) {
+        } catch (err) {
             logger.err(
                 `Unable to set apk_server_location to ${serverLocation} for
                 app version: ${versionID}. Error: ${err}`
@@ -169,11 +168,10 @@ class DB {
     async updateAppVersionHasAPKFlag(versionID, hasAPK) {
         try {
             await this.query(
-                `update app_versions set has_apk_stored = $1 where id = $2`,
+                'update app_versions set has_apk_stored = $1 where id = $2',
                 [hasAPK, versionID]
             );
-        }
-        catch(err) {
+        } catch (err) {
             logger.err(
                 `Unable to set hasAPK flag to ${hasAPK ? 'True' : 'False'}
                 for app version ID: ${versionID}. Error: ${err}`
@@ -184,11 +182,10 @@ class DB {
     async updateAppVersionAPKLocation(versionID, apkLocation) {
         try {
             await this.query(
-                `update app_versions set apk_location = $1 where id = $2`,
+                'update app_versions set apk_location = $1 where id = $2',
                 [apkLocation, versionID]
-            )
-        }
-        catch(err) {
+            );
+        } catch (err) {
             logger.err(
                 `Unable to set apk_location for version ID:${versionID}.
                 Desired location string: ${apkLocation}.
@@ -396,22 +393,22 @@ class DB {
     }
 
     async selectAppVersion(appId) {
-        try{
-            let res = await this.query("select * from app_versions where id = $1", [appId]);
+        try {
+            const res = await this.query('select * from app_versions where id = $1', [appId]);
             return res.rows[0];
-        }
-        catch {
+        } catch (err) {
             logger.err(`Unable to select App Version with ID: ${appId}. Error: ${err}`);
+            throw err;
         }
     }
 
     async selectAllAppPackageNameVersionNumbers() {
         try {
-            let res = await this.query("select * from apps");
+            const res = await this.query('select * from apps');
             return res.rows;
-        }
-        catch(err) {
+        } catch (err) {
             logger.err(`Error selecting apps and version id's. Errrrrror: ${err}`);
+            throw err;
         }
     }
 
