@@ -152,6 +152,7 @@ grant usage on developers_id_seq to retriever;
 
 grant select, update on app_versions to downloader;
 grant select on playstore_apps to downloader;
+grant select on apps to downloader;
 
 grant select, insert, update on apps to analyzer;
 grant select, insert, update on app_versions to analyzer;
