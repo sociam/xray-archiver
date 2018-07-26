@@ -1,6 +1,9 @@
 const logger = require('../../util/logger');
+
 const DB = require('../../db/db');
 const db = new DB('downloader');
+
+const config = require('/etc/xray/config.json');
 
 const fs = require('fs');
 
@@ -39,6 +42,20 @@ function resolveAppVersionDir(appInfo) {
     return `/var/xray/apps/${packageName}/${storeName}/${region}/${version}`;
 }
 
+
+async function updateAppVersionAPKDBPath(versionID, apkPath) {
+    await db.updateAppVersionAPKLocation(versionID, apkPath);
+}
+
+async function updateAppversionHasAPKFlag(versionID, hasAPK) {
+    await db.updateAppVersionHasAPKFlag(versionID, hasAPK);
+}
+
+async function updateAppVersionAPKServerLocation(versionID, serverName) {
+    await db.updateServerLocation(versionID, serverName);
+}
+
+
 async function main() {
     let appPackageVersions = await db.selectAllAppPackageNameVersionNumbers();
 
@@ -47,9 +64,27 @@ async function main() {
             const versionDetails = await db.selectAppVersion(versionID);
 
             const appVersionDir = resolveAppVersionDir(versionDetails);
-
             const dirExists = fs.existsSync(appVersionDir);
-            console.log(`App Version has Directory Structure: ${dirExists ? 'TRUE' : 'FALSE'} - ${appVersionDir}`);
+            await updateAppVersionAPKDBPath(versionID, dirExists ? appVersionDir : '');
+
+            const hasAPK = fs.existsSync(`${appVersionDir}/${versionDetails.app}.apk`);
+            await updateAppversionHasAPKFlag(versionID, hasAPK);
+
+            await updateAppVersionAPKServerLocation(versionID, dirExists ? config.vmname : '');
+
+
+            // Now the DB has been updated... do any extra stuff.
+
+            // IF THERE IS AN APK...
+
+                // if rsync flag is set. do something like...
+                // rsync -a --relative /var/xray/apps/zen.basketball/play/uk/1.1.3/ hapax:/
+                // rsync -a --relative ${appVersionDir} ${newServer}:${rootPath}
+
+                // if update DB with rsync flag is set...
+                // updateAppVersionApkDBPath ( versionID, `${rootPath}/${appVersionDir}`);
+                // updateAppVersionAPKServerLocation( versionID, `${newServer}`);
+
         }
     }
 

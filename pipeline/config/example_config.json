@@ -1,6 +1,7 @@
 {
     "datadir": "/var/xray",
     "unpackdir": "/tmp/unpacked_apks",
+    "vmname" : "localhost",
     "credDownload": "/etc/xray/credentials.conf",
     "db": {
         "database": "xraydb",

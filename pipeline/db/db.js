@@ -151,6 +151,52 @@ class DB {
         }
     }
 
+    async updateServerLocation(versionID, serverLocation) {
+        try {
+            await this.query(
+                `update app_versions set apk_server_location = $1 where id = $2`,
+                [serverLocation, versionID]
+            );
+        }
+        catch(err) {
+            logger.err(
+                `Unable to set apk_server_location to ${serverLocation} for
+                app version: ${versionID}. Error: ${err}`
+            );
+        }
+    }
+
+    async updateAppVersionHasAPKFlag(versionID, hasAPK) {
+        try {
+            await this.query(
+                `update app_versions set has_apk_stored = $1 where id = $2`,
+                [hasAPK, versionID]
+            );
+        }
+        catch(err) {
+            logger.err(
+                `Unable to set hasAPK flag to ${hasAPK ? 'True' : 'False'}
+                for app version ID: ${versionID}. Error: ${err}`
+            );
+        }
+    }
+
+    async updateAppVersionAPKLocation(versionID, apkLocation) {
+        try {
+            await this.query(
+                `update app_versions set apk_location = $1 where id = $2`,
+                [apkLocation, versionID]
+            )
+        }
+        catch(err) {
+            logger.err(
+                `Unable to set apk_location for version ID:${versionID}.
+                Desired location string: ${apkLocation}.
+                Error: ${err}`
+            );
+        }
+    }
+
     async getAppsToFindAltsForThatHaventYetHadThemFound(limit) {
         try {
             const res = await this.query(
