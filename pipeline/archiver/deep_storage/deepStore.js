@@ -7,55 +7,52 @@ const config = require('/etc/xray/config.json');
 
 const fs = require('fs');
 
-var argv = require('minimist')(process.argv.slice(2));
+const argv = require('minimist')(process.argv.slice(2));
 
 const { execSync } = require('child_process');
-
 
 let argumentsInvalid = false;
 
 // Check Flags are set correctly.
-if(argv.deleteAPK && !argv.updateDB) {
-    console.log(`Invalid argument configuration: UpdateDB Flag must be set to delete APKs.`);
+if (argv.deleteAPK && !argv.updateDB) {
+    logger.log('Invalid argument configuration: UpdateDB Flag must be set to delete APKs.');
     argumentsInvalid = true;
 }
 
 // if any of the rsync related flags are set, but they aren't all set.
-if( (argv.rsync || argv.server || argv.root) && !(argv.rsync && argv.root && argv.server)) {
-    console.log(`Invalid argument configuration: When wanting to rsync files, all three rsync flags must be set: rsync, server, and root.`);
+if ( (argv.rsync || argv.server || argv.root) && !(argv.rsync && argv.root && argv.server)) {
+    logger.log(`Invalid argument configuration: When wanting to rsync files, all three rsync
+                flags must be set: rsync, server, and root.`);
     argumentsInvalid = true;
 }
 
-if(argumentsInvalid) {
+if (argumentsInvalid) {
     process.exit();
 }
 
 // Get list of all app package names.
 
 // check if the app package has:
-    // Directory...
-        // APK
-        // ICON
+// Directory...
+// APK
+// ICON
 
 // Then update DB accordingly
 
 // if move APK Flag is set
-    // Move file from one location to the specified location
-    // update DB to reflect relocation.
+// Move file from one location to the specified location
+// update DB to reflect relocation.
 
 // if move ICON flag is set
-    // move file from one location to the specified location
-
+// move file from one location to the specified location
 
 // if delete old apk flag is set
-    // delete old apk after move
+// delete old apk after move
 
 // if delete old icon flag is set
-    // delete old icon after move
-
+// delete old icon after move
 
 function resolveAppVersionDir(appInfo, rootPath='/var/xray/apps') {
-
     const packageName = appInfo.app;
     const storeName = appInfo.store;
     const region = appInfo.region;
@@ -63,7 +60,6 @@ function resolveAppVersionDir(appInfo, rootPath='/var/xray/apps') {
 
     return `${rootPath}/${packageName}/${storeName}/${region}/${version}`;
 }
-
 
 async function updateAppVersionAPKDBPath(versionID, apkPath) {
     await db.updateAppVersionAPKLocation(versionID, apkPath);
@@ -77,44 +73,45 @@ async function updateAppVersionAPKServerLocation(versionID, serverName) {
     await db.updateServerLocation(versionID, serverName);
 }
 
-
 async function main() {
-    let appPackageVersions = await db.selectAllAppPackageNameVersionNumbers();
+    const appPackageVersions = await db.selectAllAppPackageNameVersionNumbers();
 
-    for(const appVer of appPackageVersions) {
-        for(const versionID of appVer.versions) {
+    for (const appVer of appPackageVersions) {
+        for (const versionID of appVer.versions) {
             const versionDetails = await db.selectAppVersion(versionID);
             // If the APK is still on this VM...
-            if(versionDetails.apk_server_location == config.vmname) {
-
+            if (versionDetails.apk_server_location == config.vmname) {
                 // Check and update APK status and location.
                 const appVersionDir = resolveAppVersionDir(versionDetails);
 
                 const dirExists = fs.existsSync(appVersionDir);
                 await updateAppVersionAPKDBPath(versionID, dirExists ? appVersionDir : '');
-
-                const hasAPK = fs.existsSync(`${appVersionDir}/${versionDetails.app}.apk`);
+                const apkPath = `${appVersionDir}/${versionDetails.app}.apk`;
+                const hasAPK = fs.existsSync(apkPath);
                 await updateAppversionHasAPKFlag(versionID, hasAPK);
 
                 await updateAppVersionAPKServerLocation(versionID, dirExists ? config.vmname : '');
 
                 // If the flags for rsyncing are set....
-                if( hasAPK && argv.rsync && argv.server && argv.root) {
-                    const rsyncString = `rsync -a --relative ${appVersionDir} ${argv.server}:${argv.root}`;
-                    console.log(`Performing an RSync for app version: ${versionID}.`);
-                    console.log(`RSync String: ${rsyncString}`);
+                if ( hasAPK && argv.rsync && argv.server && argv.root) {
+                    const rsyncString =
+                        `rsync -a --relative ${appVersionDir} ${argv.server}:${argv.root}`;
+                    logger.log(`Performing an RSync for app version: ${versionID}.`);
+                    logger.log(`RSync String: ${rsyncString}`);
 
                     execSync(rsyncString);
 
-                    if(argv.deleteAPK && argv.updateDB) {
-                        console.log(`Deleting old APK now it is moved to ${argv.server}. Deleting: ${apkPath}`);
+                    if (argv.deleteAPK && argv.updateDB) {
+                        logger.log(`Deleting old APK now it is moved to ${argv.server}.
+                                    Deleting: ${apkPath}`);
                         fs.unlinkSync(apkPath);
                     }
 
-                    if(argv.updateDB) {
-                        console.log(`Updating DB with new APK storage details: ${argv.server}`);
+                    if (argv.updateDB) {
+                        logger.log(`Updating DB with new APK storage details: ${argv.server}`);
 
-                        let pathString = argv.root == '/' ? appVersionDir : `${argv.root}/${appVersionDir}`;
+                        const pathString =
+                            argv.root == '/' ? appVersionDir : `${argv.root}/${appVersionDir}`;
 
                         await updateAppVersionAPKDBPath(versionID, pathString);
                         await updateAppVersionAPKServerLocation(versionID, argv.server);
@@ -123,7 +120,6 @@ async function main() {
             }
         }
     }
-
 }
 
 main();
