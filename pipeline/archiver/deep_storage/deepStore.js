@@ -13,6 +13,8 @@ const { execSync } = require('child_process');
 
 let argumentsInvalid = false;
 
+const ROOT_FILE_PATH = argv.appRoot ? argv.appRoot : '/var/xray/apps';
+
 // Check Flags are set correctly.
 if (argv.deleteAPK && !argv.updateDB) {
     logger.info('Invalid argument configuration: UpdateDB Flag must be set to delete APKs.');
@@ -52,11 +54,13 @@ if (argumentsInvalid) {
 // if delete old icon flag is set
 // delete old icon after move
 
-function resolveAppVersionDir(appInfo, rootPath='/var/xray/apps') {
+function resolveAppVersionDir(appInfo, rootPath) {
     const packageName = appInfo.app;
     const storeName = appInfo.store;
     const region = appInfo.region;
     const version = appInfo.version;
+
+    rootPath = rootPath ? rootPath : ROOT_FILE_PATH;
 
     return `${rootPath}/${packageName}/${storeName}/${region}/${version}`;
 }
