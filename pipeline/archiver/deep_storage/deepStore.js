@@ -81,7 +81,7 @@ async function main() {
             const versionDetails = await db.selectAppVersion(versionID);
             // If the APK is still on this VM...
             if (versionDetails.apk_server_location == config.vmname ||
-                SversionDetails.apk_server_location == '') {
+                versionDetails.apk_server_location == '') {
                 // Check and update APK status and location.
                 const appVersionDir = resolveAppVersionDir(versionDetails);
 
