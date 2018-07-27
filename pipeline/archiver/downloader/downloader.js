@@ -92,7 +92,7 @@ async function download(app) {
                     return Promise.reject('File did not successfully download and is a empty size');
                 }
 
-                await db.updateDownloadedApp(app, appSavePath);
+                await db.updateDownloadedApp(app, appSavePath, config.vmname);
                 return undefined;
             });
         }

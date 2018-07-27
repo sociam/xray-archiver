@@ -34,15 +34,15 @@ create table developers(
 );
 
 create table alt_apps(
-   app_id                text             references apps(id) not null,
-   alt_app_title         text                                 not null,
-   alt_to_url            text                                 not null,
-   g_play_url            text                                         ,
-   g_play_id             text                                         ,
-   icon_url              text                                         ,
-   official_site_url     text                                         ,
-   is_scraped            bool                                 not null,
-   primary key (app_id, alt_app_title)
+  app_id                text             references apps(id) not null,
+  alt_app_title         text                                 not null,
+  alt_to_url            text                                 not null,
+  g_play_url            text                                         ,
+  g_play_id             text                                         ,
+  icon_url              text                                         ,
+  official_site_url     text                                         ,
+  is_scraped            bool                                 not null,
+  primary key (app_id, alt_app_title)
 );
 
 create table playstore_apps(
@@ -152,6 +152,7 @@ grant usage on developers_id_seq to retriever;
 
 grant select, update on app_versions to downloader;
 grant select on playstore_apps to downloader;
+grant select on apps to downloader;
 
 grant select, insert, update on apps to analyzer;
 grant select, insert, update on app_versions to analyzer;
