@@ -295,6 +295,80 @@ func GetAppHostsByID(id int64) (util.AppHostRecord, error) {
 	return appHosts, nil
 }
 
+// InsertCompanyAppAssociation inserts an app and company name association into the database.
+func InsertCompanyAppAssociation(appID int64, companyName string) error {
+
+	if !HasAppVersionID(appID) {
+		util.Log.Warning("App ID: %d Not Found", appID)
+		return nil
+	}
+
+	if !HasCompanyName(companyName) {
+		util.Log.Warning("Company Name %s Not Found", companyName)
+	}A
+
+	if HasCompanyAppAssociation(appID, companyName) {
+		util.Log.Debug("Company-App association between app: %d and company: %s already exists. Exiting method.", appID, companyName)
+		return nil
+	}
+
+	_, err := db.Query("insert into companyAppAssociations(company_name, associated_app")
+
+	if err != nil {
+		util.Log.Err("Error inserting company-app association for app with id: %d and company with name: %s. Error:", appID, companyName, err)
+		return err
+	}
+
+	return nil
+}
+
+// HasCompanyAppAssociation checks if an association between a given app and company name already exists.
+func HasCompanyAppAssociation(appID int64, companyName string) bool {
+	var assocCount int
+	util.Log.Debug("Counting number of CompanyApp Assocications to see if it already exists.")
+	db.QueryRow("select count(*) from companyAppAssociations where company_name=$1 and associated_app=$2", companyName, appID).Scan(
+		&assocCount)
+	util.Log.Debug("Company-App Associations Counted. %d associations found for app with id: %d and company with name: %s", assocCount, appID, companyName)
+	return assocCount > 0
+}
+
+// InsertCompanyName inserts the provided company name into the database.
+func InsertCompanyName(companyName string) error {
+	if HasCompanyName(companyName) {
+		util.Log.Warning("Company Name: %s already exists. Exiting method.")
+		return nil
+	}
+
+	_, err := db.Query("insert into companyNames(company_name) values( $1 )", companyName)
+
+	if err != nil {
+		util.Log.Err("Error inserting Company Name: %s into the companyNames table. Error: %s", companyName, err)
+		return err
+	}
+
+	return nil
+}
+
+// HasCompanyName Checks if companyNames table has the provided company name
+func HasCompanyName(companyName string) bool {
+	var companyCount int
+	util.Log.Debug("Requesting CompanyName Row for provided company name: %s", companyName)
+	db.QueryRow("select count(*) from companyNames where company_name=$1", companyName).Scan(
+		&companyCount)
+	util.Log.Debug("CompanyNames counted. %d companies found with name matching %s", companyCount, companyName)
+	return companyCount > 0
+}
+
+// HasAppVersionID Checks if app_versions table has the provided appversionId
+func HasAppVersionID(appID int64) bool {
+	var appVerCount int
+	util.Log.Debug("Requesting app_version Row for provided app version id: %d", appID)
+	db.QueryRow("select count(*) from app_versions where id = $1", appID).Scan(
+		&appVerCount)
+	util.Log.Debug("app_versions counted. %d app_versions found with ID matching %d", appVerCount, appID)
+	return appVerCount > 0
+}
+
 // GetAppHostIDs returns an array of  app_version ids found in app_hosts.
 func GetAppHostIDs() ([]int64, error) {
 	ids := make([]int64, 0, 0)

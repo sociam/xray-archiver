@@ -85,6 +85,10 @@ func main() {
 		tmCompanies := requestTrackerMapping(appHostRecord)
 
 		for j := 0; j < len(tmCompanies); j++ {
+			// Insert Company App Association into the Database.
+			db.InsertCompanyName(tmCompanies[j].CompanyName)
+			db.InsertCompanyAppAssociation(tmCompanies[j])
+
 			util.Log.Debug("Company Name: %s, Host Name: %s", tmCompanies[j].CompanyName, tmCompanies[j].HostName)
 		}
 	}
