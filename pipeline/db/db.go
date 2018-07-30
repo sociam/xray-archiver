@@ -295,6 +295,28 @@ func GetAppHostsByID(id int64) (util.AppHostRecord, error) {
 	return appHosts, nil
 }
 
+// IncrementCompanyAppAssociationCount increments the counter on the associated app and company
+func IncrementCompanyAppAssociationCount(appID int64, companyName string) error {
+	if !HasAppVersionID(appID) {
+		util.Log.Warning("App ID: %d Not Found", appID)
+		return nil
+	}
+
+	if !HasCompanyName(companyName) {
+		util.Log.Warning("Company Name %s Not Found", companyName)
+		return nil
+	}
+
+	if HasCompanyAppAssociation(appID, companyName) {
+		util.Log.Debug("Company-App association between app: %d and company: %s already exists. Incrementing Count", appID, companyName)
+		return IncrementCompanyAppAssociationCount(appID, companyName)
+	}
+	//
+	//
+	//
+
+}
+
 // InsertCompanyAppAssociation inserts an app and company name association into the database.
 func InsertCompanyAppAssociation(appID int64, companyName string) error {
 
@@ -305,11 +327,12 @@ func InsertCompanyAppAssociation(appID int64, companyName string) error {
 
 	if !HasCompanyName(companyName) {
 		util.Log.Warning("Company Name %s Not Found", companyName)
-	}A
+		return nil
+	}
 
 	if HasCompanyAppAssociation(appID, companyName) {
-		util.Log.Debug("Company-App association between app: %d and company: %s already exists. Exiting method.", appID, companyName)
-		return nil
+		util.Log.Debug("Company-App association between app: %d and company: %s already exists. Incrementing Count", appID, companyName)
+		return IncrementCompanyAppAssociationCount(appID, companyName)
 	}
 
 	_, err := db.Query("insert into companyAppAssociations(company_name, associated_app")
