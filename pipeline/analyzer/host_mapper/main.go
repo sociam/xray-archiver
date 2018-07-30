@@ -39,48 +39,47 @@ func main() {
 	for i := 0; i < len(appIDs); i++ {
 		appHostRecord, _ := db.GetAppHostsByID(appIDs[i])
 		tmReqData := util.TrackerMapperRequest{appHostRecord.HostNames}
-		for j := 0; j < len(appHostRecord.HostNames); j++ {
-			// BODY: {"host_names":["facebook.com", "360.jp.co"]}
-			// URL: localhost:8080/hosts
-			// REQUEST TYPE: Post
+		// BODY: {"host_names":["facebook.com", "360.jp.co"]}
+		// URL: localhost:8080/hosts
+		// REQUEST TYPE: Post
 
-			url := "localhost:8080/hosts" // Get from some config file or something...
+		url := "http://127.0.0.1:8080/hosts" // Get from some config file or something...
 
-			// Encode Object
-			ioBuffer := new(bytes.Buffer)
-			json.NewEncoder(ioBuffer).Encode(tmReqData)
+		// Encode Object
+		ioBuffer := new(bytes.Buffer)
+		json.NewEncoder(ioBuffer).Encode(tmReqData)
 
-			// Form Request and set headers.
-			req, err := http.NewRequest("POST", url, ioBuffer)
-			req.Header.Set("Content-Type", "application/json")
+		// Form Request and set headers.
+		req, err := http.NewRequest("POST", url, ioBuffer)
+		req.Header.Set("Content-Type", "application/json")
 
-			// Check for errors forming request.
-			if err != nil {
-				util.Log.Err("Error forming TrackerMapper API Request.")
-			}
+		// Check for errors forming request.
+		if err != nil {
+			util.Log.Err("Error forming TrackerMapper API Request.", err)
+		}
 
-			// carry out the request.
-			client := &http.Client{}
-			resp, err := client.Do(req)
+		// carry out the request.
+		client := &http.Client{}
+		resp, err := client.Do(req)
 
-			// check for errors carrying out the request
-			if err != nil {
-				util.Log.Err("Client Error issueing Tracker Mapper API request..")
-			}
+		// check for errors carrying out the request
+		if err != nil {
+			util.Log.Err("Client Error issueing Tracker Mapper API request..", err)
+		}
 
-			// Check there is a response body.
-			if resp.Body != nil {
-				defer resp.Body.Close()
-			}
+		// Check there is a response body.
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
 
-			// Decode the response and check for error.
-			var tmCompany util.TrackerMapperCompany
-			if err := json.NewDecoder(resp.Body).Decode(&tmCompany); err != nil {
-				util.Log.Err("Error Decoding Response Body from TrackerMapper API.")
-			}
+		// Decode the response and check for error.
+		var tmCompanies []util.TrackerMapperCompany
+		if err := json.NewDecoder(resp.Body).Decode(&tmCompanies); err != nil {
+			util.Log.Err("Error Decoding Response Body from TrackerMapper API.", err)
+		}
 
-			// Log the decoded responsee
-			util.Log.Debug("Company Name: %s. Host Name: %s", tmCompany.CompanyName, tmCompany.HostName)
+		for j := 0; j < len(tmCompanies); j++ {
+			util.Log.Debug("Company Name: %s, Host Name: %s", tmCompanies[j].CompanyName, tmCompanies[j].HostName)
 		}
 	}
 }
