@@ -20,8 +20,10 @@ type Unit struct{}
 
 var unit Unit
 
+// AppHostRecord holds app_host data from the xray DB
 type AppHostRecord struct {
-	id int64 `json:"id"`
+	ID        int64    `json:"id"`
+	HostNames []string `json:"hostnames"`
 }
 
 // App Struct for holding of information extracted from the APK

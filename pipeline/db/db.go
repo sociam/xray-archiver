@@ -281,27 +281,48 @@ func GetDeveloper(id int64) (Developer, error) {
 
 }
 
+// GetAppHostsByID selects an app host record from the DB using the provided ID
+func GetAppHostsByID(id int64) (util.AppHostRecord, error) {
+	var appHosts util.AppHostRecord
+
+	util.Log.Debug("Requesting App Host info for App with ID: %d", id)
+	db.QueryRow("select id, hosts from app_hosts where id = $1", id).Scan(
+		&appHosts.ID,
+		pq.Array(&appHosts.HostNames))
+
+	util.Log.Debug("Finished Selecting app_hosts record for id: %d. Returning AppHostsRecord Object.", id)
+
+	return appHosts, nil
+}
+
 // GetAppHostIDs returns an array of  app_version ids found in app_hosts.
 func GetAppHostIDs() ([]int64, error) {
-	ids := make([]int64, 100)
+	ids := make([]int64, 0, 0)
 
-	rows, err := db.Query("select id from app_hosts")
+	util.Log.Debug("About To request all app_host IDs.")
+	rows, err := db.Query("SELECT id FROM app_hosts")
+
 	if rows != nil {
+		util.Log.Debug("Rows successfully Selected.")
 		defer rows.Close()
 	}
 	if err != nil {
-		return ids, err
+		util.Log.Err("Error Occured querying app_hosts for ids.")
+		return []int64{}, err
 	}
 
+	util.Log.Debug("Scanning app_host ID rows.")
 	for i := 0; rows.Next(); i++ {
 		ids = append(ids, int64(i))
 		rows.Scan(&ids[i])
 	}
 
-	if rows.Err() != sql.ErrNoRows {
-		return []int64{}, err
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+		util.Log.Err("Error querying for App IDs")
+		return []int64{}, rows.Err()
 	}
 
+	util.Log.Debug("Finished Processing App IDs. Returning Array of AppIDs.")
 	return ids, nil
 }
 
@@ -324,7 +345,7 @@ func GetDevelopers(num, start int) ([]Developer, error) {
 			&ret[i].StoreSite)
 	}
 
-	if rows.Err() != sql.ErrNoRows {
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
 		return []Developer{}, err
 	}
 
