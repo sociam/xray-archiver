@@ -281,6 +281,30 @@ func GetDeveloper(id int64) (Developer, error) {
 
 }
 
+// GetAppHostIDs returns an array of  app_version ids found in app_hosts.
+func GetAppHostIDs() ([]int64, error) {
+	ids := make([]int64, 100)
+
+	rows, err := db.Query("select id from app_hosts")
+	if rows != nil {
+		defer rows.Close()
+	}
+	if err != nil {
+		return ids, err
+	}
+
+	for i := 0; rows.Next(); i++ {
+		ids = append(ids, int64(i))
+		rows.Scan(&ids[i])
+	}
+
+	if rows.Err() != sql.ErrNoRows {
+		return []int64{}, err
+	}
+
+	return ids, nil
+}
+
 // GetDevelopers returns a list of developers.
 func GetDevelopers(num, start int) ([]Developer, error) {
 	rows, err := db.Query("SELECT * FROM developers LIMIT $1 OFFSET $2", num, start)

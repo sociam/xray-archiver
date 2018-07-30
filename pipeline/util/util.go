@@ -20,6 +20,10 @@ type Unit struct{}
 
 var unit Unit
 
+type AppHostRecord struct {
+	id int64 `json:"id"`
+}
+
 // App Struct for holding of information extracted from the APK
 type App struct {
 	DBID                   int64
