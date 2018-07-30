@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"flag"
 	"log"
-	"strings"
+	"net/http"
 
 	"github.com/sociam/xray-archiver/pipeline/db"
 	"github.com/sociam/xray-archiver/pipeline/util"
@@ -36,7 +38,49 @@ func main() {
 
 	for i := 0; i < len(appIDs); i++ {
 		appHostRecord, _ := db.GetAppHostsByID(appIDs[i])
-		util.Log.Debug("Host Names found in app with Version ID: %d", appHostRecord.ID)
-		util.Log.Debug(strings.Join(appHostRecord.HostNames, ", "))
+		tmReqData := util.TrackerMapperRequest{appHostRecord.HostNames}
+		for j := 0; j < len(appHostRecord.HostNames); j++ {
+			// BODY: {"host_names":["facebook.com", "360.jp.co"]}
+			// URL: localhost:8080/hosts
+			// REQUEST TYPE: Post
+
+			url := "localhost:8080/hosts" // Get from some config file or something...
+
+			// Encode Object
+			ioBuffer := new(bytes.Buffer)
+			json.NewEncoder(ioBuffer).Encode(tmReqData)
+
+			// Form Request and set headers.
+			req, err := http.NewRequest("POST", url, ioBuffer)
+			req.Header.Set("Content-Type", "application/json")
+
+			// Check for errors forming request.
+			if err != nil {
+				util.Log.Err("Error forming TrackerMapper API Request.")
+			}
+
+			// carry out the request.
+			client := &http.Client{}
+			resp, err := client.Do(req)
+
+			// check for errors carrying out the request
+			if err != nil {
+				util.Log.Err("Client Error issueing Tracker Mapper API request..")
+			}
+
+			// Check there is a response body.
+			if resp.Body != nil {
+				defer resp.Body.Close()
+			}
+
+			// Decode the response and check for error.
+			var tmCompany util.TrackerMapperCompany
+			if err := json.NewDecoder(resp.Body).Decode(&tmCompany); err != nil {
+				util.Log.Err("Error Decoding Response Body from TrackerMapper API.")
+			}
+
+			// Log the decoded responsee
+			util.Log.Debug("Company Name: %s. Host Name: %s", tmCompany.CompanyName, tmCompany.HostName)
+		}
 	}
 }
