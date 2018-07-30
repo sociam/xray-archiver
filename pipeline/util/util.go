@@ -28,7 +28,7 @@ type AppHostRecord struct {
 
 // TrackerMapperRequest holds the data used in requests to the OxfordHCC TrackerMapper API.
 type TrackerMapperRequest struct {
-	HostNames []string `json:"hostNames"`
+	HostNames []string `json:"host_names"`
 }
 
 // TrackerMapperCompany holds the data requested from the OxfordHCC TrackerMapper API.
