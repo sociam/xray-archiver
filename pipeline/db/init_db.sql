@@ -133,6 +133,150 @@ create table company_domains (
   primary key(company, domain)
 );
 
+
+--
+--    Company Association Information
+--
+
+create table iotDevices(
+  id                      serial    not null primary key
+);
+
+create table websites(
+  id                      serial    not null  primary key
+);
+
+
+--
+--    Names of companies associated with an App, IoT Device, or website.
+--
+
+create table companyNames(
+  id                      serial      not null    primary key,
+  company_name            text        not null    unique
+);
+
+
+--
+--    All apps, IoT devices, and websites associated with a given company.
+--
+
+create table companyAssociations(
+  id                      serial      not null    primary key,
+  company_name            text        not null    unique references companyNames(company_name),
+  app_associations        integer[],
+  iot_device_associations integer[],
+  website_associations    integer[]
+);
+
+create table companyAppAssociations(
+  id                      serial      not null    ,
+  company_name            text        not null    references companyNames(company_name),
+  associated_app          serial      not null    references app_versions(id),
+  primary key (company_name, associated_app)
+);
+
+create table companyIoTDeviceAssociations(
+  id                      serial      not null    ,
+  company_name            text        not null    references companyNames(company_name),
+  associated_iot_device   serial      not null    references iotDevices(id),
+  primary key (company_name, associated_iot_device)
+);
+
+create table companyWebsiteAssociations(
+  id                      serial      not null    ,
+  company_name            text        not null    references companyNames(company_name),
+  associated_website      serial      not null    references websites(id),
+  primary key (company_name, associated_website)
+);
+
+
+--
+-- Functions
+--
+
+create or replace function createCompanyAssociationRecord() returns trigger as
+  $BODY$
+    begin
+      insert into companyAssociations(
+        company_name,
+        app_associations,
+        iot_device_associations,
+        website_associations
+      ) values (
+        new.company_name,
+        array[]::integer[],
+        array[]::integer[],
+        array[]::integer[]
+      );
+      return new;
+    end;
+  $BODY$
+language plpgsql;
+
+
+create or replace function updateCompanyAppAssociations() returns trigger as
+  $BODY$
+    begin
+      update companyAssociations
+        set app_associations = app_associations || new.associated_app
+          where company_name = new.company_name;
+      return new;
+    end;
+  $BODY$
+language plpgsql;
+
+create or replace function updateCompanyWebsiteAssociations() returns trigger as
+  $BODY$
+    begin
+      update companyAssociations
+        set website_associations = website_associations || new.associated_website
+          where company_name = new.company_name;
+      return new;
+    end;
+  $BODY$
+language plpgsql;
+
+create or replace function updateCompanyIoTDeviceAssociations() returns trigger as
+  $BODY$
+    begin
+      update companyAssociations
+        set iot_device_associations = iot_device_associations || new.associated_iot_device
+          where company_name = new.company_name;
+      return new;
+    end;
+  $BODY$
+language plpgsql;
+
+--
+
+--
+-- Triggers
+--
+
+
+create trigger onCompanyNameInsert
+  after insert on companyNames
+    for each row
+      execute procedure createCompanyAssociationRecord();
+
+create trigger onCompanyAppAssociationInsert
+  after insert on companyAppAssociations
+    for each row
+      execute procedure updateCompanyAppAssociations();
+
+create trigger onCompanyWebsiteAssociationInsert
+  after insert on companyWebsiteAssociations
+    for each row
+      execute procedure updateCompanyWebsiteAssociations();
+
+create trigger onCompanyIoTDeviceAssociationInsert
+  after insert on companyIoTDeviceAssociations
+    for each row
+      execute procedure updateCompanyIoTDeviceAssociations();
+
+
+
 create user explorer;
 create user retriever;
 create user downloader;
