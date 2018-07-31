@@ -282,8 +282,8 @@ func GetDeveloper(id int64) (Developer, error) {
 }
 
 // GetAppHostsByID selects an app host record from the DB using the provided ID
-func GetAppHostsByID(id int64) (util.AppHostRecord, error) {
-	var appHosts util.AppHostRecord
+func GetAppHostsByID(id int64) (AppHostRecord, error) {
+	var appHosts AppHostRecord
 
 	util.Log.Debug("Requesting App Host info for App with ID: %d", id)
 	db.QueryRow("select id, hosts from app_hosts where id = $1", id).Scan(
@@ -362,6 +362,36 @@ func HasCompanyAppAssociation(appID int64, companyName string) bool {
 		&assocCount)
 	util.Log.Debug("Company-App Associations Counted. %d associations found for app with id: %d and company with name: %s", assocCount, appID, companyName)
 	return assocCount > 0
+}
+
+// SelectCompanyNames returns an array of company names found in the DB.
+func SelectCompanyNames() ([]string, error) {
+	companyNames := make([]string, 0, 100)
+
+	rows, err := db.Query("select company_name from companyNames")
+
+	if err != nil {
+		util.Log.Err("Error selecting company names from the companyNames table.", err)
+		return companyNames, err
+	}
+
+	if rows != nil {
+		util.Log.Debug("Company Names successfully selected from the DB.")
+		defer rows.Close()
+	}
+
+	for i := 0; rows.Next(); i++ {
+		companyNames = append(companyNames, "")
+		rows.Scan(
+			&companyNames[i])
+	}
+
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+		util.Log.Err("Error processing Rows.")
+		return companyNames, rows.Err()
+	}
+
+	return companyNames, nil
 }
 
 // InsertCompanyName inserts the provided company name into the database.
