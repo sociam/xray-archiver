@@ -263,6 +263,42 @@ func GetAppVersionByID(id int64) (AppVersion, error) {
 	return appVer, nil
 }
 
+// GetAppVersionAssociations returns an AppAssociations object containing an array of Company names and the number of times they are associated with this company.
+func GetAppVersionAssociations(appID int64) (AppAssociations, error) {
+	var associations AppAssociations
+
+	rows, err := db.Query(
+		"select company_name, number_of_associations from companyAppAssociations where associated_app = $1",
+		appID)
+
+	if err != nil {
+		util.Log.Err("Error selecting associated companies for app with ID: %d", appID, err)
+		return AppAssociations{}, err
+	}
+
+	if rows != nil {
+		util.Log.Debug("App Company Associations succesfully selected from app with id: %d", appID)
+		defer rows.Close()
+	}
+
+	associations.AppVersionID = appID
+	for i := 0; rows.Next(); i++ {
+		associations.AssociatedCompanies = append(associations.AssociatedCompanies, AssociatedCompany{})
+		rows.Scan(
+			&associations.AssociatedCompanies[i].CompanyName,
+			&associations.AssociatedCompanies[i].NumberOfAssociations)
+	}
+
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+		util.Log.Err("Error processing Rows.")
+		return associations, rows.Err()
+	}
+
+	util.Log.Err("Retrieved Companies associated app version ID: %d", appID)
+	return associations, nil
+
+}
+
 // GetCompanyAssocations fetches the associations logged between a company and apps/websits/devices.
 func GetCompanyAssocations(companyName string) (CompanyAssociations, error) {
 	var associations CompanyAssociations

@@ -365,7 +365,51 @@ func companyAppAssociations(w http.ResponseWriter, r *http.Request) {
 	} else {
 		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
 	}
+}
 
+// appCompanyAssociations allows requests for a list of company names associated with a given AppID
+func appCompanyAssociations(w http.ResponseWriter, r *http.Request) {
+	mime := r.Header.Get("Accept")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	//Check input
+	if r.Method == "POST" || r.Method == "GET" {
+		mime = mimeCheck(mime)
+		if mime == "" {
+			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+			return
+		}
+
+		//XXX:Assuming all endpoints have a form to process...
+		err := r.ParseForm()
+		if err != nil {
+			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
+			return
+		}
+		for name, val := range r.Form {
+			switch name {
+
+			case "appID":
+				util.Log.Debug("Name form param found.")
+				util.Log.Debug("Request For Copmany Names associated with App ID: %d", val)
+
+				appID, err := strconv.ParseInt(val[0], 10, 64)
+				associations, err := db.GetAppVersionAssociations(appID)
+
+				if err != nil {
+					util.Log.Debug("Error Selecting App Company Assocations for AppID: %d", val[0], err)
+					requestError := db.APIRequestError{ErrorType: "DB_ERROR", ErrorMessage: err.Error(), APIRequest: "Company Associations"}
+					writeData(w, mime, http.StatusInternalServerError, requestError)
+					return
+				}
+
+				writeData(w, mime, http.StatusOK, associations)
+			}
+		}
+
+	} else {
+		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
+	}
 }
 
 func appsEndpoint(w http.ResponseWriter, r *http.Request) {
@@ -653,6 +697,9 @@ func main() {
 	http.HandleFunc("/api/stats/company_genre_coverage", companyGenreCoverageEndpoint)
 	http.HandleFunc("/api/hosts", fetchHosts)
 	http.HandleFunc("/api/companies/names", companyNamesEndpoint)
+
 	http.HandleFunc("/api/companies/associations", companyAppAssociations)
+	http.HandleFunc("/api/apps/associations", appCompanyAssociations)
+
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }

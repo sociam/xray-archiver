@@ -184,6 +184,18 @@ type CompanyAssociations struct {
 	AssociatedWebsiteIDs   []int64 `json:"associatedWebsiteIDs"`
 }
 
+// AssociatedCompany holds the name of a company and the number of associations that it has.
+type AssociatedCompany struct {
+	CompanyName          string `json:"companyName"`
+	NumberOfAssociations int64  `json:"numberOfAssociations"`
+}
+
+// AppAssociations holds the result of a query to the DB for all company names with an app association.
+type AppAssociations struct {
+	AppVersionID        int64               `json:"appVersionID"`
+	AssociatedCompanies []AssociatedCompany `json:"associatedCompanies"`
+}
+
 // APIRequestError holds Error information sent via the API should na endpoint fail.
 type APIRequestError struct {
 	ErrorType    string `json:"ErrorType"`
