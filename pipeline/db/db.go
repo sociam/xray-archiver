@@ -307,14 +307,21 @@ func IncrementCompanyAppAssociationCount(appID int64, companyName string) error 
 		return nil
 	}
 
-	if HasCompanyAppAssociation(appID, companyName) {
-		util.Log.Debug("Company-App association between app: %d and company: %s already exists. Incrementing Count", appID, companyName)
-		return IncrementCompanyAppAssociationCount(appID, companyName)
+	if !HasCompanyAppAssociation(appID, companyName) {
+		util.Log.Debug("Company-App association between app: %d and company: %s Not Found", appID, companyName)
+		return nil
 	}
-	//
-	//
-	//
 
+	_, err := db.Query(
+		"update companyappassociations set number_of_associations = number_of_associations + 1 where company_name=$1 and associated_app=$2",
+		appID,
+		companyName)
+
+	if err != nil {
+		util.Log.Err("Error incrementing number of associations for companyAppAssociation between Company: %s and app with ID: %d", companyName, appID, err)
+	}
+
+	return nil
 }
 
 // InsertCompanyAppAssociation inserts an app and company name association into the database.
@@ -335,7 +342,7 @@ func InsertCompanyAppAssociation(appID int64, companyName string) error {
 		return IncrementCompanyAppAssociationCount(appID, companyName)
 	}
 
-	_, err := db.Query("insert into companyAppAssociations(company_name, associated_app")
+	_, err := db.Query("insert into companyAppAssociations(company_name, associated_app, number_of_associations) values($1,$2,1)", companyName, appID)
 
 	if err != nil {
 		util.Log.Err("Error inserting company-app association for app with id: %d and company with name: %s. Error:", appID, companyName, err)
