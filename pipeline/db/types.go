@@ -170,3 +170,15 @@ type TrackerMapperCompany struct {
 	Locale      string   `json:"locale"`
 	Categories  []string `json:"categories"`
 }
+
+// CompanyNames represents the json structure used to send company names selected from the DB via the rest API.
+type CompanyNames struct {
+	CompanyNames []string `json:"companyNames"`
+}
+
+// APIRequestError holds Error information sent via the API should na endpoint fail.
+type APIRequestError struct {
+	ErrorType    string `json:"ErrorType"`
+	ErrorMessage string `json:"ErrorMsg"`
+	APIRequest   string `json:"APIRequest"`
+}

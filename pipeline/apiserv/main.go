@@ -300,11 +300,23 @@ func companyNamesEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	//Check input
 	if r.Method == "POST" || r.Method == "GET" {
-		mime = mimeCheck(mime)
-		if mime == "" {
-			writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
-			return
+		// mime = mimeCheck(mime)
+		// if mime == "" {
+		// 	writeErr(w, mime, http.StatusNotAcceptable, "not_acceptable", "This API only supports JSON at the moment.")
+		// 	return
+		// }
+
+		companyNames, err := db.SelectCompanyNames()
+
+		if err != nil {
+			errMessage := db.APIRequestError{
+				ErrorType:    "DB_ERROR",
+				ErrorMessage: err.Error(),
+				APIRequest:   "Company Names Endpoint"}
+			writeData(w, mime, http.StatusInternalServerError, errMessage)
 		}
+
+		writeData(w, mime, http.StatusOK, companyNames)
 
 	} else {
 		writeErr(w, mime, http.StatusBadRequest, "bad_method", "You must POST or GET this endpoint!")
@@ -620,5 +632,6 @@ func main() {
 	http.HandleFunc("/api/stats/app_type_freq", appTypeFreqEndpoint)
 	http.HandleFunc("/api/stats/company_genre_coverage", companyGenreCoverageEndpoint)
 	http.HandleFunc("/api/hosts", fetchHosts)
+	http.HandleFunc("/api/companies/names", companyNamesEndpoint)
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
