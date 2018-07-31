@@ -691,13 +691,14 @@ func main() {
 	http.HandleFunc("/api/apps", appsEndpoint)
 	http.HandleFunc("/api/alt/", altAppsEndpoint)
 	http.HandleFunc("/api/fetch", fetchIDEndpoint)
+	http.HandleFunc("/api/hosts", fetchHosts)
+
 	http.HandleFunc("/api/stats/genre_host_averages", genreHostAvgEndpoint)
 	http.HandleFunc("/api/stats/app_company_freq", appCompanyFreqEndpoint)
 	http.HandleFunc("/api/stats/app_type_freq", appTypeFreqEndpoint)
 	http.HandleFunc("/api/stats/company_genre_coverage", companyGenreCoverageEndpoint)
-	http.HandleFunc("/api/hosts", fetchHosts)
-	http.HandleFunc("/api/companies/names", companyNamesEndpoint)
 
+	http.HandleFunc("/api/companies/names", companyNamesEndpoint)
 	http.HandleFunc("/api/companies/associations", companyAppAssociations)
 	http.HandleFunc("/api/apps/associations", appCompanyAssociations)
 
