@@ -323,6 +323,7 @@ func companyNamesEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// CompanyAppAssociations allows requests for a list of app ids associated with a given company name
 func companyAppAssociations(w http.ResponseWriter, r *http.Request) {
 	mime := r.Header.Get("Accept")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -340,6 +341,25 @@ func companyAppAssociations(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			writeErr(w, mime, http.StatusBadRequest, "bad_form", "Error parsing form input: %s", err.Error())
 			return
+		}
+		for name, val := range r.Form {
+			switch name {
+
+			case "name":
+				util.Log.Debug("Name form param found.")
+				util.Log.Debug("Request For Apps associated with: %s", val)
+
+				association, err := db.GetCompanyAssocations(val[0])
+
+				if err != nil {
+					util.Log.Debug("Error Selecting company App Assocations for company: %s", val[0], err)
+					requestError := db.APIRequestError{ErrorType: "DB_ERROR", ErrorMessage: err.Error(), APIRequest: "Company Associations"}
+					writeData(w, mime, http.StatusInternalServerError, requestError)
+					return
+				}
+
+				writeData(w, mime, http.StatusOK, association)
+			}
 		}
 
 	} else {
@@ -633,5 +653,6 @@ func main() {
 	http.HandleFunc("/api/stats/company_genre_coverage", companyGenreCoverageEndpoint)
 	http.HandleFunc("/api/hosts", fetchHosts)
 	http.HandleFunc("/api/companies/names", companyNamesEndpoint)
+	http.HandleFunc("/api/companies/associations", companyAppAssociations)
 	panic(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }

@@ -176,6 +176,14 @@ type CompanyNames struct {
 	CompanyNames []string `json:"companyNames"`
 }
 
+// CompanyAssociations holds a record of from the DB describing the associations between a single company and various apps/devices/websites.
+type CompanyAssociations struct {
+	CompanyName            string  `json:"companyName"`
+	AssociatedAppIDs       []int64 `json:"associatedAppIDs"`
+	AssociatedIoTDeviceIDs []int64 `json:"associatedIoTDeviceIDs"`
+	AssociatedWebsiteIDs   []int64 `json:"associatedWebsiteIDs"`
+}
+
 // APIRequestError holds Error information sent via the API should na endpoint fail.
 type APIRequestError struct {
 	ErrorType    string `json:"ErrorType"`

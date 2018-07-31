@@ -263,6 +263,27 @@ func GetAppVersionByID(id int64) (AppVersion, error) {
 	return appVer, nil
 }
 
+// GetCompanyAssocations fetches the associations logged between a company and apps/websits/devices.
+func GetCompanyAssocations(companyName string) (CompanyAssociations, error) {
+	var associations CompanyAssociations
+
+	err := db.QueryRow(
+		"select company_name, app_associations, iot_device_associations, website_associations from companyassociations where company_name=$1",
+		companyName).Scan(
+		&associations.CompanyName,
+		pq.Array(&associations.AssociatedAppIDs),
+		pq.Array(&associations.AssociatedIoTDeviceIDs),
+		pq.Array(&associations.AssociatedWebsiteIDs))
+
+	if err != nil {
+		util.Log.Err("Error selecting company associations for company: %s", companyName, err)
+		return CompanyAssociations{}, err
+	}
+
+	util.Log.Debug("Company Association selected from the DB for company named: %s.", companyName)
+	return associations, nil
+}
+
 // GetDeveloper gets a developer given its ID in the database.
 func GetDeveloper(id int64) (Developer, error) {
 	var dev Developer

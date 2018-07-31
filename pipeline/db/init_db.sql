@@ -164,9 +164,9 @@ create table companyNames(
 create table companyAssociations(
   id                      serial      not null    primary key,
   company_name            text        not null    unique references companyNames(company_name),
-  app_associations        integer[],
-  iot_device_associations integer[],
-  website_associations    integer[]
+  app_associations        int[],
+  iot_device_associations int[],
+  website_associations    int[]
 );
 
 create table companyAppAssociations(
