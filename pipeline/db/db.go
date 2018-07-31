@@ -312,10 +312,11 @@ func IncrementCompanyAppAssociationCount(appID int64, companyName string) error 
 		return nil
 	}
 
-	_, err := db.Query(
+	rows, err := db.Query(
 		"update companyappassociations set number_of_associations = number_of_associations + 1 where company_name=$1 and associated_app=$2",
-		appID,
-		companyName)
+		companyName,
+		appID)
+	rows.Close()
 
 	if err != nil {
 		util.Log.Err("Error incrementing number of associations for companyAppAssociation between Company: %s and app with ID: %d", companyName, appID, err)
@@ -342,7 +343,8 @@ func InsertCompanyAppAssociation(appID int64, companyName string) error {
 		return IncrementCompanyAppAssociationCount(appID, companyName)
 	}
 
-	_, err := db.Query("insert into companyAppAssociations(company_name, associated_app, number_of_associations) values($1,$2,1)", companyName, appID)
+	rows, err := db.Query("insert into companyAppAssociations(company_name, associated_app, number_of_associations) values($1,$2,1)", companyName, appID)
+	rows.Close()
 
 	if err != nil {
 		util.Log.Err("Error inserting company-app association for app with id: %d and company with name: %s. Error:", appID, companyName, err)
@@ -369,7 +371,8 @@ func InsertCompanyName(companyName string) error {
 		return nil
 	}
 
-	_, err := db.Query("insert into companyNames(company_name) values( $1 )", companyName)
+	rows, err := db.Query("insert into companyNames(company_name) values( $1 )", companyName)
+	rows.Close()
 
 	if err != nil {
 		util.Log.Err("Error inserting Company Name: %s into the companyNames table. Error: %s", companyName, err)

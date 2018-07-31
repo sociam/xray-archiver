@@ -87,7 +87,7 @@ func main() {
 		for j := 0; j < len(tmCompanies); j++ {
 			// Insert Company App Association into the Database.
 			db.InsertCompanyName(tmCompanies[j].CompanyName)
-			db.InsertCompanyAppAssociation(tmCompanies[j])
+			db.InsertCompanyAppAssociation(appIDs[i], tmCompanies[j].CompanyName)
 
 			util.Log.Debug("Company Name: %s, Host Name: %s", tmCompanies[j].CompanyName, tmCompanies[j].HostName)
 		}
