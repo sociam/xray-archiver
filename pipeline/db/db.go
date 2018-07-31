@@ -263,6 +263,63 @@ func GetAppVersionByID(id int64) (AppVersion, error) {
 	return appVer, nil
 }
 
+// GetAppVersionAssociations returns an AppAssociations object containing an array of Company names and the number of times they are associated with this company.
+func GetAppVersionAssociations(appID int64) (AppAssociations, error) {
+	var associations AppAssociations
+
+	rows, err := db.Query(
+		"select company_name, number_of_associations from companyAppAssociations where associated_app = $1",
+		appID)
+
+	if err != nil {
+		util.Log.Err("Error selecting associated companies for app with ID: %d", appID, err)
+		return AppAssociations{}, err
+	}
+
+	if rows != nil {
+		util.Log.Debug("App Company Associations succesfully selected from app with id: %d", appID)
+		defer rows.Close()
+	}
+
+	associations.AppVersionID = appID
+	for i := 0; rows.Next(); i++ {
+		associations.AssociatedCompanies = append(associations.AssociatedCompanies, AssociatedCompany{})
+		rows.Scan(
+			&associations.AssociatedCompanies[i].CompanyName,
+			&associations.AssociatedCompanies[i].NumberOfAssociations)
+	}
+
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+		util.Log.Err("Error processing Rows.")
+		return associations, rows.Err()
+	}
+
+	util.Log.Err("Retrieved Companies associated app version ID: %d", appID)
+	return associations, nil
+
+}
+
+// GetCompanyAssocations fetches the associations logged between a company and apps/websits/devices.
+func GetCompanyAssocations(companyName string) (CompanyAssociations, error) {
+	var associations CompanyAssociations
+
+	err := db.QueryRow(
+		"select company_name, app_associations, iot_device_associations, website_associations from companyassociations where company_name=$1",
+		companyName).Scan(
+		&associations.CompanyName,
+		pq.Array(&associations.AssociatedAppIDs),
+		pq.Array(&associations.AssociatedIoTDeviceIDs),
+		pq.Array(&associations.AssociatedWebsiteIDs))
+
+	if err != nil {
+		util.Log.Err("Error selecting company associations for company: %s", companyName, err)
+		return CompanyAssociations{}, err
+	}
+
+	util.Log.Debug("Company Association selected from the DB for company named: %s.", companyName)
+	return associations, nil
+}
+
 // GetDeveloper gets a developer given its ID in the database.
 func GetDeveloper(id int64) (Developer, error) {
 	var dev Developer
@@ -282,8 +339,8 @@ func GetDeveloper(id int64) (Developer, error) {
 }
 
 // GetAppHostsByID selects an app host record from the DB using the provided ID
-func GetAppHostsByID(id int64) (util.AppHostRecord, error) {
-	var appHosts util.AppHostRecord
+func GetAppHostsByID(id int64) (AppHostRecord, error) {
+	var appHosts AppHostRecord
 
 	util.Log.Debug("Requesting App Host info for App with ID: %d", id)
 	db.QueryRow("select id, hosts from app_hosts where id = $1", id).Scan(
@@ -362,6 +419,36 @@ func HasCompanyAppAssociation(appID int64, companyName string) bool {
 		&assocCount)
 	util.Log.Debug("Company-App Associations Counted. %d associations found for app with id: %d and company with name: %s", assocCount, appID, companyName)
 	return assocCount > 0
+}
+
+// SelectCompanyNames returns an array of company names found in the DB.
+func SelectCompanyNames() ([]string, error) {
+	companyNames := make([]string, 0, 100)
+
+	rows, err := db.Query("select company_name from companyNames")
+
+	if err != nil {
+		util.Log.Err("Error selecting company names from the companyNames table.", err)
+		return companyNames, err
+	}
+
+	if rows != nil {
+		util.Log.Debug("Company Names successfully selected from the DB.")
+		defer rows.Close()
+	}
+
+	for i := 0; rows.Next(); i++ {
+		companyNames = append(companyNames, "")
+		rows.Scan(
+			&companyNames[i])
+	}
+
+	if rows.Err() != sql.ErrNoRows && rows.Err() != nil {
+		util.Log.Err("Error processing Rows.")
+		return companyNames, rows.Err()
+	}
+
+	return companyNames, nil
 }
 
 // InsertCompanyName inserts the provided company name into the database.

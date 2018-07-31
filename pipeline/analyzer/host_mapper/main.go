@@ -11,8 +11,8 @@ import (
 	"github.com/sociam/xray-archiver/pipeline/util"
 )
 
-func requestTrackerMapping(appHostRecord util.AppHostRecord) []util.TrackerMapperCompany {
-	tmReqData := util.TrackerMapperRequest{appHostRecord.HostNames}
+func requestTrackerMapping(appHostRecord db.AppHostRecord) []db.TrackerMapperCompany {
+	tmReqData := db.TrackerMapperRequest{appHostRecord.HostNames}
 	// BODY: {"host_names":["facebook.com", "360.jp.co"]}
 	// URL: localhost:8080/hosts
 	// REQUEST TYPE: Post
@@ -47,7 +47,7 @@ func requestTrackerMapping(appHostRecord util.AppHostRecord) []util.TrackerMappe
 	}
 
 	// Decode the response and check for error.
-	var tmCompanies []util.TrackerMapperCompany
+	var tmCompanies []db.TrackerMapperCompany
 	if err := json.NewDecoder(resp.Body).Decode(&tmCompanies); err != nil {
 		util.Log.Err("Error Decoding Response Body from TrackerMapper API.", err)
 	}
