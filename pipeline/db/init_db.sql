@@ -25,6 +25,16 @@ create table app_versions(
   last_alt_checked     timestamp
 );
 
+create table ad_hoc_analysis(
+  id                    serial        not null,
+  app_id                int           not null references app_versions(id),
+  analyser_name         text          not null,
+  analysis_by           text          not null default 'anon',
+  analysis_date         timestamp     not null default now(),
+  results               json          not null,
+  primary key(app_id, analyser_name)
+);
+
 create table developers(
   id         serial primary key not null,
   email      text[]             not null,
