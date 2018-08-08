@@ -4,7 +4,16 @@
         "downloader_credentials": "/etc/xray/credentials.conf"
     },
     "storage_config" : {
-        "apk_download_directories" : ["/var/xray","/var/xray2"],
+        "apk_download_directories" : [
+            {
+                "name" : "local_hdd",
+                "path":"/var/xray"
+            },
+            {
+                "name":"sandisk_64gb_usb",
+                "path":"/var/xray2"
+            }
+        ],
         "apk_unpack_directory": "/tmp/unpacked_apks",
         "minimum_gb_required" : "4"
     },

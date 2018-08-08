@@ -43,38 +43,77 @@ function parseDFOutputToJSON(fsString) {
     return parsedOutput;
 }
 
-async function getAvailableDiskSpace(path) {
-    logger.debug(`Using 'df' to get the disk space for the drive containing '${path}'`);
-    try {
-        const {stdout, stderr} = await bashExec(`df ${path} -BG`);
+async function df(path='') {
+    const {stdout, stderr} = await bashExec(`df ${path} -BG`);
+    if(stderr) {
+        logger.err(`getDiskSpace: df wrote to stderr. throwing err.`);
+        throw stderr
+    }
+    return {stdout, stderr};
+}
 
+async function getPathFileSystem(path) {
+    try {
+        const {stdout, stderr} = await df(path);
         if(stderr) {
-            logger.err(`getDiskSpace: df wrote to stderr. throwing err.`);
             throw stderr;
         }
-
+        return parseDFOutputForFirstFS(stdout);
+    }
+    catch(err){
+        logger.err(`Error getting the Filesystem containing ${path}. Error: ${err}`);
+    }
+}
+async function getAvailableDiskSpace(path) {
+    logger.debug(`Using 'df' to get the filesystem space for the filesystem containing '${path}'`);
+    try {
+        const {stdout, stderr} = await df(path);
         const dfJSON = parseDFOutputToJSON(stdout);
         const fs = parseDFOutputForFirstFS(stdout);
+        if(stderr) {
+            throw stderr;
+        }
         return parseInt(dfJSON[fs]['available'].replace('G',''));
     }
     catch(err){
-        logger.err(`Error getting the disk space for disk containing ${path}. Error: ${err}`);
+        logger.err(`Error getting the filesystem space for filesystem containing ${path}. Error: ${err}`);
     }
 }
 
+async function getLocationWithLeastSpace() {
+    logger.debug(`Getting Save Location with the lowest amount of Space.`)
+    const directories = config.storage_config.apk_download_directories;
+    let dirSpaces = [];
+    for(const dir of directories) {
+        dirSpaces.push({
+            path : dir,
+            available : await getAvailableDiskSpace(dir)
+        })
+    }
 
-async function resolveAPKDir(appData) {
-    const appsSaveDir = getLocationWithLeastSpace();
-    logger.debug(`appdir: ${appsSaveDir}`, `\nappId ${appData.app}`, `\nappStore ${appData.store}`,
+    const dirsWithSomeSpace = dirSpaces.filter((dir) => dir.available >= config.storage_config.minimum_gb_required);
+    return dirsWithSomeSpace.sort((a, b) => {
+        return a.available > b.available ? 1 : -1
+    })[0];
+}
+
+async function resolveAPKSaveInfo(appData) {
+    const appsSaveDir = await getLocationWithLeastSpace();
+    const filesystem = await getPathFileSystem(appsSaveDir.path);
+
+    logger.debug(`appdir: ${appsSaveDir.path} - space remaining: ${appsSaveDir.available}`, `\nappId ${appData.app}`, `\nappStore ${appData.store}`,
         `\nregion ${appData.region}`, `\nversion ${appData.version}`);
 
-    const appSavePath = path.join(appsSaveDir, appData.app,
+    const appSavePath = path.join(appsSaveDir.path, appData.app,
         appData.store, appData.region, appData.version);
-    logger.info(`App desired save dir ${appSavePath}`);
+    logger.info(`App Save Directory formed: '${appSavePath}'`);
 
     await mkdirp(appSavePath);
 
-    return appSavePath;
+    return {
+        appSavePath : appSavePath,
+        appSaveFS   : filesystem
+    };
 }
 
 function downloadApp(appData, appSavePath) {
@@ -106,34 +145,34 @@ async function download(app) {
     logger.info('Starting download attempt for:', app.app);
     // Could be move to the call to DL app. but this is where the whole DL process starts.
     db.updatedDlAttempt(app);
-    let appSavePath;
+    let appSaveInfo;
     try {
-        appSavePath = await resolveAPKDir(app);
+        appSaveInfo = await resolveAPKSaveInfo(app);
     } catch (err) {
         await new Promise((resolve) => setTimeout(resolve, 6000));
         return Promise.reject(`Did not have access to resolve dir: ${err.message}`);
     }
 
     try {
-        await downloadApp(app, appSavePath);
+        await downloadApp(app, appSaveInfo.appSavePath);
     } catch (err) {
         logger.debug('Attempting to remove created dir');
-        await fs.rmdir(appSavePath).catch(logger.warning);
+        await fs.rmdir(appSaveInfo.appSavePath).catch(logger.warning);
         return Promise.reject(`Downloading failed with err: ${err}`);
     }
 
     try {
-        const apkPath = path.join(appSavePath, `${app.app}.apk`);
+        const apkPath = path.join(appSaveInfo.appSavePath, `${app.app}.apk`);
 
         if (fs.existsSync(apkPath)) {
             // Perform a check on apk size
             await fs.stat(apkPath, async(err, stats) => {
                 if (stats.size == 0 || stats.size == undefined) {
-                    await fs.rmdir(appSavePath).catch(logger.warning);
+                    await fs.rmdir(appSaveInfo.appSavePath).catch(logger.warning);
                     return Promise.reject('File did not successfully download and is a empty size');
                 }
 
-                await db.updateDownloadedApp(app, appSavePath, config.system_config.vm_name);
+                await db.updateDownloadedApp(app, appSaveInfo, config.system_config.vm_name);
                 return undefined;
             });
         }
@@ -160,7 +199,7 @@ async function main() {
 
     // Ensure that directory structures exist.
     await ensureDirectoriesExist(config.storage_config.apk_download_directories);
-
+    console.log(await getLocationWithLeastSpace());
     for (;;) {
         let apps;
         try {
@@ -170,7 +209,16 @@ async function main() {
             continue;
         }
 
-        await Promise.each(apps, download).catch(logger.err);
+        for(const app of apps ) {
+            try {
+                await download(app).catch(err => {throw err});
+            }
+            catch(err) {
+                logger.err(`Error Downloading application with package name: ${app.app}. Error: ${err}`);
+            }
+        }
+
+        // await Promise.each(apps, download).catch(logger.err);
     }
 }
 
