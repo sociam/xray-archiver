@@ -2,16 +2,14 @@
 Download process spawner
 */
 
-const Promise = require('bluebird');
-
 const config = require('/etc/xray/config.json');
 const fs = require('fs-extra');
 const path = require('path');
 const logger = require('../../util/logger');
-
+const util = require('util');
+const bashExec = util.promisify(require('child_process').exec);
 const db = new (require('../../db/db'))('downloader');
 
-const appsSaveDir = path.join(config.datadir, 'apps');
 
 function mkdirp(dir) {
     dir.split(path.sep).reduce((parentDir, childDir) => {
@@ -23,7 +21,45 @@ function mkdirp(dir) {
     }, path.isAbsolute(dir) ? path.sep : '');
 }
 
+function parseFSOutputToJSON(fsString) {
+    const fsLines = fsString.split('\n').filter((part) => part != '');
+    const header = fsLines[0].split(' ').filter((part) => part != '');
+    const fileSystems = fsLines.slice(1);
+    let parsedOutput = {};
+    for(const fs of fileSystems) {
+        const lineParts = fs.split(' ').filter((part) => part != '');
+        parsedOutput[lineParts[0]] = {};
+        for(let i=1 ; i < header.length; i++) {
+            if(lineParts[i]) {
+                parsedOutput[lineParts[0]][header[i].toLowerCase()] = lineParts[i];
+
+            }
+        }
+    }
+    return parsedOutput;
+}
+
+async function getDiskSpace(path) {
+    logger.debug(`Using 'df' to get the disk space for the drive containing '${path}'`);
+    try {
+        const {stdout, stderr} = await bashExec(`df ${path} -BG`);
+
+        if(stderr) {
+            logger.err(`getDiskSpace: df wrote to stderr. throwing err.`);
+            throw stderr;
+        }
+
+        const fsJSON = parseFSOutputToJSON(stdout);
+        logger.debug(fsJSON);
+    }
+    catch(err){
+        logger.err(`Error getting the disk space for disk containing ${path}. Error: ${err}`);
+    }
+}
+
+
 async function resolveAPKDir(appData) {
+    const appsSaveDir = getLocationWithLeastSpace();
     logger.debug(`appdir: ${appsSaveDir}`, `\nappId ${appData.app}`, `\nappStore ${appData.store}`,
         `\nregion ${appData.region}`, `\nversion ${appData.version}`);
 
@@ -38,7 +74,7 @@ async function resolveAPKDir(appData) {
 
 function downloadApp(appData, appSavePath) {
     // Command line args for gplay cli
-    const args = ['-pd', appData.app, '-f', appSavePath, '-c', config.credDownload];
+    const args = ['-pd', appData.app, '-f', appSavePath, '-c', config.system_config.downloader_credentials];
     const spw = require('child-process-promise').spawn;
     logger.debug(`Passing args to downloader${args}`);
     const apkDownloader = spw('gplaycli', args);
@@ -92,7 +128,7 @@ async function download(app) {
                     return Promise.reject('File did not successfully download and is a empty size');
                 }
 
-                await db.updateDownloadedApp(app, appSavePath, config.vmname);
+                await db.updateDownloadedApp(app, appSavePath, config.system_config.vm_name);
                 return undefined;
             });
         }
@@ -104,18 +140,33 @@ async function download(app) {
     return undefined;
 }
 
-async function main() {
-    for (;;) {
-        let apps;
-        try {
-            apps = await db.queryAppsToDownload(4000);
-        } catch (err) {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            continue;
+async function ensureDirectoriesExist(directories) {
+    for(const location of directories) {
+        try{
+            await fs.ensureDir(path.join(location, 'apps'));
         }
-
-        await Promise.each(apps, download).catch(logger.err);
+        catch(err) {
+            logger.err(`Error ensuring directory '${location}' exisits. Error: ${err}`);
+        }
     }
+}
+
+async function main() {
+
+    // Ensure that directory structures exist.
+    await ensureDirectoriesExist(config.storage_config.apk_download_directories);
+    await getDiskSpace('/var/xray/');
+    // for (;;) {
+    //     let apps;
+    //     try {
+    //         apps = await db.queryAppsToDownload(4000);
+    //     } catch (err) {
+    //         await new Promise((resolve) => setTimeout(resolve, 1000));
+    //         continue;
+    //     }
+
+    //     await Promise.each(apps, download).catch(logger.err);
+    // }
 }
 
 main();
