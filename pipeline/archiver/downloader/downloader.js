@@ -21,7 +21,12 @@ function mkdirp(dir) {
     }, path.isAbsolute(dir) ? path.sep : '');
 }
 
-function parseFSOutputToJSON(fsString) {
+function parseDFOutputForFirstFS(fsString) {
+    const fsLines = fsString.split('\n').filter((part) => part != '');
+    return fsLines[1].split(' ')[0];
+}
+
+function parseDFOutputToJSON(fsString) {
     const fsLines = fsString.split('\n').filter((part) => part != '');
     const header = fsLines[0].split(' ').filter((part) => part != '');
     const fileSystems = fsLines.slice(1);
@@ -32,14 +37,13 @@ function parseFSOutputToJSON(fsString) {
         for(let i=1 ; i < header.length; i++) {
             if(lineParts[i]) {
                 parsedOutput[lineParts[0]][header[i].toLowerCase()] = lineParts[i];
-
             }
         }
     }
     return parsedOutput;
 }
 
-async function getDiskSpace(path) {
+async function getAvailableDiskSpace(path) {
     logger.debug(`Using 'df' to get the disk space for the drive containing '${path}'`);
     try {
         const {stdout, stderr} = await bashExec(`df ${path} -BG`);
@@ -49,8 +53,9 @@ async function getDiskSpace(path) {
             throw stderr;
         }
 
-        const fsJSON = parseFSOutputToJSON(stdout);
-        logger.debug(fsJSON);
+        const dfJSON = parseDFOutputToJSON(stdout);
+        const fs = parseDFOutputForFirstFS(stdout);
+        return parseInt(dfJSON[fs]['available'].replace('G',''));
     }
     catch(err){
         logger.err(`Error getting the disk space for disk containing ${path}. Error: ${err}`);
@@ -155,18 +160,18 @@ async function main() {
 
     // Ensure that directory structures exist.
     await ensureDirectoriesExist(config.storage_config.apk_download_directories);
-    await getDiskSpace('/var/xray/');
-    // for (;;) {
-    //     let apps;
-    //     try {
-    //         apps = await db.queryAppsToDownload(4000);
-    //     } catch (err) {
-    //         await new Promise((resolve) => setTimeout(resolve, 1000));
-    //         continue;
-    //     }
 
-    //     await Promise.each(apps, download).catch(logger.err);
-    // }
+    for (;;) {
+        let apps;
+        try {
+            apps = await db.queryAppsToDownload(4000);
+        } catch (err) {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            continue;
+        }
+
+        await Promise.each(apps, download).catch(logger.err);
+    }
 }
 
 main();
