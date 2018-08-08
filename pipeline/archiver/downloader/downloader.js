@@ -86,8 +86,9 @@ async function getLocationWithLeastSpace() {
     let dirSpaces = [];
     for(const dir of directories) {
         dirSpaces.push({
-            path : dir,
-            available : await getAvailableDiskSpace(dir)
+            name : dir.name,
+            path : dir.path,
+            available : await getAvailableDiskSpace(dir.path)
         })
     }
 
@@ -111,8 +112,10 @@ async function resolveAPKSaveInfo(appData) {
     await mkdirp(appSavePath);
 
     return {
-        appSavePath : appSavePath,
-        appSaveFS   : filesystem
+        appSavePath :    appSavePath,
+        appSaveFS   :    filesystem,
+        appSaveFSName:   appsSaveDir.name,
+        appSavePathRoot: appsSaveDir.path
     };
 }
 
@@ -198,7 +201,7 @@ async function ensureDirectoriesExist(directories) {
 async function main() {
 
     // Ensure that directory structures exist.
-    await ensureDirectoriesExist(config.storage_config.apk_download_directories);
+    await ensureDirectoriesExist(config.storage_config.apk_download_directories.map(dir => dir.path));
     console.log(await getLocationWithLeastSpace());
     for (;;) {
         let apps;

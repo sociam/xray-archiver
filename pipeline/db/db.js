@@ -229,11 +229,38 @@ class DB {
         }
     }
 
-    async updateDownloadedApp(app, appSaveInfo={appSavePath:'',appSaveFS:''}, serverLocation='localhost') {
+    async updateDownloadedApp(
+        app,
+        appSaveInfo={
+            appSavePath:'',
+            appSaveFS:'',
+            appSaveFSName:'',
+            appSavePathRoot:''
+        },
+        serverLocation='localhost') {
         try {
             await this.query(
-                'UPDATE app_versions SET downloaded=True, has_apk_stored=True, apk_location=$1, apk_server_location=$2, apk_filesystem=$3 WHERE app = $4',
-                [appSaveInfo.appSavePath, serverLocation, appSaveInfo.appSaveFS, app.app]
+                `
+                UPDATE
+                    app_versions
+                SET
+                    downloaded=True,
+                    has_apk_stored=True,
+                    apk_location        =   $1,
+                    apk_server_location =   $2,
+                    apk_filesystem      =   $3,
+                    apk_filesystem_name =   $4,
+                    apk_location_root   =   $5
+                WHERE
+                    app                 =   $6`,
+                [
+                    appSaveInfo.appSavePath,
+                    serverLocation,
+                    appSaveInfo.appSaveFS,
+                    appSaveInfo.appSaveFSName,
+                    appSaveInfo.appSavePathRoot,
+                    app.app
+                ]
             );
         } catch (err) {
             logger.err('Error updating app version flags:', err);
