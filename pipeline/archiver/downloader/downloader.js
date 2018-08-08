@@ -11,6 +11,8 @@ const bashExec = util.promisify(require('child_process').exec);
 const db = new (require('../../db/db'))('downloader');
 
 
+let downloadLocations = [];
+
 function mkdirp(dir) {
     dir.split(path.sep).reduce((parentDir, childDir) => {
         const curDir = path.join(parentDir, childDir);
@@ -82,9 +84,9 @@ async function getAvailableDiskSpace(path) {
 
 async function getLocationWithLeastSpace() {
     logger.debug(`Getting Save Location with the lowest amount of Space.`)
-    const directories = config.storage_config.apk_download_directories;
+    downloadLocations = await ensureDirectoriesExist(config.storage_config.apk_download_directories);
     let dirSpaces = [];
-    for(const dir of directories) {
+    for(const dir of downloadLocations) {
         dirSpaces.push({
             name : dir.name,
             path : dir.path,
@@ -105,7 +107,7 @@ async function resolveAPKSaveInfo(appData) {
     logger.debug(`appdir: ${appsSaveDir.path} - space remaining: ${appsSaveDir.available}`, `\nappId ${appData.app}`, `\nappStore ${appData.store}`,
         `\nregion ${appData.region}`, `\nversion ${appData.version}`);
 
-    const appSavePath = path.join(appsSaveDir.path, appData.app,
+    const appSavePath = path.join(appsSaveDir.path,'apps', appData.app,
         appData.store, appData.region, appData.version);
     logger.info(`App Save Directory formed: '${appSavePath}'`);
 
@@ -188,20 +190,31 @@ async function download(app) {
 }
 
 async function ensureDirectoriesExist(directories) {
-    for(const location of directories) {
+    let validDirectories = [];
+    for(const dir of directories){
         try{
-            await fs.ensureDir(path.join(location, 'apps'));
+            await fs.ensureDir(path.join(dir.path, 'apps'));
+            validDirectories.push(dir);
         }
         catch(err) {
-            logger.err(`Error ensuring directory '${location}' exisits. Error: ${err}`);
+            logger.err(
+                `
+                Error ensuring directory '${dir.path}' exists.
+                Error: ${err}.
+                Exluding ${dir.name} at ${dir.path} from the dowload location options.
+                `
+            );
         }
     }
+    return validDirectories;
+
 }
 
 async function main() {
 
     // Ensure that directory structures exist.
-    await ensureDirectoriesExist(config.storage_config.apk_download_directories.map(dir => dir.path));
+    downloadLocations = await ensureDirectoriesExist(config.storage_config.apk_download_directories);
+
     console.log(await getLocationWithLeastSpace());
     for (;;) {
         let apps;
