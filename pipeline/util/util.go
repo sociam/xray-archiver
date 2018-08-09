@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 	"time"
 )
 
@@ -69,6 +70,15 @@ func (app *App) AppDir() string {
 	return path.Dir(app.ApkPath())
 }
 
+// getUUIDMountPath uses linux 'findmnt' program to try and find the mount point of the provided uuid.
+func getUUIDMountPath(UUID string) string {
+	out, err := exec.Command("findmnt", "-rn", "-S", "UUID="+UUID, "-o", "TARGET").Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(out[:])
+}
+
 // ApkPath will try and find the APK on any mounted disks in potential locations
 // starting with the location specified in the DB, falling down to checking
 // locations with the root of the path specidied in the DB substituted,
@@ -80,6 +90,15 @@ func (app *App) ApkPath() string {
 	if _, err := os.Stat(path.Join(app.APKLocationPath, app.ID+".apk")); err == nil {
 		// App Found in the expected location...
 		return path.Join(path.Clean(app.APKLocationPath), app.ID+".apk")
+	}
+
+	// Check if the Root is wrong, get the filesystem mount path
+	// and replace the APKLocationRoot of APKLocationPath with the new root.
+	uuidMount := getUUIDMountPath(app.APKLocationUUID)
+	altAPKLocation := strings.Replace(app.APKLocationPath, app.APKLocationRoot, uuidMount, 1)
+	if _, err := os.Stat(path.Join(altAPKLocation, app.ID+".apk")); err == nil {
+		// App Found in the expected location...
+		return path.Join(path.Clean(altAPKLocation), app.ID+".apk")
 	}
 
 	if app.Path != "" {
