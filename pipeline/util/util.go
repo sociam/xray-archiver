@@ -101,6 +101,16 @@ func (app *App) ApkPath() string {
 		return path.Join(path.Clean(altAPKLocation), app.ID+".apk")
 	}
 
+	// if the app cannot be found in the new mount location for whatever UUID, go through
+	// each storage location in the config and check there.
+	for _, location := range Cfg.StorageConfig.APKDownloadDirectories {
+		altAPKLocation = strings.Replace(app.APKLocationPath, app.APKLocationRoot, location.Path, 1)
+		if _, err := os.Stat(path.Join(altAPKLocation, app.ID+".apk")); err == nil {
+			// App Found in the expected location...
+			return path.Join(path.Clean(altAPKLocation), app.ID+".apk")
+		}
+	}
+
 	if app.Path != "" {
 		return app.Path
 	}
