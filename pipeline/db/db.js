@@ -235,7 +235,8 @@ class DB {
             appSavePath:'',
             appSaveFS:'',
             appSaveFSName:'',
-            appSavePathRoot:''
+            appSavePathRoot:'',
+            appSaveUUID:''
         },
         serverLocation='localhost') {
         try {
@@ -250,15 +251,17 @@ class DB {
                     apk_server_location =   $2,
                     apk_filesystem      =   $3,
                     apk_filesystem_name =   $4,
-                    apk_location_root   =   $5
+                    apk_location_root   =   $5,
+                    apk_location_uuid   =   $6
                 WHERE
-                    app                 =   $6`,
+                    app                 =   $7`,
                 [
                     appSaveInfo.appSavePath,
                     serverLocation,
                     appSaveInfo.appSaveFS,
                     appSaveInfo.appSaveFSName,
                     appSaveInfo.appSavePathRoot,
+                    appSaveInfo.appSaveUUID,
                     app.app
                 ]
             );

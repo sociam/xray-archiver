@@ -22,7 +22,8 @@ create table app_versions(
   apk_location              text                             , -- Path to the APK for this version of the App.
   apk_filesystem            text                             ,
   apk_filesystem_name       text                             ,
-  apk_location_root             text                             ,
+  apk_location_root         text                             ,
+  apk_location_uuid         text                             , -- UUID of the device that this APK is stored on.
   apk_server_location       text                             , -- Really an indicator of what VM the APK is stored on.
   screen_flags               int                             ,
   downloaded                bool                     not null,

@@ -45,6 +45,20 @@ function parseDFOutputToJSON(fsString) {
     return parsedOutput;
 }
 
+async function getUUID(devicePath) {
+    try {
+        const {stdout, stderr} = await bashExec(`sudo blkid -s UUID -o value ${devicePath}`);
+        if(stderr) {
+            logger.err(`blkid wrote to STDERR: ${stderr}`);
+            throw stderr;
+        }
+        return stdout;
+    }
+    catch(err) {
+        logger.err(`Error getting UUID for ${devicePath} using 'blkid'. Error: ${err}`);
+    }
+}
+
 async function df(path='') {
     const {stdout, stderr} = await bashExec(`df ${path} -BG`);
     if(stderr) {
@@ -103,6 +117,7 @@ async function getLocationWithLeastSpace() {
 async function resolveAPKSaveInfo(appData) {
     const appsSaveDir = await getLocationWithLeastSpace();
     const filesystem = await getPathFileSystem(appsSaveDir.path);
+    const UUID = await getUUID(filesystem);
 
     logger.debug(`appdir: ${appsSaveDir.path} - space remaining: ${appsSaveDir.available}`, `\nappId ${appData.app}`, `\nappStore ${appData.store}`,
         `\nregion ${appData.region}`, `\nversion ${appData.version}`);
@@ -117,7 +132,8 @@ async function resolveAPKSaveInfo(appData) {
         appSavePath :    appSavePath,
         appSaveFS   :    filesystem,
         appSaveFSName:   appsSaveDir.name,
-        appSavePathRoot: appsSaveDir.path
+        appSavePathRoot: appsSaveDir.path,
+        appSaveUUID: UUID
     };
 }
 
