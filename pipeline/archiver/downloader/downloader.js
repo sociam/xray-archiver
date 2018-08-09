@@ -46,6 +46,11 @@ function parseDFOutputToJSON(fsString) {
 }
 
 async function getUUID(devicePath) {
+    // Can use df to get the filesystem and mounted on path.
+    //      df -BG /dev/disk/by-uuid/5D3E-D824
+    //      Filesystem     1G-blocks  Used Available Use% Mounted on
+    //      /dev/sdc1            58G   14G       44G  24% /mnt/sanDiskUSB
+    //
     try {
         const {stdout, stderr} = await bashExec(`sudo blkid -s UUID -o value ${devicePath}`);
         if(stderr) {

@@ -117,7 +117,7 @@ func analyze(app *util.App) error {
 }
 
 func runServer() {
-	util.CheckDir(util.Cfg.UnpackDir, "Unpacked APK directory")
+	util.CheckDir(util.Cfg.StorageConfig.APKUnpackDirectory, "Unpacked APK directory")
 
 	for {
 		apps, err := db.GetAppsToAnalyze()
@@ -163,13 +163,7 @@ func init() {
 }
 
 func main() {
-	if err := os.MkdirAll(util.Cfg.DataDir, 0755); err != nil {
-		panic(err)
-	}
-	if err := os.MkdirAll(util.Cfg.AppDir, 0755); err != nil {
-		panic(err)
-	}
-	if err := os.MkdirAll(util.Cfg.UnpackDir, 0755); err != nil {
+	if err := os.MkdirAll(util.Cfg.StorageConfig.APKUnpackDirectory, 0755); err != nil {
 		panic(err)
 	}
 

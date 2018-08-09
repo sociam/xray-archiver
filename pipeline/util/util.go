@@ -30,6 +30,9 @@ type App struct {
 	Packages               []string
 	Icon                   string
 	UsesReflect            bool
+	APKLocationUUID        string
+	APKLocationPath        string
+	APKLocationRoot        string
 }
 
 // Permission Struct represents the permission information found
@@ -41,8 +44,16 @@ type Permission struct {
 
 // NewApp Constructs a new app. initialising values based on
 // the parameters passed.
-func NewApp(dbID int64, id, store, region, ver string) *App {
-	return &App{DBID: dbID, ID: id, Store: store, Region: region, Ver: ver}
+func NewApp(dbID int64, id, store, region, ver, apkLocationUUID, apkLocationPath, apkLocationRoot string) *App {
+	return &App{
+		DBID:            dbID,
+		ID:              id,
+		Store:           store,
+		Region:          region,
+		Ver:             ver,
+		APKLocationPath: apkLocationPath,
+		APKLocationRoot: apkLocationRoot,
+		APKLocationUUID: apkLocationUUID}
 }
 
 // AppByPath returns an App object with the Path value initialised.
@@ -55,12 +66,22 @@ func (app *App) AppDir() string {
 	if app.Path != "" {
 		return path.Dir(app.Path)
 	}
-	return path.Join(Cfg.AppDir, app.ID, app.Store, app.Region, app.Ver)
+	return path.Dir(app.ApkPath())
 }
 
-// ApkPath creates a string that represents the location of the APK
-// on disk. Used to populate the Path string of an App object.
+// ApkPath will try and find the APK on any mounted disks in potential locations
+// starting with the location specified in the DB, falling down to checking
+// locations with the root of the path specidied in the DB substituted,
+// follewed by checking each location in the config forming a path from the
+// app version details.
 func (app *App) ApkPath() string {
+
+	// Check if file can be found at the path in the DB.
+	if _, err := os.Stat(path.Join(app.APKLocationPath, app.ID+".apk")); err == nil {
+		// App Found in the expected location...
+		return path.Join(path.Clean(app.APKLocationPath), app.ID+".apk")
+	}
+
 	if app.Path != "" {
 		return app.Path
 	}
@@ -74,13 +95,13 @@ func (app *App) OutDir() string {
 	if app.UnpackDir == "" {
 		if app.Path != "" {
 			var err error
-			app.UnpackDir, err = ioutil.TempDir(Cfg.UnpackDir, path.Base(app.Path))
+			app.UnpackDir, err = ioutil.TempDir(Cfg.StorageConfig.APKUnpackDirectory, path.Base(app.Path))
 			if err != nil {
 				// maybe do something else?
-				log.Fatal("Failed to create temp dir in ", Cfg.UnpackDir, ": ", err)
+				log.Fatal("Failed to create temp dir in ", Cfg.StorageConfig.APKUnpackDirectory, ": ", err)
 			}
 		} else {
-			app.UnpackDir = path.Join(Cfg.UnpackDir, app.ID, app.Store, app.Region, app.Ver)
+			app.UnpackDir = path.Join(Cfg.StorageConfig.APKUnpackDirectory, app.ID, app.Store, app.Region, app.Ver)
 			if err := os.MkdirAll(app.UnpackDir, 0755); err != nil {
 				log.Fatalf("Failed to create temp dir in %s: %s", app.UnpackDir, err.Error())
 			}

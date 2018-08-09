@@ -21,19 +21,22 @@ type App struct {
 // AppVersion represents all the information about an app version contained in
 // the database
 type AppVersion struct {
-	ID          int64     `json:"id"`
-	App         string    `json:"app"`
-	Store       string    `json:"string"`
-	Region      string    `json:"region"`
-	Ver         string    `json:"ver"`
-	ScreenFlags int64     `json:"screenFlags"`
-	StoreInfo   StoreInfo `json:"storeinfo"`
-	Icon        string    `json:"icon"`
-	Dev         Developer `json:"developer"`
-	Hosts       []string  `json:"hosts"`
-	Perms       []string  `json:"perms"`
-	Packages    []string  `json:"packages"`
-	IsAnalyzed  bool      `json:"isAnalyzed"`
+	ID              int64     `json:"id"`
+	App             string    `json:"app"`
+	Store           string    `json:"string"`
+	Region          string    `json:"region"`
+	Ver             string    `json:"ver"`
+	ScreenFlags     int64     `json:"screenFlags"`
+	StoreInfo       StoreInfo `json:"storeinfo"`
+	Icon            string    `json:"icon"`
+	Dev             Developer `json:"developer"`
+	Hosts           []string  `json:"hosts"`
+	Perms           []string  `json:"perms"`
+	Packages        []string  `json:"packages"`
+	IsAnalyzed      bool      `json:"isAnalyzed"`
+	APKLocationUUID string    `json:"apkLocationUUID"`
+	APKLocationPath string    `json:"apkLocationPath"`
+	APKLocationRoot string    `json:"apkLocationRoot"`
 }
 
 // GenreStats represents a row from the Genre average statistics table
@@ -147,7 +150,7 @@ type Company struct {
 
 // UtilApp creates a *util.App from an AppVersion
 func (a AppVersion) UtilApp() *util.App {
-	return util.NewApp(a.ID, a.App, a.Store, a.Region, a.Ver)
+	return util.NewApp(a.ID, a.App, a.Store, a.Region, a.Ver, a.APKLocationPath, a.APKLocationRoot, a.APKLocationUUID)
 }
 
 // AppHostRecord holds app_host data from the xray DB

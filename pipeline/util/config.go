@@ -40,13 +40,33 @@ type APIServCfg struct {
 // locations. As well as holding DB, Analyser and APIServ Config
 // information.
 type Config struct {
-	GeoIPEndpoint string      `json:"geoipurl"`
-	DataDir       string      `json:"datadir"`
-	AppDir        string      `json:"-"`
-	UnpackDir     string      `json:"unpackdir"`
-	Analyzer      AnalyzerCfg `json:"analyzer"`
-	APIServ       APIServCfg  `json:"apiserv"`
-	DB            DBCfg       `json:"db"`
+	GeoIPEndpoint string        `json:"geoipurl"`
+	StorageConfig StorageConfig `json:"storage_config"`
+	SystemConfig  SystemConfig  `json:"system_config"`
+	Analyzer      AnalyzerCfg   `json:"analyzer"`
+	APIServ       APIServCfg    `json:"apiserv"`
+	DB            DBCfg         `json:"db"`
+}
+
+// SystemConfig represents the config info related to the system the program
+// is running on.
+type SystemConfig struct {
+	VMName                string `json:"vm_name"`
+	DownloaderCredentials string `json:"downloader_credentials"`
+}
+
+// StorageConfig holds the config data related to where APK data
+// may be stored.
+type StorageConfig struct {
+	APKDownloadDirectories []APKDownloadDirectory `json:"apk_download_directories"`
+	APKUnpackDirectory     string                 `json:"apk_unpack_directory"`
+	MinimumGBRequired      string                 `json:"minimum_gb_required"`
+}
+
+// APKDownloadDirectory represents a possible location an APK could be stored on.
+type APKDownloadDirectory struct {
+	Name string `json:"name"`
+	Path string `json:"path"`
 }
 
 // Cfg is an instance of Config that will contain DB settings
@@ -77,16 +97,8 @@ func LoadCfg(cfgFile string, requester int) error {
 	if Cfg.GeoIPEndpoint == "" {
 		Cfg.GeoIPEndpoint = "http://localhost/geoip"
 	}
-	if Cfg.DataDir == "" {
-		Cfg.DataDir = "/var/xray"
-	}
-	Cfg.AppDir = path.Join(Cfg.DataDir, "apps")
-	if Cfg.UnpackDir == "" {
-		Cfg.UnpackDir, err = ioutil.TempDir("", "xray-analyzer")
-	}
 
-	Cfg.AppDir = path.Clean(Cfg.AppDir)
-	Cfg.UnpackDir = path.Clean(Cfg.UnpackDir)
+	Cfg.StorageConfig.APKUnpackDirectory = path.Clean(Cfg.StorageConfig.APKUnpackDirectory)
 
 	switch requester {
 	case Analyzer:
@@ -98,8 +110,8 @@ func LoadCfg(cfgFile string, requester int) error {
 	}
 
 	fmt.Println("Config:")
-	fmt.Println("\tApp directory:", Cfg.AppDir)
-	fmt.Println("\tUnpacked app directory:", Cfg.UnpackDir)
+	fmt.Println("\tApp directories:", Cfg.StorageConfig.APKDownloadDirectories)
+	fmt.Println("\tUnpacked app directory:", Cfg.StorageConfig.APKUnpackDirectory)
 
 	return nil
 }
