@@ -232,11 +232,11 @@ class DB {
     async updateDownloadedApp(
         app,
         appSaveInfo={
-            appSavePath:     '',
-            appSaveFS:       '',
-            appSaveFSName:   '',
+            appSavePath: '',
+            appSaveFS: '',
+            appSaveFSName: '',
             appSavePathRoot: '',
-            appSaveUUID:     ''
+            appSaveUUID: '',
         },
         serverLocation='localhost') {
         try {
@@ -262,7 +262,7 @@ class DB {
                     appSaveInfo.appSaveFSName,
                     appSaveInfo.appSavePathRoot,
                     appSaveInfo.appSaveUUID,
-                    app.app
+                    app.app,
                 ]
             );
         } catch (err) {
