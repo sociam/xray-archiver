@@ -1,8 +1,22 @@
 {
-    "datadir": "/var/xray",
-    "unpackdir": "/tmp/unpacked_apks",
-    "vmname" : "localhost",
-    "credDownload": "/etc/xray/credentials.conf",
+    "system_config" :{
+        "vm_name" : "localhost",
+        "downloader_credentials": "/etc/xray/credentials.conf"
+    },
+    "storage_config" : {
+        "apk_download_directories" : [
+            {
+                "name" : "local_hdd",
+                "path":"/var/xray"
+            },
+            {
+                "name":"sandisk_64gb_usb",
+                "path":"/var/xray2"
+            }
+        ],
+        "apk_unpack_directory": "/tmp/unpacked_apks",
+        "minimum_gb_required" : "4"
+    },
     "db": {
         "database": "xraydb",
         "host": "localhost",

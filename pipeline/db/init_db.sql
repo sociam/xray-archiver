@@ -1,3 +1,11 @@
+
+
+-----
+--
+--  Table Creation
+--
+-----
+
 begin;
 
 create table apps(
@@ -12,6 +20,10 @@ create table app_versions(
   region                    text                     not null,
   version                   text                     not null,
   apk_location              text                             , -- Path to the APK for this version of the App.
+  apk_filesystem            text                             ,
+  apk_filesystem_name       text                             ,
+  apk_location_root         text                             ,
+  apk_location_uuid         text                             , -- UUID of the device that this APK is stored on.
   apk_server_location       text                             , -- Really an indicator of what VM the APK is stored on.
   screen_flags               int                             ,
   downloaded                bool                     not null,
@@ -199,11 +211,17 @@ create table companyWebsiteAssociations(
   primary key (company_name, associated_website)
 );
 
+commit;
 
---
--- Functions
---
 
+
+
+-----
+--
+--  Function Creation
+--
+-----
+begin;
 create or replace function createCompanyAssociationRecord() returns trigger as
   $BODY$
     begin
@@ -256,14 +274,15 @@ create or replace function updateCompanyIoTDeviceAssociations() returns trigger 
     end;
   $BODY$
 language plpgsql;
+commit;
 
+
+-----
 --
-
+--  Trigger Creation
 --
--- Triggers
---
-
-
+-----
+begin;
 create trigger onCompanyNameInsert
   after insert on companyNames
     for each row
@@ -284,7 +303,15 @@ create trigger onCompanyIoTDeviceAssociationInsert
     for each row
       execute procedure updateCompanyIoTDeviceAssociations();
 
+commit;
 
+
+-----
+--
+--  Role Creation
+--
+-----
+begin;
 
 create user explorer;
 create user retriever;
@@ -292,6 +319,17 @@ create user downloader;
 create user analyzer;
 create user apiserv;
 create user suggester;
+
+commit;
+
+
+
+-----
+--
+--  Role Permissions
+--
+-----
+begin;
 
 grant insert, select on search_terms to explorer;
 

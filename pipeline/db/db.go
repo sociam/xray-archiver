@@ -1183,7 +1183,30 @@ func QueryAll(
 // GetAppsToAnalyze returns a list of up to 10 apps that have analyzed=False and
 // downloaded=True for the analyzer.
 func GetAppsToAnalyze() ([]AppVersion, error) {
-	rows, err := db.Query("SELECT v.id, v.app,v.store, v.region, v.version, v.screen_flags, v.icon FROM app_versions v FULL OUTER JOIN playstore_apps p ON (v.id = p.id) WHERE v.analyzed = False AND v.downloaded = True ORDER BY v.last_analyze_attempt NULLS FIRST, p.max_installs USING> LIMIT 10")
+	fmt.Println("Getting Apps From the DB to Analyse.")
+	rows, err := db.Query(
+		`SELECT
+			v.id,
+			v.app,
+			v.store,
+			v.region,
+			v.version,
+			v.screen_flags,
+			v.icon,
+			v.apk_location,
+			v.apk_location_root,
+			v.apk_location_uuid
+		FROM
+			app_versions v FULL OUTER JOIN playstore_apps p ON (v.id = p.id)
+		WHERE
+			v.analyzed = False
+		AND
+			v.downloaded = True
+		ORDER BY
+			v.last_analyze_attempt NULLS FIRST,
+			p.max_installs USING >
+		LIMIT 10`)
+	fmt.Println("DB Query Made.")
 	if rows != nil {
 		defer rows.Close()
 	}
@@ -1195,7 +1218,18 @@ func GetAppsToAnalyze() ([]AppVersion, error) {
 		var cur AppVersion
 		var screenFlags sql.NullInt64
 		var icon sql.NullString
-		err := rows.Scan(&cur.ID, &cur.App, &cur.Store, &cur.Region, &cur.Ver, &screenFlags, &icon)
+		err := rows.Scan(
+			&cur.ID,
+			&cur.App,
+			&cur.Store,
+			&cur.Region,
+			&cur.Ver,
+			&screenFlags,
+			&icon,
+			&cur.APKLocationPath,
+			&cur.APKLocationRoot,
+			&cur.APKLocationUUID)
+
 		cur.ScreenFlags = screenFlags.Int64
 		cur.Icon = icon.String
 

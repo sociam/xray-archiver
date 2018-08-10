@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 	"time"
 )
 
@@ -30,6 +31,9 @@ type App struct {
 	Packages               []string
 	Icon                   string
 	UsesReflect            bool
+	APKLocationUUID        string
+	APKLocationPath        string
+	APKLocationRoot        string
 }
 
 // Permission Struct represents the permission information found
@@ -41,8 +45,16 @@ type Permission struct {
 
 // NewApp Constructs a new app. initialising values based on
 // the parameters passed.
-func NewApp(dbID int64, id, store, region, ver string) *App {
-	return &App{DBID: dbID, ID: id, Store: store, Region: region, Ver: ver}
+func NewApp(dbID int64, id, store, region, ver, apkLocationPath, apkLocationRoot, apkLocationUUID string) *App {
+	return &App{
+		DBID:            dbID,
+		ID:              id,
+		Store:           store,
+		Region:          region,
+		Ver:             ver,
+		APKLocationPath: apkLocationPath,
+		APKLocationRoot: apkLocationRoot,
+		APKLocationUUID: apkLocationUUID}
 }
 
 // AppByPath returns an App object with the Path value initialised.
@@ -55,12 +67,57 @@ func (app *App) AppDir() string {
 	if app.Path != "" {
 		return path.Dir(app.Path)
 	}
-	return path.Join(Cfg.AppDir, app.ID, app.Store, app.Region, app.Ver)
+	return path.Dir(app.ApkPath())
 }
 
-// ApkPath creates a string that represents the location of the APK
-// on disk. Used to populate the Path string of an App object.
+// getUUIDMountPath uses linux 'findmnt' program to try and find the mount point of the provided uuid.
+func getUUIDMountPath(UUID string) string {
+	out, err := exec.Command("findmnt", "-rn", "-S", "UUID="+UUID, "-o", "TARGET").Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(out[:])
+}
+
+// ApkPath will try and find the APK on any mounted disks in potential locations
+// starting with the location specified in the DB, falling down to checking
+// locations with the root of the path specidied in the DB substituted,
+// follewed by checking each location in the config forming a path from the
+// app version details.
 func (app *App) ApkPath() string {
+	fmt.Println("Getting APK Path for App:", app.ID)
+
+	apkLocation := path.Join(app.APKLocationPath, app.ID+".apk")
+	fmt.Println("Checking if APK is at: ", apkLocation)
+
+	if _, err := os.Stat(apkLocation); err == nil {
+		fmt.Println("App Found in DB specified location: ", apkLocation)
+		return path.Join(path.Clean(app.APKLocationPath), app.ID+".apk")
+	}
+
+	// Check if the Root is wrong, get the filesystem mount path
+	// and replace the APKLocationRoot of APKLocationPath with the new root.
+	uuidMount := getUUIDMountPath(app.APKLocationUUID)
+	apkLocation = path.Join(strings.Replace(app.APKLocationPath, app.APKLocationRoot, uuidMount, 1), app.ID+".apk")
+
+	fmt.Println("Checking if APK is at: ", apkLocation)
+	if _, err := os.Stat(apkLocation); err == nil {
+		fmt.Println("App Found on DB specified Device. UUID: ", app.APKLocationUUID, "APK Path:", apkLocation)
+		return path.Join(path.Clean(apkLocation), app.ID+".apk")
+	}
+
+	// if the app cannot be found in the new mount location for whatever UUID, go through
+	// each storage location in the config and check there.
+	for _, location := range Cfg.StorageConfig.APKDownloadDirectories {
+		apkLocation = path.Join(strings.Replace(app.APKLocationPath, app.APKLocationRoot, location.Path, 1), app.ID+".apk")
+		fmt.Println("Checking if APK is at: ", apkLocation)
+
+		if _, err := os.Stat(apkLocation); err == nil {
+			fmt.Println("Searched for APK and found it in: ", apkLocation)
+			return path.Join(path.Clean(apkLocation), app.ID+".apk")
+		}
+	}
+
 	if app.Path != "" {
 		return app.Path
 	}
@@ -74,13 +131,13 @@ func (app *App) OutDir() string {
 	if app.UnpackDir == "" {
 		if app.Path != "" {
 			var err error
-			app.UnpackDir, err = ioutil.TempDir(Cfg.UnpackDir, path.Base(app.Path))
+			app.UnpackDir, err = ioutil.TempDir(Cfg.StorageConfig.APKUnpackDirectory, path.Base(app.Path))
 			if err != nil {
 				// maybe do something else?
-				log.Fatal("Failed to create temp dir in ", Cfg.UnpackDir, ": ", err)
+				log.Fatal("Failed to create temp dir in ", Cfg.StorageConfig.APKUnpackDirectory, ": ", err)
 			}
 		} else {
-			app.UnpackDir = path.Join(Cfg.UnpackDir, app.ID, app.Store, app.Region, app.Ver)
+			app.UnpackDir = path.Join(Cfg.StorageConfig.APKUnpackDirectory, app.ID, app.Store, app.Region, app.Ver)
 			if err := os.MkdirAll(app.UnpackDir, 0755); err != nil {
 				log.Fatalf("Failed to create temp dir in %s: %s", app.UnpackDir, err.Error())
 			}
