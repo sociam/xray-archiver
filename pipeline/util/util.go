@@ -45,7 +45,7 @@ type Permission struct {
 
 // NewApp Constructs a new app. initialising values based on
 // the parameters passed.
-func NewApp(dbID int64, id, store, region, ver, apkLocationUUID, apkLocationPath, apkLocationRoot string) *App {
+func NewApp(dbID int64, id, store, region, ver, apkLocationPath, apkLocationRoot, apkLocationUUID string) *App {
 	return &App{
 		DBID:            dbID,
 		ID:              id,
@@ -85,29 +85,36 @@ func getUUIDMountPath(UUID string) string {
 // follewed by checking each location in the config forming a path from the
 // app version details.
 func (app *App) ApkPath() string {
+	fmt.Println("Getting APK Path for App:", app.ID)
 
-	// Check if file can be found at the path in the DB.
-	if _, err := os.Stat(path.Join(app.APKLocationPath, app.ID+".apk")); err == nil {
-		// App Found in the expected location...
+	apkLocation := path.Join(app.APKLocationPath, app.ID+".apk")
+	fmt.Println("Checking if APK is at: ", apkLocation)
+
+	if _, err := os.Stat(apkLocation); err == nil {
+		fmt.Println("App Found in DB specified location: ", apkLocation)
 		return path.Join(path.Clean(app.APKLocationPath), app.ID+".apk")
 	}
 
 	// Check if the Root is wrong, get the filesystem mount path
 	// and replace the APKLocationRoot of APKLocationPath with the new root.
 	uuidMount := getUUIDMountPath(app.APKLocationUUID)
-	altAPKLocation := strings.Replace(app.APKLocationPath, app.APKLocationRoot, uuidMount, 1)
-	if _, err := os.Stat(path.Join(altAPKLocation, app.ID+".apk")); err == nil {
-		// App Found in the expected location...
-		return path.Join(path.Clean(altAPKLocation), app.ID+".apk")
+	apkLocation = path.Join(strings.Replace(app.APKLocationPath, app.APKLocationRoot, uuidMount, 1), app.ID+".apk")
+
+	fmt.Println("Checking if APK is at: ", apkLocation)
+	if _, err := os.Stat(apkLocation); err == nil {
+		fmt.Println("App Found on DB specified Device. UUID: ", app.APKLocationUUID, "APK Path:", apkLocation)
+		return path.Join(path.Clean(apkLocation), app.ID+".apk")
 	}
 
 	// if the app cannot be found in the new mount location for whatever UUID, go through
 	// each storage location in the config and check there.
 	for _, location := range Cfg.StorageConfig.APKDownloadDirectories {
-		altAPKLocation = strings.Replace(app.APKLocationPath, app.APKLocationRoot, location.Path, 1)
-		if _, err := os.Stat(path.Join(altAPKLocation, app.ID+".apk")); err == nil {
-			// App Found in the expected location...
-			return path.Join(path.Clean(altAPKLocation), app.ID+".apk")
+		apkLocation = path.Join(strings.Replace(app.APKLocationPath, app.APKLocationRoot, location.Path, 1), app.ID+".apk")
+		fmt.Println("Checking if APK is at: ", apkLocation)
+
+		if _, err := os.Stat(apkLocation); err == nil {
+			fmt.Println("Searched for APK and found it in: ", apkLocation)
+			return path.Join(path.Clean(apkLocation), app.ID+".apk")
 		}
 	}
 

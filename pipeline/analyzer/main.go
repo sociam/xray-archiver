@@ -117,6 +117,7 @@ func analyze(app *util.App) error {
 }
 
 func runServer() {
+	fmt.Println("Checking APK Unpack Directory:", util.Cfg.StorageConfig.APKUnpackDirectory)
 	util.CheckDir(util.Cfg.StorageConfig.APKUnpackDirectory, "Unpacked APK directory")
 
 	for {
