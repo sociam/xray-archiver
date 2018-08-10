@@ -10,8 +10,26 @@ const util = require('util');
 const bashExec = util.promisify(require('child_process').exec);
 const db = new (require('../../db/db'))('downloader');
 
-
 let downloadLocations = [];
+
+async function ensureDirectoriesExist(directories) {
+    const validDirectories = [];
+    for (const dir of directories) {
+        try {
+            await fs.ensureDir(path.join(dir.path, 'apps'));
+            validDirectories.push(dir);
+        } catch (err) {
+            logger.err(
+                `
+                Error ensuring directory '${dir.path}' exists.
+                Error: ${err}.
+                Exluding ${dir.name} at ${dir.path} from the dowload location options.
+                `
+            );
+        }
+    }
+    return validDirectories;
+}
 
 function mkdirp(dir) {
     dir.split(path.sep).reduce((parentDir, childDir) => {
@@ -32,12 +50,12 @@ function parseDFOutputToJSON(fsString) {
     const fsLines = fsString.split('\n').filter((part) => part != '');
     const header = fsLines[0].split(' ').filter((part) => part != '');
     const fileSystems = fsLines.slice(1);
-    let parsedOutput = {};
-    for(const fs of fileSystems) {
+    const parsedOutput = {};
+    for (const fs of fileSystems) {
         const lineParts = fs.split(' ').filter((part) => part != '');
         parsedOutput[lineParts[0]] = {};
-        for(let i=1 ; i < header.length; i++) {
-            if(lineParts[i]) {
+        for (let i=1; i < header.length; i++) {
+            if (lineParts[i]) {
                 parsedOutput[lineParts[0]][header[i].toLowerCase()] = lineParts[i];
             }
         }
@@ -52,70 +70,75 @@ async function getUUID(devicePath) {
     //      /dev/sdc1            58G   14G       44G  24% /mnt/sanDiskUSB
     //
     try {
-        const {stdout, stderr} = await bashExec(`sudo blkid -s UUID -o value ${devicePath}`);
-        if(stderr) {
+        const { stdout, stderr } = await bashExec(`sudo blkid -s UUID -o value ${devicePath}`);
+        if (stderr) {
             logger.err(`blkid wrote to STDERR: ${stderr}`);
             throw stderr;
         }
         return stdout;
-    }
-    catch(err) {
+    } catch (err) {
         logger.err(`Error getting UUID for ${devicePath} using 'blkid'. Error: ${err}`);
+        return err;
     }
 }
 
 async function df(path='') {
-    const {stdout, stderr} = await bashExec(`df ${path} -BG`);
-    if(stderr) {
-        logger.err(`getDiskSpace: df wrote to stderr. throwing err.`);
-        throw stderr
+    const { stdout, stderr } = await bashExec(`df ${path} -BG`);
+    if (stderr) {
+        logger.err('getDiskSpace: df wrote to stderr. throwing err.');
+        throw stderr;
     }
-    return {stdout, stderr};
+    return { stdout, stderr };
 }
 
 async function getPathFileSystem(path) {
     try {
-        const {stdout, stderr} = await df(path);
-        if(stderr) {
+        const { stdout, stderr } = await df(path);
+        if (stderr) {
             throw stderr;
         }
         return parseDFOutputForFirstFS(stdout);
-    }
-    catch(err){
+    } catch (err) {
         logger.err(`Error getting the Filesystem containing ${path}. Error: ${err}`);
+        return err;
     }
 }
 async function getAvailableDiskSpace(path) {
     logger.debug(`Using 'df' to get the filesystem space for the filesystem containing '${path}'`);
     try {
-        const {stdout, stderr} = await df(path);
+        const { stdout, stderr } = await df(path);
         const dfJSON = parseDFOutputToJSON(stdout);
         const fs = parseDFOutputForFirstFS(stdout);
-        if(stderr) {
+        if (stderr) {
             throw stderr;
         }
-        return parseInt(dfJSON[fs]['available'].replace('G',''));
-    }
-    catch(err){
-        logger.err(`Error getting the filesystem space for filesystem containing ${path}. Error: ${err}`);
+        return parseInt(dfJSON[fs]['available'].replace('G', ''));
+    } catch (err) {
+        logger.err(`Error getting the filesystem space for filesystem containing ${path}.
+        Error: ${err}`);
+        return err;
     }
 }
 
 async function getLocationWithLeastSpace() {
-    logger.debug(`Getting Save Location with the lowest amount of Space.`)
-    downloadLocations = await ensureDirectoriesExist(config.storage_config.apk_download_directories);
-    let dirSpaces = [];
-    for(const dir of downloadLocations) {
+    logger.debug('Getting Save Location with the lowest amount of Space.');
+    downloadLocations = await ensureDirectoriesExist(
+        config.storage_config.apk_download_directories
+    );
+    const dirSpaces = [];
+    for (const dir of downloadLocations) {
         dirSpaces.push({
-            name : dir.name,
-            path : dir.path,
-            available : await getAvailableDiskSpace(dir.path)
-        })
+            name: dir.name,
+            path: dir.path,
+            available: await getAvailableDiskSpace(dir.path),
+        });
     }
 
-    const dirsWithSomeSpace = dirSpaces.filter((dir) => dir.available >= config.storage_config.minimum_gb_required);
+    const dirsWithSomeSpace = dirSpaces.filter((dir) => {
+        return dir.available >= config.storage_config.minimum_gb_required;
+    });
     return dirsWithSomeSpace.sort((a, b) => {
-        return a.available > b.available ? 1 : -1
+        return a.available > b.available ? 1 : -1;
     })[0];
 }
 
@@ -124,27 +147,32 @@ async function resolveAPKSaveInfo(appData) {
     const filesystem = await getPathFileSystem(appsSaveDir.path);
     const UUID = await getUUID(filesystem);
 
-    logger.debug(`appdir: ${appsSaveDir.path} - space remaining: ${appsSaveDir.available}`, `\nappId ${appData.app}`, `\nappStore ${appData.store}`,
+    logger.debug(`appdir: ${appsSaveDir.path} - space remaining: ${appsSaveDir.available}`,
+        `\nappId ${appData.app}`, `\nappStore ${appData.store}`,
         `\nregion ${appData.region}`, `\nversion ${appData.version}`);
 
-    const appSavePath = path.join(appsSaveDir.path,'apps', appData.app,
+    const appSavePath = path.join(appsSaveDir.path, 'apps', appData.app,
         appData.store, appData.region, appData.version);
     logger.info(`App Save Directory formed: '${appSavePath}'`);
 
     await mkdirp(appSavePath);
 
     return {
-        appSavePath :    appSavePath,
-        appSaveFS   :    filesystem,
-        appSaveFSName:   appsSaveDir.name,
+        appSavePath: appSavePath,
+        appSaveFS: filesystem,
+        appSaveFSName: appsSaveDir.name,
         appSavePathRoot: appsSaveDir.path,
-        appSaveUUID: UUID
+        appSaveUUID: UUID,
     };
 }
 
 function downloadApp(appData, appSavePath) {
     // Command line args for gplay cli
-    const args = ['-pd', appData.app, '-f', appSavePath, '-c', config.system_config.downloader_credentials];
+    const args = [
+        '-pd', appData.app,
+        '-f', appSavePath,
+        '-c', config.system_config.downloader_credentials,
+    ];
     const spw = require('child-process-promise').spawn;
     logger.debug(`Passing args to downloader${args}`);
     const apkDownloader = spw('gplaycli', args);
@@ -210,33 +238,12 @@ async function download(app) {
     return undefined;
 }
 
-async function ensureDirectoriesExist(directories) {
-    let validDirectories = [];
-    for(const dir of directories){
-        try{
-            await fs.ensureDir(path.join(dir.path, 'apps'));
-            validDirectories.push(dir);
-        }
-        catch(err) {
-            logger.err(
-                `
-                Error ensuring directory '${dir.path}' exists.
-                Error: ${err}.
-                Exluding ${dir.name} at ${dir.path} from the dowload location options.
-                `
-            );
-        }
-    }
-    return validDirectories;
-
-}
-
 async function main() {
-
     // Ensure that directory structures exist.
-    downloadLocations = await ensureDirectoriesExist(config.storage_config.apk_download_directories);
+    downloadLocations = await ensureDirectoriesExist(
+        config.storage_config.apk_download_directories
+    );
 
-    console.log(await getLocationWithLeastSpace());
     for (;;) {
         let apps;
         try {
@@ -246,12 +253,16 @@ async function main() {
             continue;
         }
 
-        for(const app of apps ) {
+        for (const app of apps ) {
             try {
-                await download(app).catch(err => {throw err});
-            }
-            catch(err) {
-                logger.err(`Error Downloading application with package name: ${app.app}. Error: ${err}`);
+                await download(app).catch((err) => {
+                    throw err;
+                });
+            } catch (err) {
+                logger.err(
+                    `Error Downloading application with package name: ${app.app}.`,
+                    `Error: ${err}`
+                );
             }
         }
 
