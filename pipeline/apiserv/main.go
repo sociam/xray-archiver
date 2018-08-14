@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os/exec"
+	"path"
 	"regexp"
 	"strconv"
 	"strings"
@@ -686,7 +687,9 @@ func init() {
 
 func main() {
 
-	http.Handle("/", http.FileServer(http.Dir(util.Cfg.AppDir)))
+	for _, dir := range util.Cfg.StorageConfig.APKDownloadDirectories {
+		http.Handle(path.Join("/", dir.Name), http.FileServer(http.Dir(dir.Path)))
+	}
 
 	http.HandleFunc("/api/apps", appsEndpoint)
 	http.HandleFunc("/api/alt/", altAppsEndpoint)
