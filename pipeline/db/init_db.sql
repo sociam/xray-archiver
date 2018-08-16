@@ -374,3 +374,32 @@ grant select, update on app_versions to suggester;
 grant select on playstore_apps to suggester;
 
 commit;
+
+
+
+-- Query to migrate existing analysis into the ad_hoc_analysis, complete with json!
+-- insert into ad_hoc_analysis (app_id, analyser_name, analysis_by, results)
+--   select  coalesce(hosts_id, perms_id, packages_id),
+--           'Golang analyser',
+--           'A.D.S Team',
+--           row_to_json(q)
+--   from (
+--     select
+--       app_hosts.id as hosts_id,
+--       *
+--     from
+--       app_hosts
+--     full outer join (
+--       select
+--         app_perms.id as perms_id,
+--         app_packages.id as packages_id,
+--         app_perms.permissions,
+--         app_packages.packages,
+--         *
+--       from
+--         app_perms
+--       full outer join
+--         app_packages
+--       on app_perms.id = app_packages.id
+--     ) as mid
+--     on app_hosts.id = perms_id and app_hosts.id = packages_id) as q;
