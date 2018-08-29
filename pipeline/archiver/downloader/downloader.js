@@ -139,13 +139,15 @@ async function getLocationWithLeastSpace() {
     });
 
     if(dirsWithSomeSpace.length == 0) {
-        throw new Error(
+        var err = new Error(
             'NoDiskspaceError: No disks exist that have space available.',
             '\nMinimum Space Required:',
             config.storage_config.minimum_gb_required,
             'Disks Checked:',
             dirSpaces
         )
+        logger.err(err);
+        process.exit(-1);
     }
 
     return dirsWithSomeSpace.sort((a, b) => {
