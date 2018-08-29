@@ -12,7 +12,7 @@ ExecStart=/usr/bin/node <<<PREFIX>>>/lib/xray/archiver/downloader/downloader.js
 User=xray
 Group=xray
 Type=simple
-Restart=always
+Restart=no
 
 [Install]
 WantedBy=multi-user.target
