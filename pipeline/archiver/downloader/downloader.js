@@ -23,7 +23,7 @@ async function ensureDirectoriesExist(directories) {
                 `
                 Error ensuring directory '${dir.path}' exists.
                 Error: ${err}.
-                Exluding ${dir.name} at ${dir.path} from the dowload location options.
+                Exluding ${dir.name} at ${dir.path} from the download location options.
                 `
             );
         }
@@ -137,6 +137,17 @@ async function getLocationWithLeastSpace() {
     const dirsWithSomeSpace = dirSpaces.filter((dir) => {
         return dir.available >= config.storage_config.minimum_gb_required;
     });
+
+    if(dirsWithSomeSpace.length == 0) {
+        throw new Error(
+            'NoDiskspaceError: No disks exist that have space available.',
+            '\nMinimum Space Required:',
+            config.storage_config.minimum_gb_required,
+            'Disks Checked:',
+            dirSpaces
+        )
+    }
+
     return dirsWithSomeSpace.sort((a, b) => {
         return a.available > b.available ? 1 : -1;
     })[0];

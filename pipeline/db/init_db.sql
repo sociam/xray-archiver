@@ -1,5 +1,3 @@
-
-
 -----
 --
 --  Table Creation
@@ -154,7 +152,6 @@ create table company_domains (
   primary key(company, domain)
 );
 
-
 --
 --    Company Association Information
 --
@@ -167,7 +164,6 @@ create table websites(
   id                      serial    not null  primary key
 );
 
-
 --
 --    Names of companies associated with an App, IoT Device, or website.
 --
@@ -176,7 +172,6 @@ create table companyNames(
   id                      serial      not null    primary key,
   company_name            text        not null    unique
 );
-
 
 --
 --    All apps, IoT devices, and websites associated with a given company.
@@ -212,9 +207,6 @@ create table companyWebsiteAssociations(
 );
 
 commit;
-
-
-
 
 -----
 --
@@ -276,7 +268,6 @@ create or replace function updateCompanyIoTDeviceAssociations() returns trigger 
 language plpgsql;
 commit;
 
-
 -----
 --
 --  Trigger Creation
@@ -305,7 +296,6 @@ create trigger onCompanyIoTDeviceAssociationInsert
 
 commit;
 
-
 -----
 --
 --  Role Creation
@@ -321,8 +311,6 @@ create user apiserv;
 create user suggester;
 
 commit;
-
-
 
 -----
 --
@@ -375,8 +363,6 @@ grant select on playstore_apps to suggester;
 
 commit;
 
-
-
 -- Query to migrate existing analysis into the ad_hoc_analysis, complete with json!
 -- insert into ad_hoc_analysis (app_id, analyser_name, analysis_by, results)
 --   select  coalesce(hosts_id, perms_id, packages_id),
@@ -384,22 +370,50 @@ commit;
 --           'A.D.S Team',
 --           row_to_json(q)
 --   from (
---     select
+--     select *,
 --       app_hosts.id as hosts_id,
---       *
+--       app_packages.id as packages_id,
+--       app_perms.id as perms_id
 --     from
 --       app_hosts
---     full outer join (
---       select
---         app_perms.id as perms_id,
---         app_packages.id as packages_id,
---         app_perms.permissions,
---         app_packages.packages,
---         *
---       from
---         app_perms
---       full outer join
---         app_packages
---       on app_perms.id = app_packages.id
---     ) as mid
---     on app_hosts.id = perms_id and app_hosts.id = packages_id) as q;
+--     full outer join
+--       app_perms
+--     on
+--       app_hosts.id = app_perms.id
+--     full outer join
+--       app_packages
+--     on
+--       app_hosts.id = app_packages.id
+--     and
+--       app_perms.id = app_packages.id
+--   ) as q;
+
+
+
+
+
+
+
+insert into ad_hoc_analysis (app_id, analyser_name, analysis_by, results)
+  select  coalesce(hosts_id, perms_id, packages_id),
+          'Golang analyser',
+          'A.D.S Team',
+          row_to_json(q)
+  from (
+    select *,
+      app_hosts.id as hosts_id,
+      app_packages.id as packages_id,
+      app_perms.id as perms_id
+    from
+      app_hosts
+    full outer join
+      app_perms
+    on
+      app_hosts.id = app_perms.id
+    full outer join
+      app_packages
+    on
+      app_hosts.id = app_packages.id
+    and
+      app_perms.id = app_packages.id
+  ) as q;
