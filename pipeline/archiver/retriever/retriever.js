@@ -40,12 +40,7 @@ async function fetchAppData(searchTerm, numberOfApps, perSecond) {
             .then(
                 async(appData) => {
                     logger.debug(`inserting ${appData.title} to the DB`);
-                    const appExists = await db.doesAppExist(appData).catch(logger.err);
-                    if (!appExists) {
-                        await insertAppData(appData).catch((err) => logger.err(err));
-                    } else {
-                        logger.debug('App already exists', appData.appId);
-                    }
+                    await insertAppData(appData).catch((err) => logger.err(err));
                 },
                 (err) => logger.err(
                     `Error Requesting appData for App: ${result.appId}. Error: ${err}`

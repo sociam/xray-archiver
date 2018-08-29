@@ -481,23 +481,25 @@ class DB {
                 if (!appExists) {
                     await client.lquery('INSERT INTO apps VALUES ($1, $2)', [app.appId, []]);
                 }
+
+                // insert as a new version of the app
                 const res = await client.lquery(
                     'INSERT INTO app_versions(app, store, region, version, downloaded, last_dl_attempt, analyzed )' +
                     'VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id', [app.appId, 'play', region, app.version, 0, 'epoch', 0]
                 );
                 verId = res.rows[0].id;
 
+                // update apps table to have the new version in the app version array.
                 await client.lquery('UPDATE apps SET versions=versions || $1 WHERE id = $2', [
                     [verId], app.appId,
                 ]);
-            }
+            
+                if (!app.price && app.price != 0) {
+                    app.price = 0;
+                }
 
-            if (!app.price && app.price != 0) {
-                app.price = 0;
-            }
-
-            await client.lquery(
-                'INSERT INTO playstore_apps VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, current_date)', [
+                await client.lquery(
+                    'INSERT INTO playstore_apps VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, current_date)', [
                     verId,
                     app.title,
                     app.summary,
@@ -519,6 +521,7 @@ class DB {
                     app.video,
                     Array.isArray(app.recentChanges) ? app.recentChanges : [app.recentChanges],
                 ]);
+            }
             await client.lquery('COMMIT');
         } catch (e) {
             logger.debug(e);
