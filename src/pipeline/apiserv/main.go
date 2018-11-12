@@ -11,9 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-
+	"pipeline/util"
 	"github.com/sociam/xray-archiver/pipeline/db"
-	"github.com/sociam/xray-archiver/pipeline/util"
 )
 
 // Err - convenience struct for marshalling errors
@@ -644,7 +643,7 @@ func fetchHosts(w http.ResponseWriter, r *http.Request) {
 			go func() {
 				var geoip []util.GeoIPInfo
 
-				geoip, err = util.GetHostGeoIP(util.Cfg.GeoIPEndpoint, hosts[j])
+				geoip, err = util.GetHostGeoIP(hosts[j])
 
 				if err != nil {
 					// TODO: immedoiately fail? change status to accepted 202 and 200 and
@@ -675,6 +674,7 @@ var port = flag.Uint("port", 8118, "Port to serve on.")
 
 func init() {
 	var err error
+	flag.Parse()
 	err = util.LoadCfg(*cfgFile, util.APIServ)
 	if err != nil {
 		log.Fatalf("Failed to read config: %s", err.Error())

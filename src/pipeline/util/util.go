@@ -307,22 +307,43 @@ func GetJSON(url string, target interface{}) error {
 }
 
 // GeoIPInfo stores apphosts data for geolocation
+
+// Original from freegeoip.net
+// type GeoIPInfo struct {
+// 	IP          string  `json:"ip"`
+// 	CountryCode string  `json:"country_code"`
+// 	CountryName string  `json:"country_name"`
+// 	RegionCode  string  `json:"region_code"`
+// 	RegionName  string  `json:"region_name"`
+// 	City        string  `json:"city"`
+// 	ZipCode     string  `json:"zip_code"`
+// 	TimeZone    string  `json:"time_zone"`
+// 	Latitude    float64 `json:"latitude"`
+// 	Longitude   float64 `json:"longitude"`
+// 	MetroCode   int     `json:"metro_code"`
+// }
+
+// this struct is designed for ip-api.com : 
+// please see http://ip-api.com/docs/api:json
 type GeoIPInfo struct {
-	IP          string  `json:"ip"`
-	CountryCode string  `json:"country_code"`
-	CountryName string  `json:"country_name"`
-	RegionCode  string  `json:"region_code"`
-	RegionName  string  `json:"region_name"`
+	IP          string  `json:"query"`
+	CountryCode string  `json:"countryCode"`
+	CountryName string  `json:"country"`
+	RegionCode  string  `json:"region"`
+	RegionName  string  `json:"regionName"`
 	City        string  `json:"city"`
-	ZipCode     string  `json:"zip_code"`
-	TimeZone    string  `json:"time_zone"`
-	Latitude    float64 `json:"latitude"`
-	Longitude   float64 `json:"longitude"`
-	MetroCode   int     `json:"metro_code"`
+	ZipCode     string  `json:"zip"`
+	TimeZone    string  `json:"timezone"`
+	Latitude    float64 `json:"lat"`
+	Longitude   float64 `json:"lon"`
+	Org	    string  `json:"org"`
+	
 }
 
 // GetHostGeoIP grabs geo location information from hostname
-func GetHostGeoIP(geoipHost, host string) ([]GeoIPInfo, error) {
+func GetHostGeoIP(host string) ([]GeoIPInfo, error) {
+
+     geoipHost := Cfg.GeoIPEndpoint
 	hosts, err := net.LookupHost(host)
 	if err != nil {
 		return nil, err
@@ -331,8 +352,10 @@ func GetHostGeoIP(geoipHost, host string) ([]GeoIPInfo, error) {
 	ret := make([]GeoIPInfo, 0, len(hosts))
 	for _, host := range hosts {
 		var inf GeoIPInfo
-		//TODO: fix?
+
+		// geoipHost parameter is kind of superfluous given our fixed schema..
 		err = GetJSON(geoipHost+"/"+url.PathEscape(host), &inf)
+		
 		if err != nil {
 			//TODO: better handling?
 			fmt.Printf("Couldn't lookup geoip info for %s: %s \n", host, err.Error())
