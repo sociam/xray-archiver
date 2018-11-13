@@ -112,6 +112,7 @@ func LoadCfg(cfgFile string, requester int) error {
 	fmt.Println("Config:")
 	fmt.Println("\tApp directories:", Cfg.StorageConfig.APKDownloadDirectories)
 	fmt.Println("\tUnpacked app directory:", Cfg.StorageConfig.APKUnpackDirectory)
+	fmt.Println("\tGeoIP Endpoint:", Cfg.GeoIPEndpoint)
 
 	return nil
 }

@@ -3,7 +3,7 @@ package db
 import (
 	"time"
 
-	"github.com/sociam/xray-archiver/pipeline/util"
+	"pipeline/util"
 )
 
 // Range represents a range

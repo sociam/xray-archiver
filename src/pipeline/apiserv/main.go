@@ -12,7 +12,7 @@ import (
 	"strings"
 	"sync"
 	"pipeline/util"
-	"github.com/sociam/xray-archiver/pipeline/db"
+	"pipeline/db"
 )
 
 // Err - convenience struct for marshalling errors
