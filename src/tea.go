@@ -4,6 +4,7 @@ import (
    "flag"
    "log"
    "pipeline/util"
+   "encoding/json"
 )
 
 func blep() {
@@ -16,7 +17,8 @@ func blep() {
 
 var cfgFile = flag.String("cfg", "/etc/xray/config.json", "config file location")
 var port = flag.Uint("port", 8118, "Port to serve on.")
-var ip = flag.String("name", "web.mit.edu", "Name to lookup.")
+
+var ip = flag.String("name", "www.cs.ox.ac.uk", "Name to lookup.")
 
 func main() {
 
@@ -25,10 +27,30 @@ func main() {
      blep()
      fmt.Printf("GeoIP Endpoint Configured [%s]\n", util.Cfg.GeoIPEndpoint);
 
-     result,err := util.GetHostGeoIP(*ip)
+     iptest := make([]string, 0, 0)
+     for _, v := range util.MakeRange(0, 103) {
+     	 iptest = append(iptest, *ip)
+	 _ = v
+     }
+
+     result,err := util.GetHostGeoIPs(iptest)
      if (err != nil) {
      	fmt.Printf("fuckssake")
      }
-     fmt.Printf("Length [%d]\n", len(result))
-     fmt.Printf("%f, %f\n", result[0].Latitude, result[0].Longitude)
+
+     ms,merr := json.Marshal(result)
+     if (merr != nil) { 
+          fmt.Printf("merr is error: ",merr.Error())
+     } else {
+          fmt.Printf("result: ", string(ms))
+     }
+
+     for host, rs := range result {
+     	 fmt.Println(" host ", host, " rs ", len(rs))
+	 if len(rs) > 0 {
+	    fmt.Println("rs[0].IP", rs[0].IP, rs[0].Latitude, rs[0].Longitude);
+	 }
+     }
+
+
 }

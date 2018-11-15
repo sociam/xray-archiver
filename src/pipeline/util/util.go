@@ -14,6 +14,9 @@ import (
 	"path"
 	"strings"
 	"time"
+	"bytes"
+	"math"
+//	"sync"
 )
 
 // Unit for maps in data.go
@@ -302,26 +305,48 @@ func GetJSON(url string, target interface{}) error {
 		return fmt.Errorf("Got status %d while attempting to get GeoIP data", r.StatusCode)
 	}
 	defer r.Body.Close()
-
 	return json.NewDecoder(r.Body).Decode(target)
 }
+
+func PostJSON(url string, body []byte, target interface{}) error {
+     fmt.Println("Calling POST on url ", url)
+        req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{Timeout: 10 * time.Second}
+	r, err := client.Do(req)
+	if err != nil {  return err}
+	if r.StatusCode != http.StatusOK {
+	   return fmt.Errorf("Got status %d while attempting to get GeoIP data", r.StatusCode)
+	}
+	defer r.Body.Close()
+	// debugging only 
+	// if r.StatusCode == http.StatusOK {
+	//    bodyBytes, err2 := ioutil.ReadAll(r.Body)
+	//    bodyString := string(bodyBytes)
+	//    fmt.Println("response body ", bodyString, err2);
+	//    // 
+	// }
+	return json.NewDecoder(r.Body).Decode(target)
+	// return nil; // Error{err:"bad"};	
+}
+
 
 // GeoIPInfo stores apphosts data for geolocation
 
 // Original from freegeoip.net
-// type GeoIPInfo struct {
-// 	IP          string  `json:"ip"`
-// 	CountryCode string  `json:"country_code"`
-// 	CountryName string  `json:"country_name"`
-// 	RegionCode  string  `json:"region_code"`
-// 	RegionName  string  `json:"region_name"`
-// 	City        string  `json:"city"`
-// 	ZipCode     string  `json:"zip_code"`
-// 	TimeZone    string  `json:"time_zone"`
-// 	Latitude    float64 `json:"latitude"`
-// 	Longitude   float64 `json:"longitude"`
-// 	MetroCode   int     `json:"metro_code"`
-// }
+type OldGeoIPInfo struct {
+ 	IP          string  `json:"ip"`
+ 	CountryCode string  `json:"country_code"`
+ 	CountryName string  `json:"country_name"`
+ 	RegionCode  string  `json:"region_code"`
+ 	RegionName  string  `json:"region_name"`
+ 	City        string  `json:"city"`
+ 	ZipCode     string  `json:"zip_code"`
+ 	TimeZone    string  `json:"time_zone"`
+ 	Latitude    float64 `json:"latitude"`
+ 	Longitude   float64 `json:"longitude"`
+ 	MetroCode   int     `json:"metro_code"`
+}
 
 // this struct is designed for ip-api.com : 
 // please see http://ip-api.com/docs/api:json
@@ -340,29 +365,135 @@ type GeoIPInfo struct {
 	
 }
 
-// GetHostGeoIP grabs geo location information from hostname
-func GetHostGeoIP(host string) ([]GeoIPInfo, error) {
+type IpAPIQuery struct {
+     Query string `json:"query"`
+}
 
-     geoipHost := Cfg.GeoIPEndpoint
+// GetHostGeoIP grabs geo location information from hostname
+func GetHostGeoIPSub100(host string) ([]GeoIPInfo, error) {
+
+        geoipHost := Cfg.GeoIPEndpoint
 	hosts, err := net.LookupHost(host)
 	if err != nil {
 		return nil, err
 	}
 
-	ret := make([]GeoIPInfo, 0, len(hosts))
-	for _, host := range hosts {
-		var inf GeoIPInfo
-
-		// geoipHost parameter is kind of superfluous given our fixed schema..
-		err = GetJSON(geoipHost+"/"+url.PathEscape(host), &inf)
-		
-		if err != nil {
-			//TODO: better handling?
-			fmt.Printf("Couldn't lookup geoip info for %s: %s \n", host, err.Error())
-		} else {
-			ret = append(ret, inf)
-		}
+	hosts = hosts[:100]
+	queries := make([]IpAPIQuery,len(hosts))
+	
+	for i, host := range hosts {
+	    fmt.Println("Marshalling: ", host, i, len(queries), len(hosts))
+	    queries[i] = IpAPIQuery{url.PathEscape(host)}
 	}
+	
+	jsons,err := json.Marshal(queries)
+	var inf []GeoIPInfo
+	err = PostJSON(geoipHost+"/batch", jsons, &inf)
 
-	return ret, nil
+	if err != nil {
+	   fmt.Println("Couldn't call batch query ", err.Error())
+	   return nil, err
+	}
+		
+	return inf, nil	
 }
+
+func MakeRange(min, max int) []int {
+    a := make([]int, max-min+1)
+    for i := range a {
+        a[i] = min + i
+    }
+    return a
+}
+
+func convertGeoStruct(g GeoIPInfo) OldGeoIPInfo {
+     return OldGeoIPInfo{
+     	    g.IP,
+	    g.CountryCode,
+	    g.CountryName,
+	    g.RegionCode,
+	    g.RegionName,
+	    g.City,
+	    g.ZipCode,
+	    g.TimeZone,
+	    g.Latitude,
+	    g.Longitude,
+	    0}
+}
+
+// GetHostGeoIP grabs geo location information from hostname
+func GetHostGeoIPs(hosts []string) (map[string][]OldGeoIPInfo, error) {
+
+     fmt.Println("Entering GHGIPs", hosts)
+
+     max_hosts := 100
+     geoipHost := Cfg.GeoIPEndpoint
+
+     addr_h_map := make(map[string]string)
+     addr_geo_map := make(map[string][]OldGeoIPInfo)
+     
+     addrs := make([]string, 0, len(hosts))
+
+     // STEP 0: resolve hostnames -> addrs
+     for _, host := range hosts {
+         haddr, err := net.LookupHost(host)
+     	 if err != nil {
+	    fmt.Println("Error with ", host, " skipping ->");
+	 } else {
+	   if (len(haddr) > 0) {
+	      addr_h_map[haddr[0]] = host
+	      addrs = append(addrs, haddr[0])
+	   }
+	 }
+     }
+
+     fmt.Println(" Initial DNS resolve ", addr_h_map, len(addrs) )
+     
+     ret := make([]GeoIPInfo, 0, len(addrs)) // to return
+     queries := make([]IpAPIQuery,len(addrs)) // prepare qureis array
+     for i, addr := range addrs {
+         queries[i] = IpAPIQuery{url.PathEscape(addr)}
+     }
+
+     for _, step := range MakeRange(0,len(addrs)/max_hosts) {
+        start_idx := step*max_hosts
+	end_idx := int(math.Min(float64((step+1)*max_hosts), float64(len(queries))))
+	// fmt.Println(" start::end ", start_idx, "::", end_idx) 
+	slice_queries := queries[start_idx:end_idx]
+	// fmt.Println(" slice_query ", slice_queries, len(slice_queries)) 
+	jsons,err := json.Marshal(slice_queries)
+	var inf []GeoIPInfo
+	err = PostJSON(geoipHost+"/batch", jsons, &inf)
+
+	if err != nil {
+	   fmt.Println("Couldn't call batch query ", err.Error())
+	   // return nil, err
+	} else {
+	  ret = append(ret, inf...)
+	}
+     }
+
+     // return host to geo map which will make EDI/Refine happy
+     // as old style
+     for _, r := range ret {
+     	 host,ok := addr_h_map[r.IP]
+	 if (ok) {
+	    prev_rs, gotem := addr_geo_map[host]
+	    if (!gotem) {
+	       prev_rs = []OldGeoIPInfo{ convertGeoStruct(r) }
+	    } else {
+	       prev_rs = append(prev_rs, convertGeoStruct(r) )
+	    }
+	    addr_geo_map[host] = prev_rs
+	} else {
+	  fmt.Println("not ok ", host);
+	 }
+     }
+
+     fmt.Println("Returning ", addr_geo_map)
+	
+     return addr_geo_map, nil
+}
+
+
+

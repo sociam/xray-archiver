@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
+// 	"sync"
 	"pipeline/util"
 	"pipeline/db"
 )
@@ -633,36 +633,39 @@ func fetchHosts(w http.ResponseWriter, r *http.Request) {
 		hosts := strings.Split(hostsParams, ",")
 		util.Log.Debug("Checking over hosts: %s\n", hosts)
 
-		hostToGeoip := map[string][]util.GeoIPInfo{}
+		// hostToGeoip, err := util.GetHostGeoIPs(hosts)
+		// hostToGeoip := map[string][]util.GeoIPInfo{}
 
-		wg := sync.WaitGroup{}
-		for i := range hosts {
-			j := i
-			util.Log.Debug("Getting host geo ip: %s\n", hosts[i])
-			wg.Add(1)
-			go func() {
-				var geoip []util.GeoIPInfo
+		fmt.Println("entering get host geo ips")
+		hostToGeoip, err := util.GetHostGeoIPs(hosts)
+		
+		// for i := range hosts {
+		// 	j := i
+		// 	util.Log.Debug("Getting host geo ip: %s\n", hosts[i])
+		// 	wg.Add(1)
+		// 	go func() {
+		// 		var geoip []util.GeoIPInfo
 
-				geoip, err = util.GetHostGeoIP(hosts[j])
+		// 		geoip, err = util.GetHostGeoIP(hosts[j])
 
-				if err != nil {
-					// TODO: immedoiately fail? change status to accepted 202 and 200 and
-					// BADREQUEST when all is well with all hosts.
+		// 		if err != nil {
+		// 			// TODO: immedoiately fail? change status to accepted 202 and 200 and
+		// 			// BADREQUEST when all is well with all hosts.
 
-					// immediately failing is impossible with parallelization (or very
-					// hard) and I don't think we should use http statuses in a non-standard way -sauyon
+		// 			// immediately failing is impossible with parallelization (or very
+		// 			// hard) and I don't think we should use http statuses in a non-standard way -sauyon
 
-					// writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
-					util.Log.Notice("Host %s could not be found: %s", hosts[j], err.Error())
-					hostToGeoip[hosts[j]] = nil
-				} else {
-					hostToGeoip[hosts[j]] = geoip
-				}
-				wg.Done()
-			}()
-		}
+		// 			// writeErr(w, mime, http.StatusBadRequest, "bad_host", "the host could not be retrieved", err)
+		// 			util.Log.Notice("Host %s could not be found: %s", hosts[j], err.Error())
+		// 			hostToGeoip[hosts[j]] = nil
+		// 		} else {
+		// 			hostToGeoip[hosts[j]] = geoip
+		// 		}
+		// 		wg.Done()
+		// 	}()
+		// }
 
-		wg.Wait()
+		// wg.Wait()
 
 		writeData(w, mime, http.StatusOK, hostToGeoip)
 	}
